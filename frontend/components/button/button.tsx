@@ -8,7 +8,7 @@ export interface ButtonProps {
   color?: "primary" | "secondary" | "accent" | "white";
   icon?: {
     url: string;
-    position: "left" | "right";
+    position: "left" | "right" | "top" | "bottom";
     size?: number;
   };
   padding?: "sm" | "md" | "lg" | number;
@@ -76,7 +76,7 @@ const Button = (props: ButtonProps) => {
         case "secondary":
           return "#f1f1f1";
         case "accent":
-          return "#06fc99";
+          return "var(--althea-blue)";
         case undefined:
           return "var(--primary-10-color)";
         default:
@@ -94,8 +94,8 @@ const Button = (props: ButtonProps) => {
           : "#f1f1f1";
       case "accent":
         return props.themed || props.themed == undefined
-          ? "var(--extra-success-color)"
-          : "#06fc99";
+          ? "var(--althea-blue)"
+          : "var(--althea-blue)";
       case undefined:
         return "var(--text-dark-color)";
       default:
@@ -208,10 +208,36 @@ const Button = (props: ButtonProps) => {
         padding: props.minimal ? undefined : getPadding() + "px",
         color: getTextColor(),
         fontFamily: getFontFamily(),
-        gap: "12px",
+        gap: (() => {
+          switch (props.icon?.position) {
+            case "right":
+              return "12px";
+            case "left":
+              return "12px";
+            case "top":
+              return "2px";
+            case "bottom":
+              return "2px";
+            default:
+              return "12px";
+          }
+        })(),
         fontWeight: props.weight == "bold" ? "bold" : "normal",
         boxShadow: getShadow(),
-        flexDirection: props.icon?.position == "right" ? "row-reverse" : "row",
+        flexDirection: (() => {
+          switch (props.icon?.position) {
+            case "right":
+              return "row-reverse";
+            case "left":
+              return "row";
+            case "top":
+              return "column-reverse";
+            case "bottom":
+              return "column";
+            default:
+              return "row";
+          }
+        })(),
         textTransform: props.minimal ? "uppercase" : "none",
         letterSpacing: props.minimal ? "0.27px" : "none",
       }}

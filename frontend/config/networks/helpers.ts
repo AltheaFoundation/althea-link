@@ -14,7 +14,7 @@ const checkCosmosAddress = (prefix: string) => (address: string) =>
   address.startsWith(prefix);
 
 const truncateAddress = (address: string) => {
-  return address.slice(0, 4) + "..." + address.slice(-4);
+  return address.slice(0, 6) + "..." + address.slice(-6);
 };
 
 export {

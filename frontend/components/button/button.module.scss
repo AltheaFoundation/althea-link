@@ -23,13 +23,14 @@
 
     box-shadow: var(--box-shadow, 1px 1px 0px 0px rgba(17, 17, 17, 0.3));
     transition: all 0.2s ease-out;
+    scale: 0.95;
   }
   &:global(.minimal) {
     position: relative;
     transition: all 0.3s ease;
-  
+
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 0;
@@ -38,7 +39,7 @@
       background-color: #fff;
       transition: bottom 0.3s ease;
     }
-  
+
     &:hover::after {
       bottom: -4px;
     }

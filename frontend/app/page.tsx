@@ -3,10 +3,7 @@
 import Container from "@/components/container/container";
 import styles from "./home.module.scss";
 import Icon from "@/components/icon/icon";
-import Button from "@/components/button/button";
-import Link from "next/link";
-import Image from "next/image";
-import Glitch from "@/components/glitch/glitch";
+
 import AnimatedBackgroundHome from "@/components/animated_background_home/animatedBackgroundHome";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
 

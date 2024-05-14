@@ -15,6 +15,9 @@ interface Props {
   height?: string;
   closeOnOverlayClick?: boolean;
   padded?: boolean;
+  showDivider?: boolean;
+  showBackground?: boolean;
+  backgroundColor?: string;
 }
 
 const Modal = ({
@@ -26,6 +29,9 @@ const Modal = ({
   open,
   padded = true,
   closeOnOverlayClick = true,
+  showDivider = false,
+  showBackground = false,
+  backgroundColor = "var(--card-sub-surface-color)",
 }: Props) => {
   const [isClient, setIsClient] = useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -73,6 +79,7 @@ const Modal = ({
           style={{
             padding: padded ? "15px" : "0px",
             width: width ? width : "auto",
+            backgroundColor: backgroundColor,
           }}
         >
           <Container className={styles.close} onClick={handleClose}>
@@ -93,7 +100,11 @@ const Modal = ({
               </Text>
             </div>
           )}
-          <div className={styles.body}>{children}</div>
+          <div className={styles.body}>
+            {showDivider && <div className={styles.divider_vertical} />}
+            <div className={styles.left_content}>{children}</div>
+            {showBackground && <div className={styles.right_content}></div>}
+          </div>
         </div>
       </div>
     </div>

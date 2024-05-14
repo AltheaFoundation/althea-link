@@ -133,7 +133,7 @@ export const StakingModal = (props: StakingModalParams) => {
       userDelegationBalance,
     ]
   );
-
+  console.log(txValidation);
   useEffect(() => {
     if (userDelegationBalance === "0") {
       setSelectedTx(StakingTxTypes.DELEGATE);

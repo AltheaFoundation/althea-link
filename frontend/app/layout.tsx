@@ -16,18 +16,18 @@ import { wallets as station } from "@cosmos-kit/station";
 import { wallets as trust } from "@cosmos-kit/trust";
 import { wallets as leap } from "@cosmos-kit/leap";
 import { ReactQueryClientProvider } from "@/provider/reactQueryProvider";
-import ToastWizard from "@/components/walletWizard/wizardToast";
-import { WalletWizardModal } from "@/components/walletWizard/wizardModal";
-import { useEffect, useState } from "react";
+
 import { ToastContainer } from "@/components/toast";
-import { Chain, AssetList } from "@chain-registry/types";
+import { Chain } from "@chain-registry/types";
 import { Registry } from "@cosmjs/proto-signing";
 import { SigningStargateClientOptions, AminoTypes } from "@cosmjs/stargate";
 import { SignerOptions } from "@cosmos-kit/core";
 import "@interchain-ui/react/styles";
 import WalletConnect from "@/components/wallet_connect/walletConnect";
 import StatusText from "@/components/status_text/statusText";
-import AddKeplr from "@/components/walletWizard/addKeplr";
+
+import { althea, altheaAssets } from "@/provider/chainRegistry";
+import { modalThemeOverrides } from "@/provider/cosmosKitModal";
 
 const nm_plex = IBM_Plex_Sans({
   weight: ["400", "500", "700"],
@@ -55,9 +55,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isWalletWizardOpen, setIsWalletWizardOpen] = useState(false);
-  const [showToast, setShowToast] = useState(true);
-
   const signerOptions: SignerOptions = {
     // @ts-ignore
     signingStargate: (
@@ -75,241 +72,6 @@ export default function RootLayout({
       };
     },
   };
-
-  // MIGRATION TOOL DISABLED
-  // const openWalletWizard = () => {
-  //   setIsWalletWizardOpen(true);
-  //   setShowToast(false);
-  // };
-
-  // const closeWalletWizard = () => {
-  //   setIsWalletWizardOpen(false);
-  //   setShowToast(true);
-  // };
-
-  const modalThemeOverrides: ThemeCustomizationProps = {
-    modalContentStyles: {
-      backgroundColor: "#001833",
-      opacity: 1,
-    },
-    overrides: {
-      "connect-modal": {
-        bg: {
-          light: "rgba(0, 0, 0, 0)",
-          dark: "rgba(32, 32, 32, 0)",
-        },
-        activeBg: {
-          light: "rgba(0, 0, 0, 0)",
-          dark: "rgba(255, 255, 255, 0.9)",
-        },
-        color: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-        focusedBg: {
-          light: "rgba(0, 0, 0, 0)",
-          dark: "rgba(32, 32, 32, 0)",
-        },
-        disabledBg: {
-          light: "rgba(0, 0, 0, 0)",
-          dark: "rgba(32, 32, 32, 0)",
-        },
-      },
-
-      "clipboard-copy-text": {
-        bg: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-      },
-      "connect-modal-qr-code-shadow": {
-        bg: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-      },
-      button: {
-        bg: {
-          light: "#1c508c",
-          dark: "#1c508c",
-        },
-      },
-      "connect-modal-head-title": {
-        bg: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-      },
-      "connect-modal-wallet-button-label": {
-        bg: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-      },
-      "connect-modal-wallet-button-sublogo": {
-        bg: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-      },
-      "connect-modal-qr-code-loading": {
-        bg: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-      },
-      "connect-modal-wallet-button": {
-        bg: {
-          light: "rgba(45, 47, 61, 0.9)",
-          dark: "rgba(45, 47, 61, 0.9)",
-        },
-        hoverBg: {
-          light: "#1c508c",
-          dark: "#1c508c",
-        },
-        borderColor: { light: "black", dark: "black" },
-        hoverBorderColor: {
-          light: "black",
-          dark: "black",
-        },
-        activeBorderColor: {
-          light: "#FFFFFF",
-          dark: "#FFFFFF",
-        },
-        color: {
-          light: "#ffffff",
-          dark: "#FFFFFF",
-        },
-        focusedBorderColor: { light: "#FFFFFF", dark: "#FFFFFF" },
-      },
-      "connect-modal-qr-code": {
-        bg: {
-          light: "#add3ff",
-          dark: "#0077ff",
-        },
-        color: {
-          light: "#0077ff",
-          dark: "#add3ff",
-        },
-      },
-      "connect-modal-install-button": {
-        bg: {
-          light: "#F0F0F0",
-          dark: "#fcfcfc",
-        },
-      },
-      "connect-modal-qr-code-error": {
-        bg: {
-          light: "#FFEEEE",
-          dark: "#FFFFFF",
-        },
-      },
-      "connect-modal-qr-code-error-button": {
-        bg: {
-          light: "#FFCCCC",
-          dark: "#552222",
-        },
-      },
-    },
-  };
-
-  const altheatestnet: Chain = {
-    chain_name: "althea",
-    status: "live",
-    network_type: "mainnet",
-    website: "https://althea.net/",
-    pretty_name: "Althea",
-    chain_id: "althea_258432-1",
-    bech32_prefix: "althea",
-    daemon_name: "althea",
-    node_home: "$HOME/.althea",
-    slip44: 118,
-    apis: {
-      rest: [
-        {
-          address: "https://nodes.chandrastation.com/api/althea/",
-          provider: "Chandra Station",
-        },
-      ],
-      rpc: [
-        {
-          address: "https://nodes.chandrastation.com/rpc/althea/",
-          provider: "Chandra Station",
-        },
-      ],
-    },
-    fees: {
-      fee_tokens: [
-        {
-          denom: "aalthea",
-          fixed_min_gas_price: 100000000000,
-          low_gas_price: 100000000000,
-          average_gas_price: 100000000000,
-          high_gas_price: 300000000000,
-        },
-      ],
-    },
-    staking: {
-      staking_tokens: [
-        {
-          denom: "aalthea",
-        },
-      ],
-    },
-    logo_URIs: {
-      png: "https://github.com/chalabi2/althea-appV2/blob/staging/public/althea.png",
-      svg: "https://github.com/chalabi2/althea-appV2/blob/staging/public/althea.svg",
-    },
-    images: [
-      {
-        png: "https://github.com/chalabi2/althea-appV2/blob/staging/public/althea.png",
-        svg: "https://github.com/chalabi2/althea-appV2/blob/staging/public/althea.svg",
-      },
-    ],
-    codebase: {
-      git_repo: "https://github.com/AltheaFoundation/althea-L1",
-      recommended_version: "v1.3.0",
-      compatible_versions: ["v1.3.0"],
-      binaries: {
-        "linux/amd64":
-          "https://github.com/AltheaFoundation/althea-L1/releases/download/v1.3.0/althea-linux-amd64",
-      },
-      versions: [
-        {
-          name: "v1",
-          recommended_version: "v1.3.0",
-          compatible_versions: ["v1.3.0"],
-        },
-      ],
-      genesis: {
-        genesis_url:
-          "https://github.com/AltheaFoundation/althea-L1-docs/blob/main/althea-l1-mainnet-genesis.json",
-      },
-    },
-  };
-  const altheatestnetAssets: AssetList = {
-    chain_name: "althea",
-    assets: [
-      {
-        description: "Althea native token",
-        denom_units: [
-          {
-            denom: "aalthea",
-            exponent: 0,
-          },
-          {
-            denom: "althea",
-            exponent: 18,
-          },
-        ],
-        base: "aalthea",
-        name: "Althea Token",
-        display: "althea",
-        symbol: "ALTHEA",
-      },
-    ],
-  };
-
   return (
     <html lang="en">
       {/* <head>
@@ -360,8 +122,8 @@ export default function RootLayout({
       >
         <div id="toast-root"></div>
         <ChainProvider
-          chains={[altheatestnet]}
-          assetLists={[altheatestnetAssets]}
+          chains={[althea]}
+          assetLists={[altheaAssets]}
           // @ts-ignore
           wallets={[...keplr, ...cosmostation, ...trust, ...station, ...leap]}
           signerOptions={signerOptions}
@@ -392,9 +154,8 @@ export default function RootLayout({
         >
           <CantoWalletProvider>
             <ReactQueryClientProvider>
-              <ToastContainer>
-                <div className="body">
-                  {/* <InfoBar
+              <div className="body">
+                {/* <InfoBar
                 values={[
                   {
                     name: "contracts w/ CSR enabled:",
@@ -422,29 +183,12 @@ export default function RootLayout({
                   },
                 ]}
               /> */}
-                  <NavBar />
-
-                  {children}
-
-                  <div id="modal-root">
-                    {showToast && (
-                      <AddKeplr
-                        isVisible={showToast}
-                        onClose={() => setShowToast(false)}
-                      />
-                    )}
-                    {/* <WalletWizardModal
-                      balance={10}
-                      isOpen={isWalletWizardOpen}
-                      onOpen={setIsWalletWizardOpen}
-                      onClose={closeWalletWizard}
-                    /> */}
-                  </div>
-                  <WalletConnect />
-                  <StatusText />
-                  <Footer />
-                </div>
-              </ToastContainer>
+                <NavBar />
+                {children}
+                <WalletConnect />
+                <StatusText />
+                <Footer />
+              </div>
             </ReactQueryClientProvider>
           </CantoWalletProvider>
         </ChainProvider>

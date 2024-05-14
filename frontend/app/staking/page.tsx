@@ -43,17 +43,23 @@ import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { getAnalyticsStakingInfo } from "@/utils/analytics";
 import LoadingComponent from "@/components/animated/loader";
 import Image from "next/image";
+import { useChain } from "@cosmos-kit/react";
+import { altheaToEth } from "@gravity-bridge/address-converter";
 const loadingGif = "/loading.gif";
 
 export default function StakingPage() {
   // connected user info
   const { txStore, signer, chainId } = useCantoSigner();
-
+  // if cosmos is connected
+  const { address } = useChain("althea");
+  const altheaToEthAddress = altheaToEth(
+    address ?? "althea1uwqjtgjhjctjc45ugy7ev5prprhehc7wdlsqmq"
+  ) as `0x${string}`;
   // staking hook
   const { isLoading, validators, apr, userStaking, selection, transaction } =
     useStaking({
       chainId: chainId,
-      userEthAddress: signer?.account.address,
+      userEthAddress: signer?.account.address || altheaToEthAddress,
     });
   const { isMobile } = useScreenSize();
   // handle txs

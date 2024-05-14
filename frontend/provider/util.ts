@@ -1,6 +1,6 @@
 import { Theme } from "@rainbow-me/rainbowkit";
 
-export const cantoTheme: Theme = {
+export const altheaTheme: Theme = {
   blurs: {
     modalOverlay: "blur(2px)",
   },

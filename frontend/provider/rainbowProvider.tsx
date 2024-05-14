@@ -14,7 +14,7 @@ import {
 } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import * as EVM_CHAINS from "@/config/networks/evm";
-import { cantoTheme } from "./util";
+import { altheaTheme } from "./util";
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { SafeConnector } from "wagmi/connectors/safe";
@@ -127,7 +127,7 @@ const RainbowProvider = ({ children }: RainbowProviderProps) => {
       avatar={CustomAvatar}
       chains={chains}
       modalSize="wide"
-      theme={cantoTheme}
+      theme={altheaTheme}
       initialChain={EVM_CHAINS.CANTO_MAINNET_EVM.chainId}
     >
       {mounted && children}
