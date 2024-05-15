@@ -11,17 +11,24 @@ import ThemeButton from "../footer/components/footerButton";
 import { useEffect, useRef, useState } from "react";
 import Analytics from "@/provider/analytics";
 import useCantoSigner from "@/hooks/helpers/useCantoSigner";
-import { useBalance } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import { useAutoConnect } from "@/provider/useAutoConnect";
 import Icon from "../icon/icon";
-
+import { SlWallet } from "react-icons/sl";
+import useScreenSize from "@/hooks/helpers/useScreenSize";
+import { HiddenWalletConnect } from "../wallet_connect/walletConnect";
+import { useChain } from "@cosmos-kit/react";
 const NavBar = () => {
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   // This is used to connect safe as wallet,
   // if the app is opened in the safe context.
   useAutoConnect();
-
+  const { isMobile } = useScreenSize();
   const currentPath = usePathname();
   const searchParams = useSearchParams();
+  const { isConnected } = useAccount();
+  const { isWalletConnected } = useChain("althea");
   const { signer } = useCantoSigner();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // useEffect(() => {
@@ -62,30 +69,39 @@ const NavBar = () => {
   //   chainId: signer?.chain.id,
   // });
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.logo}>
-        <button
-          className={styles.menu}
-          onClick={() => {
-            setIsMenuOpen(!isMenuOpen);
-          }}
-        >
-          <Icon
-            icon={{
-              url: "/menu.svg",
-              size: 56,
-            }}
-            themed
-          />
-        </button>
-        <Link href="/">
-          <Image src="/altheaLink.svg" width={160} height={24} alt="althea" />
-        </Link>
-      </div>
+  const handleWalletIconClick = () => {
+    if (isConnected || isWalletConnected) {
+      setIsAccountModalOpen(true);
+    } else {
+      setIsWalletModalOpen(true);
+    }
+  };
 
-      <div className={styles["nav-links"]} data-menu-open={isMenuOpen}>
-        {/* <Link
+  return (
+    <>
+      <div className={styles.container}>
+        <div className={styles.logo}>
+          <button
+            className={styles.menu}
+            onClick={() => {
+              setIsMenuOpen(!isMenuOpen);
+            }}
+          >
+            <Icon
+              icon={{
+                url: "/menu.svg",
+                size: 56,
+              }}
+              themed
+            />
+          </button>
+          <Link href="/">
+            <Image src="/altheaLink.svg" width={160} height={24} alt="althea" />
+          </Link>
+        </div>
+
+        <div className={styles["nav-links"]} data-menu-open={isMenuOpen}>
+          {/* <Link
           href="/bridge"
           className={clsx(
             styles["nav-link"],
@@ -96,7 +112,7 @@ const NavBar = () => {
           <Text size="sm">Bridge</Text>
         </Link> */}
 
-        {/* <Link
+          {/* <Link
           href="/lending"
           className={clsx(
             styles["nav-link"],
@@ -106,7 +122,7 @@ const NavBar = () => {
         >
           <Text size="sm">Lending</Text>
         </Link> */}
-        {/* <Link
+          {/* <Link
           href="/lp"
           className={clsx(
             styles["nav-link"],
@@ -116,7 +132,7 @@ const NavBar = () => {
         >
           <Text size="sm">Pools</Text>
         </Link> */}
-        {/* <Link
+          {/* <Link
           href="/explore"
           className={clsx(
             styles["nav-link"],
@@ -126,28 +142,30 @@ const NavBar = () => {
         >
           <Text size="sm">Explore</Text>
         </Link> */}
-        <Link
-          href="/staking"
-          className={clsx(
-            styles["nav-link"],
-            currentPath == "/staking" && styles.active
-          )}
-          onClick={() => Analytics.actions.events.clickedNavLink("Staking")}
-        >
-          <Text size="sm">Staking</Text>
-        </Link>
-        <Link
-          href="/governance"
-          className={clsx(
-            styles["nav-link"],
-            currentPath.includes("governance") && styles.active
-          )}
-          onClick={() => Analytics.actions.events.clickedNavLink("Governance")}
-        >
-          <Text size="sm">Governance</Text>
-        </Link>
+          <Link
+            href="/staking"
+            className={clsx(
+              styles["nav-link"],
+              currentPath == "/staking" && styles.active
+            )}
+            onClick={() => Analytics.actions.events.clickedNavLink("Staking")}
+          >
+            <Text size="sm">Staking</Text>
+          </Link>
+          <Link
+            href="/governance"
+            className={clsx(
+              styles["nav-link"],
+              currentPath.includes("governance") && styles.active
+            )}
+            onClick={() =>
+              Analytics.actions.events.clickedNavLink("Governance")
+            }
+          >
+            <Text size="sm">Governance</Text>
+          </Link>
 
-        {/*  <div
+          {/*  <div
           className={styles.moreLink}
           onMouseEnter={() => setIsMoreModalOpen(true)}
           onMouseLeave={() => setIsMoreModalOpen(false)}
@@ -198,25 +216,40 @@ const NavBar = () => {
             </div>
           )}
         </div> */}
-      </div>
-      <div className={styles["btn-grp"]}>
-        {/* <div className={styles.theme}>
+        </div>
+        <div className={styles["btn-grp"]}>
+          {/* <div className={styles.theme}>
           <ThemeButton />
         </div> */}
-        <div className={styles.activity}>
-          <TransactionModal />
-        </div>
+          <div className={styles.activity}>
+            {isMobile && (
+              <SlWallet
+                className={styles.wallet_icon}
+                onClick={handleWalletIconClick}
+              />
+            )}
+            <TransactionModal />
+          </div>
 
-        {/* <div className={styles["wallet-connect"]}>
+          {/* <div className={styles["wallet-connect"]}>
           <ConnectButton key={balance.data?.formatted} chainStatus={"none"} />
         </div> */}
-        {/* <WalletWizardModal
+          {/* <WalletWizardModal
           isOpen={isWalletWizardOpen}
           onOpen={setIsWalletWizardOpen}
           balance={balance}
         /> */}
+        </div>
       </div>
-    </div>
+      <HiddenWalletConnect
+        setIsOpen={setIsWalletModalOpen}
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        setIsAccountOpen={setIsAccountModalOpen}
+        isAccountOpen={isAccountModalOpen}
+        onAccountClose={() => setIsAccountModalOpen(false)}
+      />
+    </>
   );
 };
 

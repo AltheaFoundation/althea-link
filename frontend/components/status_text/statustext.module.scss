@@ -1,20 +1,16 @@
 .item {
   display: flex;
-  position: -webkit-sticky; /* Add vendor prefix for compatibility */
-  position: sticky;
+  position: -webkit-sticky;
+
   align-items: center;
   max-width: 8rem;
-  justify-content: flex-end; /* Ensures content is aligned to the right */
+  justify-content: flex-end;
   text-transform: uppercase;
   transition: background 0.1s ease-out;
   padding: 4px 22px;
   border-radius: 36px;
   background-color: rgba(#000000, 0.4);
-  left: 36px;
-  bottom: 24px;
-  margin-right: 24px;
-  margin-bottom: 24px;
-  margin-right: auto; /* Ensures the item pushes to the right */
+
   a {
     display: flex;
     align-items: center;
@@ -28,7 +24,7 @@
   width: 10px;
   border-radius: 50%;
   background-color: var(--primary-90-color, #222);
-  position: relative; /* Changed from sticky to relative for inside the parent context */
+  position: relative;
   font-family: var(--nm-plex);
   letter-spacing: 0.27px;
   font-size: 13px;
@@ -65,7 +61,7 @@
     margin-right: 32px;
     margin-bottom: 32px;
     font-size: 12px !important;
-    /* Make sure the item stays at the bottom */
+
     &:global(.home) {
       bottom: calc(33vh + 24px);
     }

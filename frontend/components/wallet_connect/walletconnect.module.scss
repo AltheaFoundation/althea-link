@@ -1,12 +1,9 @@
 .wallet_connect {
-  position: sticky;
-  right: 36px;
-  margin-bottom: -20px;
-  margin-left: auto;
-  bottom: 24px;
+  position: relative;
   display: flex;
   gap: 24px;
-  justify-content: flex-start;
+  align-self: center;
+  justify-content: center;
   max-width: fit-content;
   background-color: rgba(255, 255, 255, 0.25);
   padding: 0.5em;

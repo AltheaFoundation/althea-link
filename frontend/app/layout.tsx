@@ -7,7 +7,7 @@ import NavBar from "@/components/nav_bar/navBar";
 import CantoWalletProvider from "@/provider/rainbowProvider";
 import localFont from "next/font/local";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
-import { ChainProvider, ThemeCustomizationProps } from "@cosmos-kit/react";
+import { ChainProvider } from "@cosmos-kit/react";
 import { cosmosAminoConverters, cosmosProtoRegistry } from "interchain";
 import { wallets as keplr } from "@cosmos-kit/keplr";
 import { wallets as cosmostation } from "@cosmos-kit/cosmostation";
@@ -17,17 +17,19 @@ import { wallets as trust } from "@cosmos-kit/trust";
 import { wallets as leap } from "@cosmos-kit/leap";
 import { ReactQueryClientProvider } from "@/provider/reactQueryProvider";
 
-import { ToastContainer } from "@/components/toast";
 import { Chain } from "@chain-registry/types";
 import { Registry } from "@cosmjs/proto-signing";
 import { SigningStargateClientOptions, AminoTypes } from "@cosmjs/stargate";
 import { SignerOptions } from "@cosmos-kit/core";
 import "@interchain-ui/react/styles";
-import WalletConnect from "@/components/wallet_connect/walletConnect";
+import { WalletConnect } from "@/components/wallet_connect/walletConnect";
 import StatusText from "@/components/status_text/statusText";
-
+import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { althea, altheaAssets } from "@/provider/chainRegistry";
 import { modalThemeOverrides } from "@/provider/cosmosKitModal";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 const nm_plex = IBM_Plex_Sans({
   weight: ["400", "500", "700"],
@@ -55,6 +57,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { isMobile } = useScreenSize();
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
   const signerOptions: SignerOptions = {
     // @ts-ignore
     signingStargate: (
@@ -185,8 +190,37 @@ export default function RootLayout({
               /> */}
                 <NavBar />
                 {children}
-                <WalletConnect />
-                <StatusText />
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: isMobile ? "center" : "space-between",
+                    alignItems: "center",
+                    alignContent: "center",
+                    justifyItems: "center",
+                    position: "sticky",
+                    bottom: 0,
+                    marginBottom: isMobile ? "0px" : "24px",
+                    marginRight: isMobile ? "auto" : "0px",
+                    marginLeft: isMobile ? "auto" : "0px",
+                    marginTop: isMobile ? "0px" : "24px",
+                    padding: isMobile ? "0px 0px" : "20px 32px",
+                  }}
+                >
+                  {isMobile ? (
+                    <div />
+                  ) : (
+                    <>
+                      <StatusText />
+                      <WalletConnect
+                        setIsOpen={setIsWalletModalOpen}
+                        isOpen={isWalletModalOpen}
+                        onClose={() => setIsWalletModalOpen(false)}
+                      />
+                    </>
+                  )}
+                </div>
+
                 <Footer />
               </div>
             </ReactQueryClientProvider>

@@ -81,6 +81,7 @@ const TransactionModal = () => {
         }}
         height="36rem"
         width="32rem"
+        closeOnOverlayClick
       >
         <Text size="lg">Activity</Text>
         {transactionFlows == undefined ||
