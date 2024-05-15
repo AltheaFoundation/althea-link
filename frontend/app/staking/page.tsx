@@ -734,7 +734,7 @@ export default function StakingPage() {
                   </div>
                   <Container direction="row" center={{ vertical: true }}>
                     <Text font="macan" size={isMobile ? "x-lg" : "lg"}>
-                      {formatPercent((parseFloat(apr) / 100).toString())}
+                      {Math.round(Number(apr))}%
                     </Text>
                   </Container>
                 </div>
