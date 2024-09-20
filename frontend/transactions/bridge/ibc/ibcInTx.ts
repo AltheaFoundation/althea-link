@@ -80,38 +80,52 @@ export async function ibcInKeplr(
   txParams: IBCInParams
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
+    console.log("Starting ibcInKeplr with params:", txParams);
+
     /** validate params */
     const validation = validateKeplrIBCParams(txParams);
     if (validation.error) throw new Error(validation.reason);
+    console.log("Validation result:", validation);
 
     /** get cosmos network data */
     const { data: cosmosNetwork, error: networkError } =
       getNetworkInfoFromChainId(txParams.fromNetworkChainId);
+    console.log("Cosmos network:", cosmosNetwork, "Network error:", networkError);
     if (networkError) throw networkError;
     if (!isCosmosNetwork(cosmosNetwork)) throw new Error("invalid network");
+    console.log('hello guy');
 
     /** get keplr client */
+    console.log("Connecting to Keplr with chainId:", cosmosNetwork.chainId);
     const { data: keplrClient, error: clientError } = await connectToKeplr(
       cosmosNetwork.chainId
     );
+    console.log("Keplr client:", keplrClient, "Client error:", clientError);
     if (clientError) throw clientError;
     if (keplrClient.address !== txParams.senderCosmosAddress)
       throw new Error("invalid keplr address");
 
     /** create tx list */
     const txList: Transaction[] = [];
+    console.log("Initial txList:", txList);
 
     /** get canto receiver */
+    console.log("Getting Canto receiver for address:", txParams.cantoEthReceiverAddress);
     const { data: cantoReceiver, error: ethToCantoError } =
       await ethToAltheaAddress(txParams.cantoEthReceiverAddress);
     if (ethToCantoError) throw ethToCantoError;
+    console.log("Canto receiver:", cantoReceiver);
 
     /** check public key */
+    console.log("Checking public key for:", cantoReceiver);
     const { data: hasPubKey, error: checkPubKeyError } = await checkCantoPubKey(
       cantoReceiver,
       CANTO_MAINNET_COSMOS.chainId
     );
+    console.log("Has public key:", hasPubKey, "Error:", checkPubKeyError);
+
     if (checkPubKeyError || !hasPubKey) {
+      console.log("Generating Canto public key");
       // create public key on EVM
       const { data: pubKeyTxs, error: pubKeyError } =
         await generateCantoPublicKeyWithTx(
@@ -120,13 +134,18 @@ export async function ibcInKeplr(
           cantoReceiver
         );
       if (pubKeyError) throw pubKeyError;
+      console.log("Public key transactions:", pubKeyTxs);
       txList.push(...pubKeyTxs);
     }
 
+    console.log("txList after public key check:", txList);
+
     /** specific chain check */
+    console.log("Checking specific chain:", cosmosNetwork.chainId);
     if (cosmosNetwork.chainId === INJECTIVE.chainId)
       throw new Error("injective not supported yet");
     if (cosmosNetwork.chainId === EVMOS.chainId) {
+      console.log("Processing EVMOS IBC in");
       const { data: evmosTxs, error: evmosError } = await evmosIBCIn(
         cosmosNetwork,
         txParams.senderCosmosAddress,
@@ -138,23 +157,29 @@ export async function ibcInKeplr(
       txList.push(...evmosTxs);
 
       /** return here */
+      console.log("Returning EVMOS txList:", txList);
       return NO_ERROR({ transactions: txList });
     }
 
     /** get ibc data */
+    console.log("Getting IBC channel for network:", cosmosNetwork.id);
     const ibcChannel =
       IBC_CHANNELS[cosmosNetwork.id as keyof typeof IBC_CHANNELS];
-    if (!ibcChannel || !ibcChannel.toCanto)
+    console.log("IBC channel:", ibcChannel);
+    if (!ibcChannel || !ibcChannel.toAlthea)
       throw new Error("invalid channel id: " + cosmosNetwork.id);
 
     /** timeout */
+    console.log("Getting block timestamp");
     const { data: blockTimestamp, error: timestampError } =
       await getBlockTimestamp(
         getCosmosAPIEndpoint(CANTO_MAINNET_COSMOS.chainId).data
       );
     if (timestampError) throw timestampError;
+    console.log("Block timestamp:", blockTimestamp);
 
     /** create tx */
+    console.log("Creating transaction");
     txList.push({
       chainId: cosmosNetwork.chainId,
       fromAddress: txParams.senderCosmosAddress,
@@ -173,7 +198,7 @@ export async function ibcInKeplr(
           cantoReceiver: cantoReceiver,
           amount: txParams.amount,
           denom: txParams.token.nativeName,
-          channelToCanto: ibcChannel.toCanto,
+          channelToCanto: ibcChannel.toAlthea,
           timeoutTimestamp: Number(blockTimestamp),
           memo: "ibcInKeplr",
         });
@@ -187,8 +212,10 @@ export async function ibcInKeplr(
     });
 
     /** return here */
+    console.log("Final txList:", txList);
     return NO_ERROR({ transactions: txList });
   } catch (err) {
+    console.error("Error in ibcInKeplr:", err);
     return NEW_ERROR("ibcInKeplr", err);
   }
 }
@@ -211,8 +238,11 @@ interface IBCKeplrParams {
 async function signAndBroadcastIBCKeplr(
   keplrClient: SigningStargateClient,
   params: IBCKeplrParams
+  
 ): PromiseWithError<DeliverTxResponse> {
   try {
+    console.log("Signing and broadcasting IBC transaction with params:", params);
+
     const ibcResponse = await keplrClient.sendIbcTokens(
       params.cosmosAccount,
       params.cantoReceiver,
@@ -224,6 +254,7 @@ async function signAndBroadcastIBCKeplr(
       "auto",
       params.memo
     );
+    console.log("IBC response:", ibcResponse);
     return NO_ERROR(ibcResponse);
   } catch (err) {
     return NEW_ERROR("signAndBroadcastIBCKeplr", err);
@@ -401,14 +432,14 @@ async function evmosIBCIn(
 
   // get ibc channel
   const ibcChannel = IBC_CHANNELS[evmosNetwork.id as keyof typeof IBC_CHANNELS];
-  if (!ibcChannel || !ibcChannel.toCanto) {
+  if (!ibcChannel || !ibcChannel.toAlthea) {
     return NEW_ERROR("evmosIBCIn: invalid channel id: " + evmosNetwork.id);
   }
 
   // create messges
   const messages = createMsgsIBCTransfer({
     sourcePort: "transfer",
-    sourceChannel: ibcChannel.toCanto,
+    sourceChannel: ibcChannel.toAlthea,
     denom: token.nativeName,
     amount,
     cosmosSender: evmosAddress,
@@ -526,17 +557,25 @@ async function evmosIBCIn(
  * @returns {Validation} whether the parameters are valid or not
  */
 export function validateKeplrIBCParams(txParams: IBCInParams): Validation {
+  console.log("Validating Keplr IBC params:", txParams);
   if (!isIBCToken(txParams.token)) {
+    console.error("Invalid token:", txParams.token);
     return {
       error: true,
       reason: TX_PARAM_ERRORS.PARAM_INVALID("token"),
     };
   }
-  return validateWeiUserInputTokenAmount(
+  const validation = validateWeiUserInputTokenAmount(
     txParams.amount,
     "1",
     txParams.token.balance ?? "0",
     txParams.token.symbol,
     txParams.token.decimals
   );
+  console.log("Amount validation result:", validation);
+  return validation;
 }
+
+window.addEventListener('unhandledrejection', function(event) {
+  console.error('Unhandled rejection (promise: ', event.promise, ', reason: ', event.reason, ').');
+});

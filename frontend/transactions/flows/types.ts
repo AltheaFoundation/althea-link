@@ -91,6 +91,7 @@ export type TransactionFlow = NewTransactionFlow & {
   error?: string; //yes
   analyticsTransactionFlowInfo?: AnalyticsTransactionFlowInfo;
   onSuccessCallback?: () => void;
+  cosmos?: boolean; 
 };
 
 // user can be on different accounts to make transactions, so we need to map the transaction flows to the account

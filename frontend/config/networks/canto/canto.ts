@@ -69,7 +69,7 @@ const cantoTestnetBaseInfo = {
 };
 export const CANTO_TESTNET_EVM: EVMNetwork = {
   ...cantoMainnetBaseInfo,
-  id: "althea-mainnet",
+  id: "althea-testnet",
   chainId: 258432,
   blockExplorer: {
     url: cantoMainBlockExplorerEVM,
@@ -81,7 +81,7 @@ export const CANTO_TESTNET_EVM: EVMNetwork = {
 
 export const CANTO_TESTNET_COSMOS: CosmosNetwork = {
   ...cantoMainnetBaseInfo,
-  id: "althea-mainnet",
+  id: "althea-testnet",
   chainId: "althea_258432-1",
   restEndpoint: "https://nodes.chandrastation.com/api/althea/",
   addressPrefix: "althea",

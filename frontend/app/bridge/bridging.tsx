@@ -425,14 +425,14 @@ const formattedFeesForConfirmation = (
                     "0"
                   ),
                   18,
-                  { symbol: "CANTO" }
+                  { symbol: "ALTHEA" }
                 ),
             }
           : props.method === BridgingMethod.IBC && props.direction === "out"
             ? {
                 tokenFees: Object.values(props.gasFees).map((fee) => ({
                   key: fee.name,
-                  value: displayAmount(fee.amount, 18, { symbol: "CANTO" }),
+                  value: displayAmount(fee.amount, 18, { symbol: "ALTHEA" }),
                 })),
                 totalFees: displayAmount(
                   Object.values(props.gasFees).reduce(
@@ -440,7 +440,7 @@ const formattedFeesForConfirmation = (
                     "0"
                   ),
                   18,
-                  { symbol: "CANTO" }
+                  { symbol: "ALTHEA" }
                 ),
               }
             : undefined;
@@ -585,7 +585,7 @@ const FeesSection = ({
                   "0"
                 ),
                 18,
-                { symbol: "CANTO" }
+                { symbol: "ALTHEA" }
               )}
             </Text>
           </>
@@ -605,7 +605,7 @@ const FeesSection = ({
               "0"
             ),
             18,
-            { symbol: "CANTO" }
+            { symbol: "ALTHEA" }
           )}
         </Text>
       )}

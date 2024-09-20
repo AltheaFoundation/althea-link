@@ -26,6 +26,12 @@ import {
 import { signTransaction, waitForTransaction } from "@/transactions/signTx";
 import Analytics from "@/provider/analytics";
 import { getAnalyticsTransactionFlowInfo } from "@/utils/analytics";
+import { cosmos } from "interchain";
+import { useTx } from "@/hooks/cosmos/useTx";
+import { useAccountInfo } from "@/hooks/cosmos/useQueries";
+import { SignerData } from "@cosmjs/stargate";
+import { useChain } from "@cosmos-kit/react";
+import { useFeeEstimation } from "@/hooks/cosmos/useFeeEstimation";
 
 // only save last 100 flows for each user to save space
 const USER_FLOW_LIMIT = 100;
@@ -33,6 +39,8 @@ interface AddNewFlowParams {
   ethAccount: string;
   txFlow: NewTransactionFlow;
   onSuccessCallback?: () => void;
+  perform?: boolean;
+  cosmos?: boolean;
 }
 export interface TransactionStore {
   transactionFlows: UserTransactionFlowMap;
@@ -49,7 +57,8 @@ export interface TransactionStore {
     ethAccount: string,
     flowId: string,
     txIndex: number,
-    tx: TransactionWithStatus
+    tx: TransactionWithStatus,
+    cosmos?: boolean
   ) => PromiseWithError<boolean>;
   // this should only be called internally
   setTxStatus: (
@@ -101,6 +110,7 @@ const useTransactionStore = create<TransactionStore>()(
             transactions: [],
             analyticsTransactionFlowInfo,
             onSuccessCallback: params.onSuccessCallback,
+            cosmos: params.cosmos,
           };
           // add the flow to the user map and set loading to null
           const currentUserTransactionFlows = get().getUserTransactionFlows(
@@ -347,11 +357,15 @@ const useTransactionStore = create<TransactionStore>()(
             );
           }
         },
-        performTx: async (ethAccount, flowId, txIndex, tx) => {
+        performTx: async (
+          ethAccount: string,
+          flowId: string,
+          txIndex: number,
+          tx: TransactionWithStatus
+        ) => {
           let txHash;
           try {
-            // set pending since about to be signed
-            // reset error, hash, and txLink since new tx
+            // Set status to SIGNING
             get().setTxStatus(ethAccount, flowId, txIndex, {
               status: "SIGNING",
               error: undefined,
@@ -360,20 +374,51 @@ const useTransactionStore = create<TransactionStore>()(
               startTimestamp: new Date().getTime(),
               timestamp: undefined,
             });
-            // request signature and receive txHash once signed
-            const { data: txData, error: txError } = await signTransaction(
-              tx.tx
-            );
-            txHash = txData;
-            // if error with signature, set status and throw error
-            if (txError) {
-              throw txError;
-            }
 
-            // we have a txHash so we can set status to pending
-            // to get the txLink, we can grab it from the chainId,
+            if (tx.tx.cosmos && tx.tx.cosmosMsg) {
+              const chainContext = useChain("althea");
+              const { address } = chainContext;
+              const accountInfoData = useAccountInfo(address ?? "");
+
+              const explicitSignerData: SignerData = {
+                accountNumber: accountInfoData.data?.account_number,
+                sequence: accountInfoData.data?.sequence,
+                chainId: "althea_258432-1",
+              };
+
+              const { tx: cosmosTx, transactionHash } = useTx(
+                "althea",
+                explicitSignerData
+              );
+
+              const { estimateFee } = useFeeEstimation("althea");
+              try {
+                const fee = await estimateFee(address ?? "", tx.tx.cosmosMsg);
+                await cosmosTx(tx.tx.cosmosMsg, {
+                  fee,
+                  onSuccess: () => {},
+                });
+              } catch (error) {
+                console.error("Failed to send Cosmos transaction:", error);
+                throw error;
+              }
+              txHash = transactionHash as string;
+            } else {
+              // Ethereum transaction signing
+              const { data: txData, error: txError } = await signTransaction(
+                tx.tx
+              );
+              txHash = txData;
+              if (txError) {
+                throw txError;
+              }
+            }
+            // Set status to PENDING
             let txChain;
-            if (tx.tx.type === "COSMOS") {
+            if (cosmos) {
+              // Get Cosmos chain info
+              txChain = getNetworkInfoFromChainId(tx.tx.chainId);
+            } else if (tx.tx.type === "COSMOS") {
               const { data: eipChain } = getCosmosEIPChainObject(
                 tx.tx.chainId as number
               );
@@ -383,6 +428,7 @@ const useTransactionStore = create<TransactionStore>()(
             } else {
               txChain = getNetworkInfoFromChainId(tx.tx.chainId);
             }
+
             get().setTxStatus(ethAccount, flowId, txIndex, {
               status: "PENDING",
               hash: txHash,
@@ -392,28 +438,33 @@ const useTransactionStore = create<TransactionStore>()(
                   : txChain?.data.blockExplorer?.getTransactionLink(txHash),
               timestamp: new Date().getTime(),
             });
-            // wait for the result before moving on
+
+            // Wait for transaction confirmation
             const { data: receipt, error: txReceiptError } =
-              await waitForTransaction(tx.tx.type, tx.tx.chainId, txHash);
-            // check receipt for error
+              await waitForTransaction(
+                cosmos ? "COSMOS" : tx.tx.type,
+                tx.tx.chainId,
+                txHash
+              );
+
+            // Check receipt for error
             if (txReceiptError || receipt.status !== "success") {
               throw Error(receipt.error);
             }
 
-            // transaction was a success so we can set status and
+            // Set status to SUCCESS
             get().setTxStatus(ethAccount, flowId, txIndex, {
               status: "SUCCESS",
             });
 
-            // some trasactions could need an extra check to make sure it is complete (ibc)
+            // Verify transaction completion if needed
             if (tx.tx.verifyTxComplete) {
               const { data: verifyResult, error: verifyError } =
                 await tx.tx.verifyTxComplete(txHash);
-              // stop the flow if we must rely on this transaction to be verified (last tx still complete)
               if (verifyError || !verifyResult) throw verifyError;
             }
           } catch (err) {
-            // something failed, so set the flow and tx to failure
+            // Handle error
             get().setTxStatus(ethAccount, flowId, txIndex, {
               status: "ERROR",
               hash: txHash,

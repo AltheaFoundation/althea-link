@@ -267,6 +267,7 @@ export default function useBridgeCombo(): BridgeComboReturn {
     return { error: false };
   };
 
+  console.log(preConfirmCheck())
   const txParams = {
     amount: amountAsBigNumberString,
     ...gBridgeFees,
@@ -274,6 +275,11 @@ export default function useBridgeCombo(): BridgeComboReturn {
   // check to see if bridging will be possible with the current parameters
   const canBridge = bridge.bridge.validateParams(txParams);
 
+
+  console.log("preConfirmCheck:", preConfirmCheck());
+console.log("canBridge:", canBridge);
+
+console.log("Selected token:", bridge.selections.token);
   // transaction that will do the bridging
   async function bridgeTx() {
     // get flow

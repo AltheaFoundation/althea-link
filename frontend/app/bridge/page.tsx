@@ -28,7 +28,11 @@ export default function BridgePage() {
           horizontal: true,
           vertical: true,
         }}
-        style={{ minHeight: "100vh" }}
+        style={{
+          minHeight: "90vh",
+          marginTop: "20px",
+          position: "relative",
+        }}
       >
         <Container
           width={isMobile ? "100vw" : "700px"}

@@ -7,6 +7,7 @@ export * from "./evmos";
 export * from "./gravitybridge";
 export * from "./injective";
 export * from "./kava";
+export * from "./noble";
 export * from "./osmosis";
 export * from "./persistence";
 export * from "./quicksilver";

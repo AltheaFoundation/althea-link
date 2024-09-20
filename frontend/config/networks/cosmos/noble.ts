@@ -5,24 +5,24 @@ import {
   getCosmosTransactionLink,
 } from "../helpers";
 
-const gravityBridgeBlockExplorer = "https://www.mintscan.io/gravity-bridge";
+const gravityBridgeBlockExplorer = "https://www.mintscan.io/noble";
 
-export const GRAVITY_BRIDGE: CosmosNetwork = {
-  id: "gravity-bridge-3",
-  chainId: "gravity-bridge-3",
-  icon: "/icons/grav.svg",
-  name: "Gravity Bridge",
+export const NOBLE: CosmosNetwork = {
+  id: "noble-1",
+  chainId: "noble-1",
+  icon: "/icons/noble.jpg",
+  name: "Noble",
   isTestChain: false,
-  rpcUrl: "https://nodes.chandrastation.com/rpc/gravity/",
-  restEndpoint: "https://nodes.chandrastation.com/api/gravity/",
-  addressPrefix: "gravity",
+  rpcUrl: "https://noble-rpc.polkachu.com",
+  restEndpoint: "https://noble-api.polkachu.com",
+  addressPrefix: "noble",
   checkAddress: function (address) {
     return checkCosmosAddress(this.addressPrefix)(address);
   },
   nativeCurrency: {
-    name: "Graviton",
-    baseName: "ugraviton",
-    symbol: "GRAV",
+    name: "USDC",
+    baseName: "uusdc",
+    symbol: "USDC",
     decimals: 6,
   },
   blockExplorer: {
@@ -30,5 +30,5 @@ export const GRAVITY_BRIDGE: CosmosNetwork = {
     getAddressLink: getCosmosAddressLink(gravityBridgeBlockExplorer),
     getTransactionLink: getCosmosTransactionLink(gravityBridgeBlockExplorer),
   },
-  extraEndpoints: ["https://gravity-api.polkachu.com"],
+  extraEndpoints: ["https://noble-api.polkachu.com"],
 };

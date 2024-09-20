@@ -76,7 +76,7 @@ export async function IBCOutTx(
     /** channel id */
     const channelId =
       IBC_CHANNELS[receivingChain.id as keyof typeof IBC_CHANNELS];
-    if (!channelId || !channelId.fromCanto) throw new Error("invalid channel");
+    if (!channelId || !channelId.fromAlthea) throw new Error("invalid channel");
 
     /** ibc data */
     const { data: ibcData, error: ibcDataError } = await getIBCData(
@@ -138,7 +138,7 @@ export async function IBCOutTx(
       txParams.token.chainId,
       txParams.senderEthAddress,
       "transfer",
-      channelId.fromCanto,
+      channelId.fromAlthea,
       txParams.amount,
       txParams.token.ibcDenom,
       txParams.receiverCosmosAddress,

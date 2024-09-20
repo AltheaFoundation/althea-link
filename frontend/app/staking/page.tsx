@@ -52,9 +52,13 @@ export default function StakingPage() {
   const { txStore, signer, chainId } = useCantoSigner();
   // if cosmos is connected
   const { address } = useChain("althea");
+  const isCosmosWallet = !!address;
+  const userAddress = signer?.account.address || address;
+
   const altheaToEthAddress = altheaToEth(
     address ?? "althea1uwqjtgjhjctjc45ugy7ev5prprhehc7wdlsqmq"
   ) as `0x${string}`;
+
   // staking hook
   const { isLoading, validators, apr, userStaking, selection, transaction } =
     useStaking({
@@ -67,20 +71,23 @@ export default function StakingPage() {
     signer: GetWalletClientResult | undefined,
     validatorAddresses: string[]
   ) {
-    if (signer && signer.account) {
+    const { address } = useChain("althea");
+    const isCosmosWallet = !!address;
+    if (signer?.account || isCosmosWallet) {
       const newFlow = transaction.newStakingFlow({
         chainId: chainId,
-        ethAccount: signer.account.address,
+        ethAccount: (signer?.account.address || address) ?? "",
         txType: StakingTxTypes.CLAIM_REWARDS,
         validatorAddresses: validatorAddresses,
         nativeBalance: userStaking?.cantoBalance ?? "0",
+        cosmos: isCosmosWallet,
       });
       txStore?.addNewFlow({
         txFlow: newFlow,
-        ethAccount: signer.account.address,
+        ethAccount: (signer?.account.address || address) ?? "",
       });
     }
-    return NEW_ERROR("signer not available");
+    return NEW_ERROR("No wallet connected");
   }
 
   const stakingTxParams = (
@@ -301,14 +308,27 @@ export default function StakingPage() {
     () =>
       transaction.validateTxParams({
         chainId: chainId,
-        ethAccount: signer?.account.address ?? "",
+        ethAccount: userAddress ?? "",
         txType: StakingTxTypes.CLAIM_REWARDS,
         validatorAddresses: allUserValidatorsAddresses,
         nativeBalance: userStaking.cantoBalance,
+        cosmos: isCosmosWallet,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [userStaking.cantoBalance]
+    [
+      userStaking.cantoBalance,
+      isCosmosWallet,
+      userAddress,
+      allUserValidatorsAddresses,
+    ]
   );
+
+  const hasRewardsToClaim = useMemo(() => {
+    return (
+      userStaking.rewards?.total.some(
+        (reward) => parseFloat(reward.amount) > 0
+      ) ?? false
+    );
+  }, [userStaking.rewards]);
 
   return isLoading ? (
     <div className={styles.loaderContainer}>
@@ -773,7 +793,10 @@ export default function StakingPage() {
                     handleRewardsClaimClick(signer, allUserValidatorsAddresses)
                   }
                   disabled={
-                    !signer || !hasUserStaked || claimRewardsTxValidation.error
+                    !userAddress ||
+                    !hasUserStaked ||
+                    claimRewardsTxValidation.error ||
+                    !hasRewardsToClaim
                   }
                   themed={false}
                 >

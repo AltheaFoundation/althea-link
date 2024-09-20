@@ -1,26 +1,26 @@
 {
-    "title": "IBC Channel List",
-    "description": "An entry in the IBC channel list for a given chain",
-    "type": "object",
-    "patternProperties": {
-        "^.*$": {
-            "$ref": "#/definitions/ibcInfo"
-        }
-    },
-    "additionalProperties": false,
-    "definitions": {
-        "ibcInfo": {
-            "type": "object",
-            "properties": {
-                "toCanto": {
-                    "description": "channel from cosmos chain to canto",
-                    "type": "string"
-                },
-                "fromCanto": {
-                    "description": "channel from canto to cosmos chain",
-                    "type": "string"
-                }
-            }
-        }
+  "title": "IBC Channel List",
+  "description": "An entry in the IBC channel list for a given chain",
+  "type": "object",
+  "patternProperties": {
+    "^.*$": {
+      "$ref": "#/definitions/ibcInfo"
     }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ibcInfo": {
+      "type": "object",
+      "properties": {
+        "toAlthea": {
+          "description": "channel from cosmos chain to canto",
+          "type": "string"
+        },
+        "fromAlthea": {
+          "description": "channel from canto to cosmos chain",
+          "type": "string"
+        }
+      }
+    }
+  }
 }

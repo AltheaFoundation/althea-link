@@ -46,7 +46,7 @@ export async function getGravityBridgeFeesFromToken(
     const { data: ethPriceInUSD, error: ethPriceInUSDError } =
       await getEthPriceInUSDC();
     if (ethPriceInUSDError) throw ethPriceInUSDError;
-
+console.log({tokenAddress})
     // get gravity token data
     const gravityToken = gravityTokens[tokenAddress];
     if (!gravityToken || !(gravityToken.isETH || gravityToken.stable))
@@ -120,6 +120,12 @@ const gravityTokens: {
     stable: false,
     decimals: 18,
     isETH: true,
+  },
+  "aalthea": {
+    symbol: "ALTHEA",
+    stable: false,
+    decimals: 18,
+    isETH: false,
   },
 } as const;
 

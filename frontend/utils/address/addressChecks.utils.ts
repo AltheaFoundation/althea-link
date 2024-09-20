@@ -2,11 +2,11 @@ import { isAddress as checkHex } from "web3-validator";
 
 /**
  * @notice checks if a canto address is valid
- * @param {string} cantoAddress address to check
+ * @param {string} altheaAddress address to check
  * @returns {boolean} if a valid canto address
  */
 export function isValidAltheaAddress(altheaAddress: string): boolean {
-  return altheaAddress.startsWith("althea") && altheaAddress.length === 44;
+  return altheaAddress.startsWith("althea");
 }
 
 /**

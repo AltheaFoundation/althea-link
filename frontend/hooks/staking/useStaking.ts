@@ -86,7 +86,7 @@ export default function useStaking(
                   rew.validator_address ===
                   delegation.delegation.validator_address
               )
-              ?.reward?.find((bal) => bal.denom === "acanto")?.amount ?? "0";
+              ?.reward?.find((bal) => bal.denom === "aalthea")?.amount ?? "0";
           if (validator) {
             userValidators.push({
               ...validator,

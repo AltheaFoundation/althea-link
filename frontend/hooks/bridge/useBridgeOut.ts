@@ -38,7 +38,7 @@ export default function useBridgeOut(
   const initialState = (testnet: boolean): BridgeHookState => ({
     // all options
     availableTokens: BRIDGE_OUT_TOKENS.chainTokenList[
-      testnet ? "canto-testnet" : "canto-mainnet"
+      testnet ? "althea-mainnet" : "althea-mainnet"
     ] as BridgeOutToken[],
     availableNetworks: [],
     availableMethods: [],
