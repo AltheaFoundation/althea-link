@@ -32,6 +32,7 @@ pub mod events;
 pub mod knockout;
 pub mod pools;
 pub mod positions;
+pub mod swap;
 
 // Searches for InitPool events and saves them
 pub async fn search_for_pools(
