@@ -1,6 +1,13 @@
 use clarity::{Address, Uint256};
 use log::info;
 
+/// Parses a bool from ABI-encoded `input`, with the relevant data beginning
+/// at byte index `start`. Bools are 1 byte long packed on the right side.
+pub fn parse_bool(input: &[u8], start: usize) -> bool {
+    // if the last byte is 0, it's false, otherwise it's true
+    input[start + 31] != 0u8
+}
+
 /// Parses an Address from ABI-encoded `input`, with the relevant data beginning
 /// at byte index `start`. Addresses are 20 bytes long packed on the right side.
 pub fn parse_address(input: &[u8], start: usize) -> Result<Address, clarity::Error> {
