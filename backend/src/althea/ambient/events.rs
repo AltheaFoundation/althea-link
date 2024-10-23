@@ -91,6 +91,48 @@ pub const MINT_AMBIENT_SIGNATURE: &str =
 pub const BURN_AMBIENT_SIGNATURE: &str =
     "BurnAmbient(address,address,address,uint256,uint128,int128,int128)";
 
+/// @notice Emitted when a knockout liquidity position is minted, adding one-way liquidity to the pool.
+/// @param user The address of the position holder.
+/// @param base The address of the base token involved.
+/// @param quote The address of the quote token involved.
+/// @param poolIdx The template of the relevant pool.
+/// @param qty The amount of base (quote) tokens being added to the pool if isBid is (not) true
+/// @param lowerTick The lower price tick of the range position.
+/// @param upperTick The upper price tick of the range position.
+///
+/// event MintKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 qty, bool isBid, int24 lowerTick, int24 upperTick);
+pub const MINT_KNOCKOUT_SIGNATURE: &str =
+    "MintKnockout(address,address,address,uint256,uint128,bool,int24,int24)";
+
+/// @notice Emitted when a knockout liquidity position is burned, removing an in-progress knockout position from the pool.
+/// @param user The address of the position holder.
+/// @param base The address of the base token involved.
+/// @param quote The address of the quote token involved.
+/// @param poolIdx The template of the relevant pool.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param lowerTick The lower price tick of the range position.
+/// @param upperTick The upper price tick of the range position.
+///
+/// event BurnKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int128 baseFlow, int128 quoteFlow, int24 lowerTick, int24 upperTick);
+pub const BURN_KNOCKOUT_SIGNATURE: &str =
+    "BurnKnockout(address,address,address,uint256,int128,int128,int24,int24)";
+
+/// @notice Emitted when a complete knockout liquidity position is claimed or recovered, deleting the position from the pool.
+/// @param user The address of the position holder.
+/// @param base The address of the base token involved.
+/// @param quote The address of the quote token involved.
+/// @param poolIdx The template of the relevant pool.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param lowerTick The lower price tick of the range position.
+/// @param upperTick The upper price tick of the range position.
+/// @param proven Indicates a correct proof was provided and earned fees were collected.
+///
+/// event WithdrawKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int128 baseFlow, int128 quoteFlow, int24 lowerTick, int24 upperTick, bool proven);
+pub const WITHDRAW_KNOCKOUT_SIGNATURE: &str =
+    "WithdrawKnockout(address,address,address,uint256,int128,int128,int24,int24,bool)";
+
 /// @notice Emitted when governance authority for CrocSwapDex is transfered.
 /// @param The authority being transfered to.
 /// event AuthorityTransfer (address indexed authority);
