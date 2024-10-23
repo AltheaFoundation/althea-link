@@ -41,3 +41,12 @@ pub fn parse_i32(input: &[u8], start: usize) -> i32 {
     let data = &input[start + 28..end];
     i32::from_be_bytes(data.try_into().unwrap())
 }
+
+/// Parses an i128 from ABI-encoded `input`, with the relevant data beginning
+/// at byte index `start`. i128's are 16 bytes long and packed on the right side.
+pub fn parse_i128(input: &[u8], start: usize) -> i128 {
+    let end = start + 32;
+    // i128 is smooshed against the right side
+    let data = &input[start + 16..end];
+    i128::from_be_bytes(data.try_into().unwrap())
+}

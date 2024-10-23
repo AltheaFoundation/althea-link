@@ -233,7 +233,7 @@ pub async fn user_pool_positions(
                 pool_idx: p.pool_idx,
                 bid_tick: p.bid_tick,
                 ask_tick: p.ask_tick,
-                is_bid: p.base_amount > 0,
+                is_bid: p.base_flow > 0,
                 ambient_liq: 0u8.into(),
                 conc_liq: p.liq.into(),
                 ..Default::default()
@@ -244,7 +244,7 @@ pub async fn user_pool_positions(
                 base: p.base,
                 quote: p.quote,
                 pool_idx: p.pool_idx,
-                is_bid: p.base_amount > 0,
+                is_bid: p.base_flow > 0,
                 conc_liq: 0u8.into(),
                 ambient_liq: p.liq.into(),
                 ..Default::default()
@@ -281,7 +281,7 @@ pub async fn user_positions(
                 pool_idx: p.pool_idx,
                 bid_tick: p.bid_tick,
                 ask_tick: p.ask_tick,
-                is_bid: p.base_amount > 0,
+                is_bid: p.base_flow > 0,
                 ambient_liq: 0u8.into(),
                 conc_liq: p.liq.into(),
                 ..Default::default()
@@ -292,7 +292,7 @@ pub async fn user_positions(
                 base: p.base,
                 quote: p.quote,
                 pool_idx: p.pool_idx,
-                is_bid: p.base_amount > 0,
+                is_bid: p.base_flow > 0,
                 conc_liq: 0u8.into(),
                 ambient_liq: p.liq.into(),
                 ..Default::default()

@@ -10,10 +10,11 @@
 /// @param buy The address of the token being bought.
 /// @param sell The address of the token being sold.
 /// @param poolIdx The template of the relevant pool.
-/// @param buyQty The quantity of buy tokens being exchanged.
-/// @param sellQty The quantity of sell tokens being exchanged.
-/// event Swap(address indexed user, address indexed buy, address indexed sell, uint256 poolIdx, uint128 buyQty, uint128 sellQty);
-pub const SWAP_SIGNATURE: &str = "Swap(address,address,address,uint256,uint128,uint128)";
+/// @param buyFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param sellFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+///
+/// event Swap(address indexed user, address indexed buy, address indexed sell, uint256 poolIdx, int128 buyFlow, int128 sellFlow);
+pub const SWAP_SIGNATURE: &str = "Swap(address,address,address,uint256,int128,int128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when a concentrated liquidity position is created, or additional liquidity is added to an existing position.
@@ -24,12 +25,12 @@ pub const SWAP_SIGNATURE: &str = "Swap(address,address,address,uint256,uint128,u
 /// @param liq The amount of liquidity (in sqrt(X*Y) terms) being added to the pool.
 /// @param bidTick The lower price tick of the range position.
 /// @param askTick The upper price tick of the range position.
-/// @param baseQty The quantity of base tokens added to the pool.
-/// @param quoteQty The quantity of quote tokens added to the pool.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 ///
-/// event MintRanged(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, int24 bidTick, int24 askTick, uint128 baseQty, uint128 quoteQty);
+/// event MintRanged(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, int24 bidTick, int24 askTick, int128 baseFlow, int128 quoteFlow);
 pub const MINT_RANGED_SIGNATURE: &str =
-    "MintRanged(address,address,address,uint256,uint128,int24,int24,uint128,uint128)";
+    "MintRanged(address,address,address,uint256,uint128,int24,int24,int128,int128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when a concentrated liquidity position is burned, removing the liquidity from the pool.
@@ -40,12 +41,12 @@ pub const MINT_RANGED_SIGNATURE: &str =
 /// @param liq The amount of liquidity (in sqrt(X*Y) terms) being removed from the pool.
 /// @param bidTick The lower price tick of the range position.
 /// @param askTick The upper price tick of the range position.
-/// @param baseQty The quantity of base tokens removed from the pool.
-/// @param quoteQty The quantity of quote tokens removed from the pool.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 ///
-/// event BurnRanged(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, int24 bidTick, int24 askTick, uint128 baseQty, uint128 quoteQty);
+/// event BurnRanged(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, int24 bidTick, int24 askTick, int128 baseFlow, int128 quoteFlow);
 pub const BURN_RANGED_SIGNATURE: &str =
-    "BurnRanged(address,address,address,uint256,uint128,int24,int24,uint128,uint128)";
+    "BurnRanged(address,address,address,uint256,uint128,int24,int24,int128,int128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when a concentrated position's ambient rewards are harvested, removing ambient liquidity from the pool.
@@ -55,12 +56,12 @@ pub const BURN_RANGED_SIGNATURE: &str =
 /// @param poolIdx The template of the relevant pool.
 /// @param bidTick The lower price tick of the range position.
 /// @param askTick The upper price tick of the range position.
-/// @param baseQty The amount of base tokens harvested.
-/// @param quoteQty The amount of quote tokens harvested.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 ///
-/// event Harvest(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int24 bidTick, int24 askTick, uint128 baseQty, uint128 quoteQty);
+/// event Harvest(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int24 bidTick, int24 askTick, int128 baseFlow, int128 quoteFlow);
 pub const HARVEST_SIGNATURE: &str =
-    "Harvest(address,address,address,uint256,int24,int24,uint128,uint128)";
+    "Harvest(address,address,address,uint256,int24,int24,int128,int128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when an ambient (full range) liquidity position is created, or additional liquidity is added to an existing position.
@@ -69,12 +70,12 @@ pub const HARVEST_SIGNATURE: &str =
 /// @param quote The address of the quote token involved.
 /// @param poolIdx The template of the relevant pool.
 /// @param liq The amount of liquidity (in sqrt(X*Y) terms) being added to the pool.
-/// @param baseQty The quantity of base tokens added to the pool.
-/// @param quoteQty The quantity of quote tokens added to the pool.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 ///
-/// event MintAmbient(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, uint128 baseQty, uint128 quoteQty);
+/// event MintAmbient(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, int128 baseFlow, int128 quoteFlow);
 pub const MINT_AMBIENT_SIGNATURE: &str =
-    "MintAmbient(address,address,address,uint256,uint128,uint128,uint128)";
+    "MintAmbient(address,address,address,uint256,uint128,int128,int128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when an ambient (full range) liquidity position is burned, removing the liquidity from the pool.
@@ -83,12 +84,12 @@ pub const MINT_AMBIENT_SIGNATURE: &str =
 /// @param quote The address of the quote token involved.
 /// @param poolIdx The template of the relevant pool.
 /// @param liq The amount of liquidity (in sqrt(X*Y) terms) being removed from the pool.
-/// @param baseQty The quantity of base tokens removed from the pool.
-/// @param quoteQty The quantity of quote tokens removed from the pool.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 ///
-/// event BurnAmbient(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, uint128 baseQty, uint128 quoteQty);
+/// event BurnAmbient(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, int128 baseFlow, int128 quoteFlow);
 pub const BURN_AMBIENT_SIGNATURE: &str =
-    "BurnAmbient(address,address,address,uint256,uint128,uint128,uint128)";
+    "BurnAmbient(address,address,address,uint256,uint128,int128,int128)";
 
 /// @notice Emitted when governance authority for CrocSwapDex is transfered.
 /// @param The authority being transfered to.
@@ -135,11 +136,12 @@ pub const SET_POOL_TEMPLATE_SIGNATURE: &str =
 /// @param price The initial price of the pool. Represented as square root price in Q64.64 notation.
 /// @param user The address of the user creating the pool.
 /// @param liq The initial liquidity of the pool.
-/// @param baseQty The initial base token quantity of the pool.
-/// @param quoteQty The initial quote token quantity of the pool.
-/// event InitPool(address indexed base, address indexed quote, uint256 indexed poolIdx, uint128 price, address user, uint128 liq, uint128 baseQty, uint128 quoteQty);
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+///
+/// event InitPool(address indexed base, address indexed quote, uint256 indexed poolIdx, uint128 price, address user, uint128 liq, int128 baseFlow, int128 quoteFlow);
 pub const INIT_POOL_SIGNATURE: &str =
-    "InitPool(address,address,uint256,uint128,address,uint128,uint128,uint128)";
+    "InitPool(address,address,uint256,uint128,address,uint128,int128,int128)";
 
 /// @notice Emitted when a previously created pool with a pre-existing protocol take rate is re-
 ///         sychronized to the current dex-wide protocol take rate setting.
