@@ -374,8 +374,8 @@ pub struct RangedPosition {
     pub bid_tick: i32,
     pub ask_tick: i32,
     pub liq: u128,
-    pub base_amount: u128,
-    pub quote_amount: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 pub fn get_active_user_positions(db: &rocksdb::DB, user: Address) -> Vec<Position> {
     let mut mint_ranged = get_all_mint_ranged(db, Some(mint_ranged_user_prefix(user).as_bytes()));
@@ -464,8 +464,8 @@ fn combine_and_filter_ranged_positions(
                 && v.ask_tick == mr.ask_tick
         }) {
             Some(pos) => {
-                pos.base_amount += mr.base_qty;
-                pos.quote_amount += mr.quote_qty;
+                pos.base_flow += mr.base_flow;
+                pos.quote_flow += mr.quote_flow;
                 pos.liq += mr.liq;
                 // We overwrite the block because fees should only apply from the most recent effective mint
                 pos.start_block = mr.block_height;
@@ -479,8 +479,8 @@ fn combine_and_filter_ranged_positions(
                 bid_tick: mr.bid_tick,
                 ask_tick: mr.ask_tick,
                 liq: mr.liq,
-                base_amount: mr.base_qty,
-                quote_amount: mr.quote_qty,
+                base_flow: mr.base_flow,
+                quote_flow: mr.quote_flow,
             }),
         }
     }
@@ -509,8 +509,8 @@ pub struct AmbientPosition {
     pub quote: Address,
     pub pool_idx: Uint256,
     pub liq: u128,
-    pub base_amount: u128,
-    pub quote_amount: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 
 // Combines together any corresponding mint_ambient entries, and filters them by any corresponding burn_ambient entries
@@ -527,8 +527,8 @@ fn combine_and_filter_ambient_positions(
                 && v.pool_idx == ma.pool_idx
         }) {
             Some(pos) => {
-                pos.base_amount += ma.base_qty;
-                pos.quote_amount += ma.quote_qty;
+                pos.base_flow += ma.base_flow;
+                pos.quote_flow += ma.quote_flow;
                 pos.liq += ma.liq;
                 // We overwrite the block because fees should only apply from the most recent effective mint
                 pos.start_block = ma.block_height;
@@ -540,8 +540,8 @@ fn combine_and_filter_ambient_positions(
                 quote: ma.quote,
                 pool_idx: ma.pool_idx,
                 liq: ma.liq,
-                base_amount: ma.base_qty,
-                quote_amount: ma.quote_qty,
+                base_flow: ma.base_flow,
+                quote_flow: ma.quote_flow,
             }),
         }
     }

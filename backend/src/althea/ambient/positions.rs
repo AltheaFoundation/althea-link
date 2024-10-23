@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use web30::types::Log;
 
 use crate::althea::{
-    abi_util::{parse_address, parse_i32, parse_u128, parse_uint256},
+    abi_util::{parse_address, parse_i128, parse_i32, parse_u128, parse_uint256},
     error::AltheaError,
 };
 
@@ -20,8 +20,8 @@ pub struct MintRangedEvent {
     pub bid_tick: i32,
     pub ask_tick: i32,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -30,8 +30,8 @@ pub struct MintRangedBytes {
     pub bid_tick: i32,
     pub ask_tick: i32,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 impl MintRangedEvent {
     /// Parse multiple logs into MintRangedEvents
@@ -100,8 +100,8 @@ impl MintRangedEvent {
             bid_tick: decoded_bytes.bid_tick,
             ask_tick: decoded_bytes.ask_tick,
             liq: decoded_bytes.liq,
-            base_qty: decoded_bytes.base_qty,
-            quote_qty: decoded_bytes.quote_qty,
+            base_flow: decoded_bytes.base_flow,
+            quote_flow: decoded_bytes.quote_flow,
         })
     }
 
@@ -132,19 +132,19 @@ impl MintRangedEvent {
 
         // base_qty
         index_start += 32;
-        let base_qty = parse_u128(input, index_start);
+        let base_flow = parse_i128(input, index_start);
 
         // quote_qty
         index_start += 32;
-        let quote_qty = parse_u128(input, index_start);
+        let quote_flow = parse_i128(input, index_start);
 
         Ok(MintRangedBytes {
             pool_idx,
             liq,
             bid_tick,
             ask_tick,
-            base_qty,
-            quote_qty,
+            base_flow,
+            quote_flow,
         })
     }
 }
@@ -162,8 +162,8 @@ pub struct BurnRangedEvent {
     pub bid_tick: i32,
     pub ask_tick: i32,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -172,8 +172,8 @@ pub struct BurnRangedBytes {
     pub bid_tick: i32,
     pub ask_tick: i32,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 impl BurnRangedEvent {
     /// Parse multiple logs into BurnRangedEvents
@@ -242,8 +242,8 @@ impl BurnRangedEvent {
             bid_tick: decoded_bytes.bid_tick,
             ask_tick: decoded_bytes.ask_tick,
             liq: decoded_bytes.liq,
-            base_qty: decoded_bytes.base_qty,
-            quote_qty: decoded_bytes.quote_qty,
+            base_flow: decoded_bytes.base_flow,
+            quote_flow: decoded_bytes.quote_flow,
         })
     }
 
@@ -274,19 +274,19 @@ impl BurnRangedEvent {
 
         // base_qty
         index_start += 32;
-        let base_qty = parse_u128(input, index_start);
+        let base_flow = parse_i128(input, index_start);
 
         // quote_qty
         index_start += 32;
-        let quote_qty = parse_u128(input, index_start);
+        let quote_flow = parse_i128(input, index_start);
 
         Ok(BurnRangedBytes {
             pool_idx,
             liq,
             bid_tick,
             ask_tick,
-            base_qty,
-            quote_qty,
+            base_flow,
+            quote_flow,
         })
     }
 }
@@ -303,8 +303,8 @@ pub struct HarvestEvent {
     pub pool_idx: Uint256,
     pub bid_tick: i32,
     pub ask_tick: i32,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -312,8 +312,8 @@ pub struct HarvestBytes {
     pub pool_idx: Uint256,
     pub bid_tick: i32,
     pub ask_tick: i32,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 impl HarvestEvent {
     /// Parse multiple logs into HarvestEvents
@@ -381,8 +381,8 @@ impl HarvestEvent {
             pool_idx: decoded_bytes.pool_idx,
             bid_tick: decoded_bytes.bid_tick,
             ask_tick: decoded_bytes.ask_tick,
-            base_qty: decoded_bytes.base_qty,
-            quote_qty: decoded_bytes.quote_qty,
+            base_flow: decoded_bytes.base_flow,
+            quote_flow: decoded_bytes.quote_flow,
         })
     }
 
@@ -409,18 +409,18 @@ impl HarvestEvent {
 
         // base_qty
         index_start += 32;
-        let base_qty = parse_u128(input, index_start);
+        let base_flow = parse_i128(input, index_start);
 
         // quote_qty
         index_start += 32;
-        let quote_qty = parse_u128(input, index_start);
+        let quote_flow = parse_i128(input, index_start);
 
         Ok(HarvestBytes {
             pool_idx,
             bid_tick,
             ask_tick,
-            base_qty,
-            quote_qty,
+            base_flow,
+            quote_flow,
         })
     }
 }
@@ -435,16 +435,16 @@ pub struct MintAmbientEvent {
     pub quote: Address,
     pub pool_idx: Uint256,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct MintAmbientBytes {
     pub pool_idx: Uint256,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 impl MintAmbientEvent {
     /// Parse multiple logs into MintAmbientEvents
@@ -511,8 +511,8 @@ impl MintAmbientEvent {
             quote,
             pool_idx: decoded_bytes.pool_idx,
             liq: decoded_bytes.liq,
-            base_qty: decoded_bytes.base_qty,
-            quote_qty: decoded_bytes.quote_qty,
+            base_flow: decoded_bytes.base_flow,
+            quote_flow: decoded_bytes.quote_flow,
         })
     }
 
@@ -535,17 +535,17 @@ impl MintAmbientEvent {
 
         // base_qty
         index_start += 32;
-        let base_qty = parse_u128(input, index_start);
+        let base_flow = parse_i128(input, index_start);
 
         // quote_qty
         index_start += 32;
-        let quote_qty = parse_u128(input, index_start);
+        let quote_flow = parse_i128(input, index_start);
 
         Ok(MintAmbientBytes {
             pool_idx,
             liq,
-            base_qty,
-            quote_qty,
+            base_flow,
+            quote_flow,
         })
     }
 }
@@ -561,16 +561,16 @@ pub struct BurnAmbientEvent {
     pub quote: Address,
     pub pool_idx: Uint256,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct BurnAmbientBytes {
     pub pool_idx: Uint256,
     pub liq: u128,
-    pub base_qty: u128,
-    pub quote_qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
 }
 impl BurnAmbientEvent {
     /// Parse multiple logs into BurnAmbientEvents
@@ -637,8 +637,8 @@ impl BurnAmbientEvent {
             quote,
             pool_idx: decoded_bytes.pool_idx,
             liq: decoded_bytes.liq,
-            base_qty: decoded_bytes.base_qty,
-            quote_qty: decoded_bytes.quote_qty,
+            base_flow: decoded_bytes.base_flow,
+            quote_flow: decoded_bytes.quote_flow,
         })
     }
 
@@ -661,17 +661,17 @@ impl BurnAmbientEvent {
 
         // base_qty
         index_start += 32;
-        let base_qty = parse_u128(input, index_start);
+        let base_flow = parse_i128(input, index_start);
 
         // quote_qty
         index_start += 32;
-        let quote_qty = parse_u128(input, index_start);
+        let quote_flow = parse_i128(input, index_start);
 
         Ok(BurnAmbientBytes {
             pool_idx,
             liq,
-            base_qty,
-            quote_qty,
+            base_flow,
+            quote_flow,
         })
     }
 }
