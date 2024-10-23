@@ -29,6 +29,7 @@ use super::{
 
 pub mod croc_query;
 pub mod events;
+pub mod knockout;
 pub mod pools;
 pub mod positions;
 
