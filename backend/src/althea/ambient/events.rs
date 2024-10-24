@@ -115,10 +115,11 @@ pub const MINT_KNOCKOUT_SIGNATURE: &str =
 /// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 /// @param lowerTick The lower price tick of the range position.
 /// @param upperTick The upper price tick of the range position.
+/// @param rewardFees The amount of ambient liquidity (as sqrt(X*Y)) removed from the pool due to payout of accrued fees.
 ///
-/// event BurnKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int128 baseFlow, int128 quoteFlow, int24 lowerTick, int24 upperTick);
+/// event BurnKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int128 baseFlow, int128 quoteFlow, int24 lowerTick, int24 upperTick, uint128 rewardFees);
 pub const BURN_KNOCKOUT_SIGNATURE: &str =
-    "BurnKnockout(address,address,address,uint256,int128,int128,int24,int24)";
+    "BurnKnockout(address,address,address,uint256,int128,int128,int24,int24,uint128)";
 
 /// @notice Emitted when a complete knockout liquidity position is claimed or recovered, deleting the position from the pool.
 /// @param user The address of the position holder.

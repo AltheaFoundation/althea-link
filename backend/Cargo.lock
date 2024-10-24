@@ -320,6 +320,7 @@ dependencies = [
  "env_logger",
  "futures",
  "log",
+ "num-traits",
  "num_cpus",
  "openssl",
  "openssl-probe",

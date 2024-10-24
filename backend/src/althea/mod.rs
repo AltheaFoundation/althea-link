@@ -3,7 +3,7 @@ use crate::Opts;
 use actix_web::rt::System;
 use actix_web::web;
 use ambient::pools::InitPoolEvent;
-use ambient::{query_latest, search_for_pools, search_for_positions};
+use ambient::{initialize_templates, query_latest, search_for_pool_events};
 use clarity::{Address, Uint256};
 use database::pools::get_init_pools;
 use database::{get_latest_searched_block, save_latest_searched_block};
@@ -31,8 +31,6 @@ pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althe
 pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
 pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
 pub const CACHE_DURATION: u64 = 300;
-// const ALTHEA_GRPC_URL: &str = "http://localhost:9090";
-// const ALTHEA_ETH_RPC_URL: &str = "http://localhost:8545";
 
 pub const ALTHEA_PREFIX: &str = "althea";
 pub const TIMEOUT: Duration = Duration::from_secs(45);
@@ -81,6 +79,7 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
 
         let web3 = get_althea_web3(TIMEOUT);
         runner.block_on(async move {
+            initialize_templates(&db, &web3, &templates).await.unwrap();
             loop {
                 let start_block =
                     get_latest_searched_block(&db).unwrap_or(DEFAULT_START_SEARCH_BLOCK.into());
@@ -94,11 +93,8 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                     start_block + DEFAULT_SEARCH_RANGE.into(),
                     current_block.unwrap(),
                 );
-                if let Err(e) = search_for_pools(&db, &web3, start_block, end_block).await {
-                    error!("Error searching for pools: {}", e);
-                }
                 if let Err(e) =
-                    search_for_positions(&db, &web3, &tokens, &templates, start_block, end_block)
+                    search_for_pool_events(&db, &web3, &tokens, &templates, start_block, end_block)
                         .await
                 {
                     error!("Error searching for positions: {}", e);

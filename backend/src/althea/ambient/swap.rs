@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use web30::types::Log;
 
 use crate::althea::{
-    abi_util::{parse_address, parse_i128, parse_u128, parse_uint256},
+    abi_util::{parse_address, parse_i128, parse_uint256},
     error::AltheaError,
 };
 
@@ -13,11 +13,11 @@ use crate::althea::{
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct SwapEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub buy: Address,
     pub sell: Address,
     pub pool_idx: Uint256,
-    pub qty: u128,
     pub buy_flow: i128,
     pub sell_flow: i128,
 }
@@ -25,7 +25,6 @@ pub struct SwapEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct SwapBytes {
     pub pool_idx: Uint256,
-    pub qty: u128,
     pub buy_flow: i128,
     pub sell_flow: i128,
 }
@@ -89,11 +88,11 @@ impl SwapEvent {
 
         Ok(SwapEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             buy,
             sell,
             pool_idx: decoded_bytes.pool_idx,
-            qty: decoded_bytes.qty,
             buy_flow: decoded_bytes.buy_flow,
             sell_flow: decoded_bytes.sell_flow,
         })
@@ -101,7 +100,7 @@ impl SwapEvent {
 
     /// Decodes the data bytes of Swap
     pub fn decode_data_bytes(input: &[u8]) -> Result<SwapBytes, AltheaError> {
-        if input.len() < 6 * 32 {
+        if input.len() < 3 * 32 {
             return Err(AltheaError::InvalidEventLogError(
                 "too short for SwapBytes".to_string(),
             ));
@@ -111,10 +110,6 @@ impl SwapEvent {
         // poolIdx
         let mut index_start = 0;
         let pool_idx = parse_uint256(input, index_start);
-
-        // qty
-        index_start += 32;
-        let qty = parse_u128(input, index_start);
 
         // buy_flow
         index_start += 32;
@@ -126,7 +121,6 @@ impl SwapEvent {
 
         Ok(SwapBytes {
             pool_idx,
-            qty,
             buy_flow,
             sell_flow,
         })

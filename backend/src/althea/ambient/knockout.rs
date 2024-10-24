@@ -13,6 +13,7 @@ use crate::althea::{
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct MintKnockoutEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -93,6 +94,7 @@ impl MintKnockoutEvent {
 
         Ok(MintKnockoutEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,
@@ -107,7 +109,7 @@ impl MintKnockoutEvent {
 
     /// Decodes the data bytes of MintKnockout
     pub fn decode_data_bytes(input: &[u8]) -> Result<MintKnockoutBytes, AltheaError> {
-        if input.len() < 6 * 32 {
+        if input.len() < 5 * 32 {
             return Err(AltheaError::InvalidEventLogError(
                 "too short for MintKnockoutBytes".to_string(),
             ));
@@ -155,6 +157,7 @@ impl MintKnockoutEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct BurnKnockoutEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -163,6 +166,7 @@ pub struct BurnKnockoutEvent {
     pub quote_flow: i128,
     pub lower_tick: i32,
     pub upper_tick: i32,
+    pub fee_rewards: u128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -172,6 +176,7 @@ pub struct BurnKnockoutBytes {
     pub quote_flow: i128,
     pub lower_tick: i32,
     pub upper_tick: i32,
+    pub fee_rewards: u128,
 }
 impl BurnKnockoutEvent {
     /// Parse multiple logs into BurnKnockoutEvents
@@ -233,6 +238,7 @@ impl BurnKnockoutEvent {
 
         Ok(BurnKnockoutEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,
@@ -241,6 +247,7 @@ impl BurnKnockoutEvent {
             quote_flow: decoded_bytes.quote_flow,
             lower_tick: decoded_bytes.lower_tick,
             upper_tick: decoded_bytes.upper_tick,
+            fee_rewards: decoded_bytes.fee_rewards,
         })
     }
 
@@ -273,12 +280,17 @@ impl BurnKnockoutEvent {
         index_start += 32;
         let upper_tick = parse_i32(input, index_start);
 
+        // fee_rewards
+        index_start += 32;
+        let fee_rewards = parse_u128(input, index_start);
+
         Ok(BurnKnockoutBytes {
             pool_idx,
             base_flow,
             quote_flow,
             lower_tick,
             upper_tick,
+            fee_rewards,
         })
     }
 }
@@ -290,6 +302,7 @@ impl BurnKnockoutEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct WithdrawKnockoutEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -370,6 +383,7 @@ impl WithdrawKnockoutEvent {
 
         Ok(WithdrawKnockoutEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,

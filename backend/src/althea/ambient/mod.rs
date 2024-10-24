@@ -1,27 +1,52 @@
 use std::{str::FromStr, sync::Arc};
 
 use clarity::{Address, Uint256};
+use croc_query::get_template;
 use events::{
-    BURN_AMBIENT_SIGNATURE, BURN_RANGED_SIGNATURE, INIT_POOL_SIGNATURE, MINT_AMBIENT_SIGNATURE,
-    MINT_RANGED_SIGNATURE,
+    BURN_AMBIENT_SIGNATURE, BURN_RANGED_SIGNATURE, HARVEST_SIGNATURE, INIT_POOL_SIGNATURE,
+    MINT_AMBIENT_SIGNATURE, MINT_RANGED_SIGNATURE, SWAP_SIGNATURE,
 };
-use futures::future::{join3, join4, join_all};
+use futures::future::join_all;
+use futures::join;
 use log::{debug, info};
 use pools::InitPoolEvent;
-use positions::{BurnAmbientEvent, BurnRangedEvent, MintAmbientEvent, MintRangedEvent};
+use positions::{
+    BurnAmbientEvent, BurnRangedEvent, HarvestEvent, MintAmbientEvent, MintRangedEvent,
+};
+use swap::SwapEvent;
 use web30::client::Web3;
 
 use crate::althea::{
     database::{
-        pools::save_init_pool,
-        positions::{save_burn_ambient, save_burn_ranged, save_mint_ambient, save_mint_ranged},
+        pools::{save_init_pool, save_swap},
+        positions::{
+            ambient::{save_burn_ambient, save_mint_ambient},
+            ranged::{save_burn_ranged, save_harvest, save_mint_ranged},
+        },
+        tracking::{mark_pool_dirty, set_dirty_pool, update_pool},
     },
-    CROC_SWAP_CTR,
+    error, CROC_SWAP_CTR,
 };
 
 use super::{
-    database::curve::{
-        get_curve, get_liquidity, get_price, save_curve, save_liquidity, save_price,
+    database::{
+        curve::{get_curve, get_liquidity, get_price, save_curve, save_liquidity, save_price},
+        pools::{
+            get_all_revision_after_block, get_all_swap_after_block, get_init_pool,
+            get_pool_template, save_pool_template,
+        },
+        positions::{
+            ambient::{get_all_burn_ambient_after_block, get_all_mint_ambient_after_block},
+            knockout::{
+                get_all_burn_knockout_after_block, get_all_mint_knockout_after_block,
+                get_all_withdraw_knockout_after_block,
+            },
+            ranged::{
+                get_all_burn_ranged_after_block, get_all_harvest_after_block,
+                get_all_mint_ranged_after_block,
+            },
+        },
+        tracking::{get_all_dirty_pools, updates::PoolUpdateEvent, DirtyPoolTracker},
     },
     error::AltheaError,
     CROC_QUERY_CTR,
@@ -34,38 +59,8 @@ pub mod pools;
 pub mod positions;
 pub mod swap;
 
-// Searches for InitPool events and saves them
-pub async fn search_for_pools(
-    db: &Arc<rocksdb::DB>,
-    web3: &Web3,
-    start_block: Uint256,
-    end_block: Uint256,
-) -> Result<(), AltheaError> {
-    info!("Search for pools");
-
-    let ctr = Address::from_str(CROC_SWAP_CTR).unwrap();
-    let topics = vec![INIT_POOL_SIGNATURE];
-    debug!("Searching on {ctr} for {topics:?} from block {start_block} to block {end_block}");
-    let events = web3
-        .check_for_events(start_block, Some(end_block), vec![ctr], topics)
-        .await?;
-    debug!("Found {} events", events.len());
-    let decoded_events = InitPoolEvent::from_logs(&events)?;
-    debug!("Decoded {} events", decoded_events.len());
-    if decoded_events.is_empty() {
-        return Ok(());
-    }
-
-    for event in decoded_events {
-        info!("Writing {event:?} to database");
-        save_init_pool(db, event);
-    }
-
-    Ok(())
-}
-
-// Searches for any position events (minting or burning ranged or ambient positions), saving them if the events contain the given tokens and templates
-pub async fn search_for_positions(
+// Searches for all the pool events needed for tracking including swapping, minting, and burning among others.
+pub async fn search_for_pool_events(
     db: &Arc<rocksdb::DB>,
     web3: &Web3,
     tokens: &[Address],
@@ -74,7 +69,19 @@ pub async fn search_for_positions(
     end_block: Uint256,
 ) -> Result<(), AltheaError> {
     let ctr = Address::from_str(CROC_SWAP_CTR).unwrap();
-    info!("Searching for position events");
+    info!("Searching for pool events");
+    let init_events = web3.check_for_events(
+        start_block,
+        Some(end_block),
+        vec![ctr],
+        vec![INIT_POOL_SIGNATURE],
+    );
+    let swap_events = web3.check_for_events(
+        start_block,
+        Some(end_block),
+        vec![ctr],
+        vec![SWAP_SIGNATURE],
+    );
     let mint_ranged_events = web3.check_for_events(
         start_block,
         Some(end_block),
@@ -99,23 +106,62 @@ pub async fn search_for_positions(
         vec![ctr],
         vec![BURN_AMBIENT_SIGNATURE],
     );
-    let (mint_ranged, mint_ambient, burn_ranged, burn_ambient) = join4(
+    let harvest_events = web3.check_for_events(
+        start_block,
+        Some(end_block),
+        vec![ctr],
+        vec![HARVEST_SIGNATURE],
+    );
+    let (init, swap, mint_ranged, mint_ambient, burn_ranged, burn_ambient, harvest) = join!(
+        init_events,
+        swap_events,
         mint_ranged_events,
         mint_ambient_events,
         burn_ranged_events,
         burn_ambient_events,
-    )
-    .await;
+        harvest_events
+    );
 
-    let (mint_ranged_events, mint_ambient_events, burn_ranged_events, burn_ambient_events) =
-        (mint_ranged?, mint_ambient?, burn_ranged?, burn_ambient?);
+    let (
+        init_events,
+        swap_events,
+        mint_ranged_events,
+        mint_ambient_events,
+        burn_ranged_events,
+        burn_ambient_events,
+        harvest_events,
+    ) = (
+        init?,
+        swap?,
+        mint_ranged?,
+        mint_ambient?,
+        burn_ranged?,
+        burn_ambient?,
+        harvest?,
+    );
     debug!(
         "Found {} events",
-        mint_ranged_events.len()
+        init_events.len()
+            + swap_events.len()
+            + mint_ranged_events.len()
             + mint_ambient_events.len()
             + burn_ranged_events.len()
             + burn_ambient_events.len()
+            + harvest_events.len()
     );
+    let init_events = InitPoolEvent::from_logs(&init_events)?
+        .into_iter()
+        .filter(|v| {
+            templates.contains(&v.pool_idx)
+                && (tokens.contains(&v.base) || tokens.contains(&v.quote))
+        })
+        .collect::<Vec<_>>();
+    let swap_events = SwapEvent::from_logs(&swap_events)?
+        .into_iter()
+        .filter(|v| {
+            templates.contains(&v.pool_idx) && (tokens.contains(&v.buy) || tokens.contains(&v.sell))
+        })
+        .collect::<Vec<_>>();
     let mint_ranged_events = MintRangedEvent::from_logs(&mint_ranged_events)?
         .into_iter()
         .filter(|v| {
@@ -144,31 +190,123 @@ pub async fn search_for_positions(
                 && (tokens.contains(&v.base) || tokens.contains(&v.quote))
         })
         .collect::<Vec<_>>();
-    if mint_ranged_events.is_empty()
+    let harvest_events = HarvestEvent::from_logs(&harvest_events)?
+        .into_iter()
+        .filter(|v| {
+            templates.contains(&v.pool_idx)
+                && (tokens.contains(&v.base) || tokens.contains(&v.quote))
+        })
+        .collect::<Vec<_>>();
+    if init_events.is_empty()
+        && swap_events.is_empty()
+        && mint_ranged_events.is_empty()
         && mint_ambient_events.is_empty()
         && burn_ranged_events.is_empty()
         && burn_ambient_events.is_empty()
+        && harvest_events.is_empty()
     {
         debug!("No events found");
         return Ok(());
     }
 
+    for event in init_events {
+        debug!("Writing {event:?} to database");
+        set_dirty_pool(
+            db,
+            event.base,
+            event.quote,
+            event.pool_idx,
+            true,
+            Uint256::default(),
+        );
+        save_init_pool(db, event);
+    }
+    for event in swap_events {
+        debug!("Writing {event:?} to database");
+        let (base, quote) = if event.buy < event.sell {
+            (event.buy, event.sell)
+        } else {
+            (event.sell, event.buy)
+        };
+        mark_pool_dirty(db, base, quote, event.pool_idx);
+        save_swap(db, event);
+    }
     for event in mint_ranged_events {
         debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
         save_mint_ranged(db, event);
     }
     for event in mint_ambient_events {
         debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
         save_mint_ambient(db, event);
     }
     for event in burn_ranged_events {
         debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
         save_burn_ranged(db, event);
     }
     for event in burn_ambient_events {
         debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
         save_burn_ambient(db, event);
     }
+    for event in harvest_events {
+        debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
+        save_harvest(db, event);
+    }
+    Ok(())
+}
+
+pub fn track_pools(db: &Arc<rocksdb::DB>) -> Result<(), AltheaError> {
+    for pool in get_all_dirty_pools(db) {
+        if let Err(e) = track_pool(db, pool) {
+            error!("Unable to track pool: {e}");
+        }
+    }
+    Ok(())
+}
+
+pub fn track_pool(db: &Arc<rocksdb::DB>, pool: DirtyPoolTracker) -> Result<(), AltheaError> {
+    if pool.last_block == Uint256::default() {
+        if let Some(init) = get_init_pool(db, pool.base, pool.quote, pool.pool_idx) {
+            update_pool(db, init.into());
+        }
+    } else {
+        // Get unhandled events by filtering for new ones
+        let mint_ambient = get_all_mint_ambient_after_block(db, None, pool.last_block);
+        let burn_ambient = get_all_burn_ambient_after_block(db, None, pool.last_block);
+        let mint_ranged = get_all_mint_ranged_after_block(db, None, pool.last_block);
+        let burn_ranged = get_all_burn_ranged_after_block(db, None, pool.last_block);
+        let harvest = get_all_harvest_after_block(db, None, pool.last_block);
+        let mint_knockout = get_all_mint_knockout_after_block(db, None, pool.last_block);
+        let burn_knockout = get_all_burn_knockout_after_block(db, None, pool.last_block);
+        let withdraw_knockout = get_all_withdraw_knockout_after_block(db, None, pool.last_block);
+        let swap = get_all_swap_after_block(db, None, pool.last_block);
+        let revision = get_all_revision_after_block(db, None, pool.last_block);
+
+        // Sort the events by block number and index and apply them in order
+        let mut updates: Vec<PoolUpdateEvent> = mint_ambient
+            .into_iter()
+            .map(PoolUpdateEvent::from)
+            .chain(burn_ambient.into_iter().map(PoolUpdateEvent::from))
+            .chain(mint_ranged.into_iter().map(PoolUpdateEvent::from))
+            .chain(burn_ranged.into_iter().map(PoolUpdateEvent::from))
+            .chain(harvest.into_iter().map(PoolUpdateEvent::from))
+            .chain(mint_knockout.into_iter().map(PoolUpdateEvent::from))
+            .chain(burn_knockout.into_iter().map(PoolUpdateEvent::from))
+            .chain(withdraw_knockout.into_iter().map(PoolUpdateEvent::from))
+            .chain(swap.into_iter().map(PoolUpdateEvent::from))
+            .chain(revision.into_iter().map(PoolUpdateEvent::from))
+            .collect();
+        updates.sort_by_key(|v| (v.block, v.index));
+
+        for update in updates {
+            update_pool(db, update);
+        }
+    }
+
     Ok(())
 }
 
@@ -204,7 +342,7 @@ pub async fn query_pool(
     let price = croc_query::get_price(web30, croc_query, base, quote, pool_idx);
     let liq = croc_query::get_liquidity(web30, croc_query, base, quote, pool_idx);
 
-    let (curve, price, liq) = join3(curve, price, liq).await;
+    let (curve, price, liq) = join!(curve, price, liq);
 
     // Only save items if the value is nonzero (empty) or if the key is already in the database
     if let Ok(curve) = curve {
@@ -226,5 +364,21 @@ pub async fn query_pool(
         }
     }
 
+    Ok(())
+}
+
+/// Initializes the pool template data in the database so that we can populate pool specs from InitPool events
+pub async fn initialize_templates(
+    db: &Arc<rocksdb::DB>,
+    web30: &Web3,
+    templates: &[Uint256],
+) -> Result<(), AltheaError> {
+    let croc_query = Address::from_str(CROC_QUERY_CTR).unwrap();
+    for template in templates {
+        if get_pool_template(db, *template).is_none() {
+            let pool_template = get_template(web30, croc_query, *template).await?;
+            save_pool_template(db, *template, pool_template);
+        }
+    }
     Ok(())
 }

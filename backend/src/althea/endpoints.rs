@@ -1,28 +1,35 @@
-use super::delegations::fetch_delegations;
-use crate::althea::{
-    database::{
-        pools::{get_init_pool, get_init_pools},
-        positions::{
-            get_active_user_pool_positions, get_active_user_positions, get_all_burn_ambient,
-            get_all_burn_ranged, get_all_mint_ambient, get_all_mint_ranged,
-        },
-    },
-    ALTHEA_MAINNET_EVM_CHAIN_ID,
-};
 use actix_web::{
     get, post,
     web::{self, Json},
     HttpResponse, Responder,
 };
-use clarity::{Address, Uint256}; // Add Uint256 here
+use clarity::{Address, Uint256};
 use deep_space::Address as CosmosAddress;
 use deep_space::Contact;
-use log::{error, info};
+use log::error;
+use log::info;
+use num_traits::ToPrimitive;
 use rocksdb::DB;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-use super::database::positions::Position::{Ambient, Ranged};
+use super::database::{
+    positions::Position::{Ambient, Ranged},
+    tracking::{LiquidityBump, TrackedPool},
+};
+use super::delegations::fetch_delegations;
+use crate::althea::{
+    database::{
+        pools::{get_init_pool, get_init_pools},
+        positions::{
+            ambient::{get_all_burn_ambient, get_all_mint_ambient},
+            get_active_user_pool_positions, get_active_user_positions,
+            ranged::{get_all_burn_ranged, get_all_mint_ranged},
+        },
+        tracking::get_tracked_pool,
+    },
+    ALTHEA_MAINNET_EVM_CHAIN_ID,
+};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct PoolRequest {
@@ -303,6 +310,98 @@ pub async fn user_positions(
         });
     }
     HttpResponse::Ok().json(results)
+}
+
+/// A request which specifies a pool (and the unused chain id)
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct PoolLiqCurveRequest {
+    pub chain_id: Uint256,
+    pub base: Address,
+    pub quote: Address,
+    pub pool_idx: Uint256,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct PoolLiqCurveResp {
+    pub ambient_liq: f64,
+    pub liquidity_bumps: Vec<LiquidityBump>,
+}
+
+impl From<TrackedPool> for PoolLiqCurveResp {
+    fn from(pool: TrackedPool) -> Self {
+        Self {
+            ambient_liq: pool.ambient_liq.to_u128().unwrap().to_f64().unwrap(),
+            liquidity_bumps: pool.bumps,
+        }
+    }
+}
+
+#[get("/pool_liq_curve")]
+pub async fn pool_liq_curve(
+    req: web::Query<PoolLiqCurveRequest>,
+    db: web::Data<Arc<DB>>,
+) -> impl Responder {
+    let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
+
+    match pool {
+        Some(pool) => HttpResponse::Ok().json(PoolLiqCurveResp::from(pool)),
+        None => HttpResponse::NotFound().body("No pool found for base quote poolIdx triple"),
+    }
+}
+
+/// A request which specifies a pool (and the unused chain id)
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct PoolStatsRequest {
+    pub chain_id: Uint256,
+    pub base: Address,
+    pub quote: Address,
+    pub pool_idx: Uint256,
+
+    // Not used
+    pub hist_time: Option<isize>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+pub struct PoolStatsResp {
+    pub base_tvl: f64,
+    pub quote_tvl: f64,
+    pub last_price_swap: f64,
+    pub fee_rate: f64,
+
+    // Not used by us
+    pub init_time: usize,
+    pub latest_time: usize,
+    pub base_volume: f64,
+    pub quote_volume: f64,
+    pub base_fees: f64,
+    pub quote_fees: f64,
+    pub last_price_liq: f64,
+    pub last_price_indic: f64,
+}
+
+impl From<TrackedPool> for PoolStatsResp {
+    fn from(pool: TrackedPool) -> Self {
+        Self {
+            base_tvl: pool.base_tvl.to_f64().unwrap(),
+            quote_tvl: pool.quote_tvl.to_f64().unwrap(),
+            last_price_swap: pool.price.to_f64().unwrap(),
+            fee_rate: pool.fee_rate.to_f64().unwrap(),
+            ..Default::default()
+        }
+    }
+}
+
+#[get("/pool_stats")]
+pub async fn pool_stats(
+    req: web::Query<PoolStatsRequest>,
+    db: web::Data<Arc<DB>>,
+) -> impl Responder {
+    let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
+
+    match pool {
+        Some(pool) => HttpResponse::Ok().json(PoolStatsResp::from(pool)),
+        None => HttpResponse::NotFound().body("No pool found for base quote poolIdx triple"),
+    }
 }
 
 /// Retrieves validators from the Althea chain

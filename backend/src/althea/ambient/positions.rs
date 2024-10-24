@@ -13,6 +13,7 @@ use crate::althea::{
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct MintRangedEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -93,6 +94,7 @@ impl MintRangedEvent {
 
         Ok(MintRangedEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,
@@ -155,6 +157,7 @@ impl MintRangedEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct BurnRangedEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -235,6 +238,7 @@ impl BurnRangedEvent {
 
         Ok(BurnRangedEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,
@@ -297,6 +301,7 @@ impl BurnRangedEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct HarvestEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -375,6 +380,7 @@ impl HarvestEvent {
 
         Ok(HarvestEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,
@@ -430,6 +436,7 @@ impl HarvestEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct MintAmbientEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -506,6 +513,7 @@ impl MintAmbientEvent {
 
         Ok(MintAmbientEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,
@@ -556,6 +564,7 @@ impl MintAmbientEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct BurnAmbientEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -632,6 +641,7 @@ impl BurnAmbientEvent {
 
         Ok(BurnAmbientEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             user,
             base,
             quote,

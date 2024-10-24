@@ -144,6 +144,7 @@ impl InitPoolEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct PoolRevisionEvent {
     pub block_height: Uint256,
+    pub index: Uint256,
     pub base: Address,
     pub quote: Address,
     pub pool_idx: Uint256,
@@ -214,6 +215,7 @@ impl PoolRevisionEvent {
 
         Ok(PoolRevisionEvent {
             block_height,
+            index: input.log_index.unwrap_or_default(),
             base,
             quote,
             pool_idx,
