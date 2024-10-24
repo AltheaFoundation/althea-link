@@ -129,11 +129,11 @@ pub const BURN_KNOCKOUT_SIGNATURE: &str =
 /// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 /// @param lowerTick The lower price tick of the range position.
 /// @param upperTick The upper price tick of the range position.
-/// @param proven Indicates a correct proof was provided and earned fees were collected.
+/// @param rewardFees Indicates the amount of the baseFlow/quoteFlow paid to the user which were accrued fees claimed by proving the knockout.
 ///
-/// event WithdrawKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int128 baseFlow, int128 quoteFlow, int24 lowerTick, int24 upperTick, bool proven);
+/// event WithdrawKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int128 baseFlow, int128 quoteFlow, int24 lowerTick, int24 upperTick, uint128 rewardFees);
 pub const WITHDRAW_KNOCKOUT_SIGNATURE: &str =
-    "WithdrawKnockout(address,address,address,uint256,int128,int128,int24,int24,bool)";
+    "WithdrawKnockout(address,address,address,uint256,int128,int128,int24,int24,uint128)";
 
 /// @notice Emitted when governance authority for CrocSwapDex is transfered.
 /// @param The authority being transfered to.
@@ -193,9 +193,23 @@ pub const INIT_POOL_SIGNATURE: &str =
 /// @param quote The quote token of the pool.
 /// @param poolIdx The pool type index of the pool.
 /// @param takeRate The newly set protocol take rate of the pool.
+///
 /// event ResyncTakeRate (address indexed base, address indexed quote,
 ///                       uint256 indexed poolIdx, uint8 takeRate);
 pub const RESYNC_TAKE_RATE_SIGNATURE: &str = "ResyncTakeRate(address,address,uint256,uint8)";
+
+/// @notice Emitted when a previously created pool is revised to have new pool specs.
+/// @param base The base token of the pool.
+/// @param quote The quote token of the pool.
+/// @param poolIdx The pool type index of the pool.
+/// @param feeRate The pool's swap fee rate in multiples of 0.0001%
+/// @param tickSize The pool's price grid size in ticks.
+/// @param jitThresh The minimum resting time (in seconds) for concentrated LPs in in the pool.
+/// @param knockout The knockout bit flags for the pool.
+///
+/// event PoolRevision (address indexed base, address indexed quote, uint256 indexed poolIdx, uint16 feeRate, uint16 tickSize, uint8 jitThresh, uint8 knockout);
+pub const POOL_REVISION_SIGNATURE: &str =
+    "PoolRevision(address,address,uint256,uint16,uint16,uint8,uint8)";
 
 /// @notice Emitted when new minimum thresholds are set for off-grid price improvement liquidity
 ///         thresholds.

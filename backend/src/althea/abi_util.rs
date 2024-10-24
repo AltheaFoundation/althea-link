@@ -15,6 +15,21 @@ pub fn parse_address(input: &[u8], start: usize) -> Result<Address, clarity::Err
     Address::from_slice(&input[start + 12..end])
 }
 
+/// Parses a u8 from ABI-encoded `input`, with the relevant data beginning
+/// at byte index `start`.
+pub fn parse_u8(input: &[u8], start: usize) -> u8 {
+    input[start + 31]
+}
+
+/// Parses a u16 from ABI-encoded `input`, with the relevant data beginning
+/// at byte index `start`.
+pub fn parse_u16(input: &[u8], start: usize) -> u16 {
+    let end = start + 32;
+    // u128 is smooshed against the right side
+    let data = &input[start + 30..end];
+    u16::from_be_bytes(data.try_into().unwrap())
+}
+
 /// Parses a Uint256 from ABI-encoded `input`, with the relevant data beginning
 /// at byte index `start`.
 pub fn parse_uint256(input: &[u8], start: usize) -> Uint256 {
