@@ -290,7 +290,7 @@ pub struct WithdrawKnockoutEvent {
     pub quote_flow: i128,
     pub lower_tick: i32,
     pub upper_tick: i32,
-    pub proven: bool,
+    pub fee_rewards: u128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -300,7 +300,7 @@ pub struct WithdrawKnockoutBytes {
     pub quote_flow: i128,
     pub lower_tick: i32,
     pub upper_tick: i32,
-    pub proven: bool,
+    pub fee_rewards: u128,
 }
 impl WithdrawKnockoutEvent {
     /// Parse multiple logs into WithdrawKnockoutEvents
@@ -370,7 +370,7 @@ impl WithdrawKnockoutEvent {
             quote_flow: decoded_bytes.quote_flow,
             lower_tick: decoded_bytes.lower_tick,
             upper_tick: decoded_bytes.upper_tick,
-            proven: decoded_bytes.proven,
+            fee_rewards: decoded_bytes.fee_rewards,
         })
     }
 
@@ -403,9 +403,9 @@ impl WithdrawKnockoutEvent {
         index_start += 32;
         let upper_tick = parse_i32(input, index_start);
 
-        // proven
+        // fee_rewards
         index_start += 32;
-        let proven = parse_bool(input, index_start);
+        let fee_rewards = parse_u128(input, index_start);
 
         Ok(WithdrawKnockoutBytes {
             pool_idx,
@@ -413,7 +413,7 @@ impl WithdrawKnockoutEvent {
             quote_flow,
             lower_tick,
             upper_tick,
-            proven,
+            fee_rewards,
         })
     }
 }
