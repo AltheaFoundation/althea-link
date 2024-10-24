@@ -1,6 +1,7 @@
 use crate::database::compact_db;
 use crate::Opts;
 use actix_web::rt::System;
+use actix_web::web;
 use ambient::pools::InitPoolEvent;
 use ambient::{query_latest, search_for_pools, search_for_positions};
 use clarity::{Address, Uint256};
@@ -18,16 +19,21 @@ use web30::client::Web3;
 pub mod abi_util;
 pub mod ambient;
 pub mod database;
+pub mod delegations;
 pub mod endpoints;
 pub mod error;
-pub mod token_mappings;
 
-// const ALTHEA_GRPC_URL: &str = "http://chainripper-2.althea.net:9090";
-// const ALTHEA_ETH_RPC_URL: &str = "http://chainripper-2.althea.net:8545";
+pub mod governance;
+pub mod token_mappings;
+pub mod validators;
+
+const ALTHEA_GRPC_URL: &str = "http://chainripper-2.althea.net:9090";
+const ALTHEA_ETH_RPC_URL: &str = "http://chainripper-2.althea.net:8545";
 const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
 const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
-const ALTHEA_GRPC_URL: &str = "http://localhost:9090";
-const ALTHEA_ETH_RPC_URL: &str = "http://localhost:8545";
+// const ALTHEA_GRPC_URL: &str = "http://localhost:9090";
+// const ALTHEA_ETH_RPC_URL: &str = "http://localhost:8545";
+
 const ALTHEA_PREFIX: &str = "althea";
 const TIMEOUT: Duration = Duration::from_secs(45);
 /// The core Ambient DEX contract
@@ -140,4 +146,10 @@ fn get_templates(opts: &Opts) -> Vec<Uint256> {
     .iter()
     .map(|v| (*v).into())
     .collect::<Vec<_>>()
+}
+
+pub fn register_endpoints(cfg: &mut web::ServiceConfig) {
+    cfg.service(endpoints::get_validators)
+        .service(endpoints::get_proposals)
+        .service(endpoints::get_delegations);
 }

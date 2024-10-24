@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use crate::althea::endpoints::{
-    query_all_burn_ranged, query_all_init_pools, query_all_mint_ambient, query_all_mint_ranged,
-    query_pool, user_pool_positions, user_positions,
+    get_delegations, get_proposals, get_validators, query_all_burn_ranged, query_all_init_pools,
+    query_all_mint_ambient, query_all_mint_ranged, query_pool, user_pool_positions, user_positions,
 };
 use crate::tls::{load_certs, load_private_key};
 use crate::Opts;
@@ -23,11 +23,13 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
             // Debug endpoints
             .service(
                 web::scope("/debug")
+                    .service(get_validators)
+                    .service(get_proposals)
+                    .service(get_delegations)
                     .service(query_all_init_pools)
                     .service(query_pool)
                     .service(query_all_mint_ranged)
                     .service(query_all_burn_ranged)
-                    .service(query_all_mint_ambient)
                     .service(query_all_mint_ambient),
             )
             // Graphcache-go endpoints
