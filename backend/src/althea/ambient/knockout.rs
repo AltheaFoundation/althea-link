@@ -17,7 +17,8 @@ pub struct MintKnockoutEvent {
     pub base: Address,
     pub quote: Address,
     pub pool_idx: Uint256,
-    pub qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
     pub is_bid: bool,
     pub lower_tick: i32,
     pub upper_tick: i32,
@@ -26,7 +27,8 @@ pub struct MintKnockoutEvent {
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub struct MintKnockoutBytes {
     pub pool_idx: Uint256,
-    pub qty: u128,
+    pub base_flow: i128,
+    pub quote_flow: i128,
     pub is_bid: bool,
     pub lower_tick: i32,
     pub upper_tick: i32,
@@ -95,7 +97,8 @@ impl MintKnockoutEvent {
             base,
             quote,
             pool_idx: decoded_bytes.pool_idx,
-            qty: decoded_bytes.qty,
+            base_flow: decoded_bytes.base_flow,
+            quote_flow: decoded_bytes.quote_flow,
             lower_tick: decoded_bytes.lower_tick,
             upper_tick: decoded_bytes.upper_tick,
             is_bid: decoded_bytes.is_bid,
@@ -115,9 +118,13 @@ impl MintKnockoutEvent {
         let mut index_start = 0;
         let pool_idx = parse_uint256(input, index_start);
 
-        // qty
+        // base_flow
         index_start += 32;
-        let qty = parse_u128(input, index_start);
+        let base_flow = parse_i128(input, index_start);
+
+        // quote_flow
+        index_start += 32;
+        let quote_flow = parse_i128(input, index_start);
 
         // is_bid
         index_start += 32;
@@ -133,7 +140,8 @@ impl MintKnockoutEvent {
 
         Ok(MintKnockoutBytes {
             pool_idx,
-            qty,
+            base_flow,
+            quote_flow,
             lower_tick,
             upper_tick,
             is_bid,
