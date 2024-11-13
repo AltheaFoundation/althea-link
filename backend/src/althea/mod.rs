@@ -5,6 +5,9 @@ use actix_web::web;
 use ambient::pools::InitPoolEvent;
 use ambient::{initialize_templates, query_latest, search_for_pool_events};
 use clarity::{Address, Uint256};
+use cosmos::delegations::start_delegation_cache_refresh_task;
+use cosmos::governance::start_proposal_cache_refresh_task;
+use cosmos::validators::start_validator_cache_refresh_task;
 use database::pools::get_init_pools;
 use database::{get_latest_searched_block, save_latest_searched_block};
 use deep_space::Contact;
@@ -18,13 +21,10 @@ use web30::client::Web3;
 
 pub mod abi_util;
 pub mod ambient;
+pub mod cosmos;
 pub mod database;
-pub mod delegations;
 pub mod endpoints;
 pub mod error;
-pub mod governance;
-pub mod token_mappings;
-pub mod validators;
 
 pub const ALTHEA_GRPC_URL: &str = "http://66.172.36.142:3890";
 pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althea";
@@ -155,7 +155,3 @@ pub fn register_endpoints(cfg: &mut web::ServiceConfig) {
         .service(endpoints::get_proposals)
         .service(endpoints::get_delegations);
 }
-
-pub use delegations::start_delegation_cache_refresh_task;
-pub use governance::start_proposal_cache_refresh_task;
-pub use validators::start_validator_cache_refresh_task;

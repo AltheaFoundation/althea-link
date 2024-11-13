@@ -17,8 +17,12 @@ use super::database::{
     positions::Position::{Ambient, Ranged},
     tracking::{LiquidityBump, TrackedPool},
 };
-use super::delegations::fetch_delegations;
 use crate::althea::{
+    cosmos::{
+        delegations::fetch_delegations,
+        governance::{fetch_proposals, fetch_proposals_filtered},
+        validators::{fetch_validator_by_address, fetch_validators_filtered},
+    },
     database::{
         pools::{get_init_pool, get_init_pools},
         positions::{
@@ -445,7 +449,7 @@ pub async fn get_validators(
 
     // If operator_address is provided, fetch specific validator
     if let Some(addr) = &query.operator_address {
-        match super::validators::fetch_validator_by_address(&db, &contact, addr).await {
+        match fetch_validator_by_address(&db, &contact, addr).await {
             Ok(Some(validator)) => return HttpResponse::Ok().json(vec![validator]),
             Ok(None) => return HttpResponse::NotFound().body("Validator not found"),
             Err(e) => {
@@ -456,7 +460,7 @@ pub async fn get_validators(
     }
 
     // Otherwise use existing logic for filtered validators
-    match super::validators::fetch_validators_filtered(&db, &contact, query.active).await {
+    match fetch_validators_filtered(&db, &contact, query.active).await {
         Ok(validators) => {
             if validators.is_empty() {
                 HttpResponse::NotFound().body("No validators found")
@@ -523,7 +527,7 @@ pub async fn get_proposals(
     );
 
     let result = if query.status.is_some() {
-        match super::governance::fetch_proposals(&db, &contact).await {
+        match fetch_proposals(&db, &contact).await {
             Ok(proposals) => Ok(proposals
                 .into_iter()
                 .filter(|p| p.status == query.status.unwrap())
@@ -531,7 +535,7 @@ pub async fn get_proposals(
             Err(e) => Err(e),
         }
     } else {
-        super::governance::fetch_proposals_filtered(&db, &contact, query.active).await
+        fetch_proposals_filtered(&db, &contact, query.active).await
     };
 
     match result {
