@@ -181,7 +181,8 @@ pub fn start_delegation_cache_refresh_task(db: Arc<DB>, contact: Contact) {
 
             let iter = db.iterator(rocksdb::IteratorMode::Start);
             for item in iter {
-                if let Ok((key_bytes, _)) = item {
+                if item.is_ok() {
+                    let (key_bytes, _) = item.unwrap();
                     let key_str = String::from_utf8_lossy(&key_bytes);
                     if key_str.starts_with(DELEGATIONS_KEY_PREFIX) {
                         let delegator_addr = key_str.trim_start_matches(DELEGATIONS_KEY_PREFIX);
