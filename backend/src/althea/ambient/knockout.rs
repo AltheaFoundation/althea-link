@@ -164,6 +164,7 @@ pub struct BurnKnockoutEvent {
     pub pool_idx: Uint256,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub is_bid: bool,
     pub lower_tick: i32,
     pub upper_tick: i32,
     pub fee_rewards: u128,
@@ -174,6 +175,7 @@ pub struct BurnKnockoutBytes {
     pub pool_idx: Uint256,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub is_bid: bool,
     pub lower_tick: i32,
     pub upper_tick: i32,
     pub fee_rewards: u128,
@@ -245,6 +247,7 @@ impl BurnKnockoutEvent {
             pool_idx: decoded_bytes.pool_idx,
             base_flow: decoded_bytes.base_flow,
             quote_flow: decoded_bytes.quote_flow,
+            is_bid: decoded_bytes.is_bid,
             lower_tick: decoded_bytes.lower_tick,
             upper_tick: decoded_bytes.upper_tick,
             fee_rewards: decoded_bytes.fee_rewards,
@@ -253,7 +256,7 @@ impl BurnKnockoutEvent {
 
     /// Decodes the data bytes of BurnKnockout
     pub fn decode_data_bytes(input: &[u8]) -> Result<BurnKnockoutBytes, AltheaError> {
-        if input.len() < 6 * 32 {
+        if input.len() < 7 * 32 {
             return Err(AltheaError::InvalidEventLogError(
                 "too short for BurnKnockoutBytes".to_string(),
             ));
@@ -272,6 +275,10 @@ impl BurnKnockoutEvent {
         index_start += 32;
         let quote_flow = parse_i128(input, index_start);
 
+        // is_bid
+        index_start += 32;
+        let is_bid = parse_bool(input, index_start);
+
         // lower_tick
         index_start += 32;
         let lower_tick = parse_i32(input, index_start);
@@ -288,6 +295,7 @@ impl BurnKnockoutEvent {
             pool_idx,
             base_flow,
             quote_flow,
+            is_bid,
             lower_tick,
             upper_tick,
             fee_rewards,
@@ -309,6 +317,7 @@ pub struct WithdrawKnockoutEvent {
     pub pool_idx: Uint256,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub is_bid: bool,
     pub lower_tick: i32,
     pub upper_tick: i32,
     pub fee_rewards: u128,
@@ -319,6 +328,7 @@ pub struct WithdrawKnockoutBytes {
     pub pool_idx: Uint256,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub is_bid: bool,
     pub lower_tick: i32,
     pub upper_tick: i32,
     pub fee_rewards: u128,
@@ -390,6 +400,7 @@ impl WithdrawKnockoutEvent {
             pool_idx: decoded_bytes.pool_idx,
             base_flow: decoded_bytes.base_flow,
             quote_flow: decoded_bytes.quote_flow,
+            is_bid: decoded_bytes.is_bid,
             lower_tick: decoded_bytes.lower_tick,
             upper_tick: decoded_bytes.upper_tick,
             fee_rewards: decoded_bytes.fee_rewards,
@@ -398,7 +409,7 @@ impl WithdrawKnockoutEvent {
 
     /// Decodes the data bytes of WithdrawKnockout
     pub fn decode_data_bytes(input: &[u8]) -> Result<WithdrawKnockoutBytes, AltheaError> {
-        if input.len() < 6 * 32 {
+        if input.len() < 7 * 32 {
             return Err(AltheaError::InvalidEventLogError(
                 "too short for WithdrawKnockoutBytes".to_string(),
             ));
@@ -417,6 +428,10 @@ impl WithdrawKnockoutEvent {
         index_start += 32;
         let quote_flow = parse_i128(input, index_start);
 
+        // is_bid
+        index_start += 32;
+        let is_bid = parse_bool(input, index_start);
+
         // lower_tick
         index_start += 32;
         let lower_tick = parse_i32(input, index_start);
@@ -433,6 +448,7 @@ impl WithdrawKnockoutEvent {
             pool_idx,
             base_flow,
             quote_flow,
+            is_bid,
             lower_tick,
             upper_tick,
             fee_rewards,

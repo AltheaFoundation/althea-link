@@ -319,6 +319,8 @@ pub fn handle_liq(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPoo
         let abs = Uint256(update.ambient_liq.0.unsigned_abs());
         pool.ambient_liq - abs
     };
+    let mut remove_bid_bump = false;
+    let mut remove_ask_bump = false;
     // Increment concentrated liquidity
     if let (Some(bid_tick), Some(ask_tick)) = (update.bid_tick, update.ask_tick) {
         // Initialize or fetch the liquidity bumps at bid and ask tick
@@ -326,20 +328,48 @@ pub fn handle_liq(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPoo
         pool.init_bump(ask_tick);
         let liq_magn = liquidity_magnitude(update);
 
+        let ko_bid = update.is_knockout && update.is_bid;
+        let ko_ask = update.is_knockout && !update.is_bid;
+
         // We separate the bid and ask bump updates to avoid mut borrowing issues
         let bid_bump = pool.get_bump_mut(bid_tick).unwrap();
-        bid_bump.liquidity_delta += liq_magn;
-        if update.is_knockout && update.is_bid {
-            bid_bump.knockout_bid_liq += liq_magn;
-            bid_bump.knockout_bid_width = ask_tick - bid_tick;
+        if update.is_burn {
+            bid_bump.liquidity_delta -= liq_magn;
+            if ko_bid {
+                bid_bump.knockout_bid_liq -= liq_magn;
+                bid_bump.knockout_bid_width = 0;
+            }
+        } else {
+            bid_bump.liquidity_delta += liq_magn;
+            if ko_bid {
+                bid_bump.knockout_bid_liq += liq_magn;
+                bid_bump.knockout_bid_width = ask_tick - bid_tick;
+            }
         }
+        remove_bid_bump = should_remove_bump(bid_bump);
 
         let ask_bump = pool.get_bump_mut(ask_tick).unwrap();
-        ask_bump.liquidity_delta -= liq_magn;
-        if update.is_knockout && !update.is_bid {
-            ask_bump.knockout_ask_liq -= liq_magn;
-            ask_bump.knockout_ask_width = ask_tick - bid_tick;
+        if update.is_burn {
+            ask_bump.liquidity_delta += liq_magn;
+            if ko_ask {
+                ask_bump.knockout_ask_liq += liq_magn;
+                ask_bump.knockout_ask_width = 0;
+            }
+        } else {
+            ask_bump.liquidity_delta -= liq_magn;
+            if ko_ask {
+                ask_bump.knockout_ask_liq -= liq_magn;
+                ask_bump.knockout_ask_width = ask_tick - bid_tick;
+            }
         }
+        remove_ask_bump = should_remove_bump(ask_bump);
+    }
+
+    if remove_bid_bump {
+        pool.bumps.retain(|b| b.tick != update.bid_tick.unwrap());
+    }
+    if remove_ask_bump {
+        pool.bumps.retain(|b| b.tick != update.ask_tick.unwrap());
     }
 
     pool
@@ -402,6 +432,12 @@ fn root_price_from_conc_flow(base_mag: f64, quote_mag: f64, bid_tick: i32, ask_t
 
 fn amb_liquidity_magnitude(base_mag: f64, quote_mag: f64) -> f64 {
     (base_mag * quote_mag).sqrt()
+}
+
+fn should_remove_bump(bump: &LiquidityBump) -> bool {
+    bump.liquidity_delta.abs() < 0.0001
+        && bump.knockout_bid_liq.abs() < 0.0001
+        && bump.knockout_ask_liq.abs() < 0.0001
 }
 
 pub fn handle_swap(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPool {
@@ -545,6 +581,51 @@ fn ambient_noop() {
         panic!("Ambient update created tick bump");
     }
 }
+#[test]
+fn ambient_burn() {
+    use crate::althea::ambient::positions::BurnAmbientEvent;
+    use crate::althea::ambient::positions::MintAmbientEvent;
+    use crate::althea::DEFAULT_TOKEN_ADDRESSES;
+    use num_traits::Zero;
+    use std::str::FromStr;
+
+    let pool = TrackedPool::default();
+    let base = Address::default();
+    let quote = Address::from_str(DEFAULT_TOKEN_ADDRESSES[0]).unwrap();
+    let update = MintAmbientEvent {
+        block_height: 1u8.into(),
+        base,
+        quote,
+        pool_idx: 36000u32.into(),
+        liq: 30000u32.into(),
+        base_flow: 30000,
+        quote_flow: 30000,
+        ..Default::default()
+    };
+    let pool = handle_update(pool, update.into());
+    let mint_liq = pool.ambient_liq;
+    let update = BurnAmbientEvent {
+        block_height: 1u8.into(),
+        base,
+        quote,
+        pool_idx: 36000u32.into(),
+        liq: 30000u32.into(),
+        base_flow: -30000,
+        quote_flow: -30000,
+        ..Default::default()
+    };
+    let pool = handle_update(pool, update.into());
+    let burn_liq = pool.ambient_liq;
+    if burn_liq != Uint256::zero() {
+        panic!(
+            "Unexpected liquidity after burn: {} (mint liq {})",
+            burn_liq, mint_liq
+        );
+    }
+    if !pool.bumps.is_empty() {
+        panic!("Ambient mint and burn created tick bump");
+    }
+}
 
 // Test ranged liquidity bumps are created correctly
 #[test]
@@ -582,6 +663,52 @@ fn range_mint() {
     if bid_liq != -ask_liq {
         panic!("Liquidity range mismatch {} <-> {}", bid_liq, ask_liq);
     }
+}
+
+// Test ranged liquidity bumps are destroyed correctly
+#[test]
+fn range_burn() {
+    use crate::althea::ambient::positions::BurnRangedEvent;
+    use crate::althea::ambient::positions::MintRangedEvent;
+    use crate::althea::DEFAULT_TOKEN_ADDRESSES;
+    use std::str::FromStr;
+
+    let pool = TrackedPool::default();
+    let user = Address::default();
+    let base = Address::default();
+    let quote = Address::from_str(DEFAULT_TOKEN_ADDRESSES[0]).unwrap();
+    let update = MintRangedEvent {
+        block_height: 1u8.into(),
+        user,
+        base,
+        quote,
+        pool_idx: 36000u32.into(),
+        liq: 30000u32.into(),
+        bid_tick: -250,
+        ask_tick: 500,
+        base_flow: 30000,
+        quote_flow: 30000,
+        ..Default::default()
+    };
+    let pool = handle_update(pool, update.into());
+    assert!(pool.get_bump(-250).is_some());
+    assert!(pool.get_bump(500).is_some());
+    let update = BurnRangedEvent {
+        block_height: 2u8.into(),
+        user,
+        base,
+        quote,
+        pool_idx: 36000u32.into(),
+        liq: 30000u32.into(),
+        bid_tick: -250,
+        ask_tick: 500,
+        base_flow: -30000,
+        quote_flow: -30000,
+        ..Default::default()
+    };
+    let pool = handle_update(pool, update.into());
+    assert!(pool.get_bump(-250).is_none());
+    assert!(pool.get_bump(500).is_none());
 }
 
 // Test knockout bid positions affect bumps correctly
@@ -647,7 +774,7 @@ fn knockout_bid() {
     if (bid_bump.liquidity_delta - start_bid_liq).abs() > 0.0001 {
         panic!(
             "Mismatched bid liq {} (expected {})",
-            bid_bump.liquidity_delta, 0.0
+            bid_bump.liquidity_delta, start_bid_liq
         );
     }
     if bid_bump.knockout_bid_liq != 0.0 {
@@ -744,6 +871,89 @@ fn knockout_ask() {
         panic!(
             "Mismatched bid liq {} (expected {})",
             bid_bump.liquidity_delta, start_bid_liq
+        );
+    }
+}
+
+// Test knockout burns are handled correctly
+#[test]
+fn knockout_burn() {
+    use crate::althea::ambient::knockout::BurnKnockoutEvent;
+    use crate::althea::ambient::knockout::MintKnockoutEvent;
+    use crate::althea::ambient::positions::MintRangedEvent;
+    use crate::althea::DEFAULT_TOKEN_ADDRESSES;
+    use std::str::FromStr;
+
+    let pool = TrackedPool::default();
+    let base = Address::default();
+    let quote = Address::from_str(DEFAULT_TOKEN_ADDRESSES[0]).unwrap();
+    // This liquidity will put the pool at tick 0 (equal amounts of base + quote) with a concentrated position of [-250, 500]
+    let update = MintRangedEvent {
+        block_height: 1u8.into(),
+        base,
+        quote,
+        pool_idx: 36000u32.into(),
+        liq: 30000u32.into(),
+        bid_tick: -250,
+        ask_tick: 500,
+        base_flow: 30000,
+        quote_flow: 30000,
+        ..Default::default()
+    };
+    let pool = handle_update(pool, update.into());
+    let start_bid_liq = pool.get_bump(-250).unwrap().liquidity_delta;
+    let start_ask_liq = pool.get_bump(500).unwrap().liquidity_delta;
+
+    let update = MintKnockoutEvent {
+        block_height: 2u8.into(),
+        base,
+        quote,
+        pool_idx: 36000u32.into(),
+        lower_tick: -250,
+        upper_tick: 500,
+        base_flow: 250000,
+        quote_flow: 250000,
+        is_bid: true,
+        ..Default::default()
+    };
+    let pool = handle_update(pool, update.into());
+
+    let update = BurnKnockoutEvent {
+        block_height: 2u8.into(),
+        base,
+        quote,
+        pool_idx: 36000u32.into(),
+        lower_tick: -250,
+        upper_tick: 500,
+        base_flow: 250000,
+        quote_flow: 250000,
+        is_bid: true,
+        ..Default::default()
+    };
+    let pool = handle_update(pool, update.into());
+
+    let bid_bump = pool.get_bump(-250).unwrap();
+    let ask_bump = pool.get_bump(500).unwrap();
+
+    if (bid_bump.liquidity_delta - start_bid_liq).abs() > 0.0001 {
+        panic!(
+            "Mismatched bid liq {} (expected {})",
+            bid_bump.liquidity_delta, start_bid_liq
+        );
+    }
+    if bid_bump.knockout_bid_liq != 0.0 {
+        panic!(
+            "Mismatched bid ko liq {} (expected {})",
+            bid_bump.knockout_bid_liq, 0.0
+        );
+    }
+    if bid_bump.knockout_bid_width != 0 {
+        panic!("Knockout bid width not reset");
+    }
+    if (ask_bump.liquidity_delta - start_ask_liq).abs() > 0.0001 {
+        panic!(
+            "Mismatched ask liq {} (expected {})",
+            ask_bump.liquidity_delta, start_ask_liq
         );
     }
 }

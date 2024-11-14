@@ -43,6 +43,7 @@ pub struct PoolUpdateEvent {
     pub is_swap: bool,
     pub is_liq: bool,
     pub is_mint: bool,
+    pub is_burn: bool,
     pub is_knockout: bool,
     pub is_bid: bool,
     pub is_harvest: bool,
@@ -103,14 +104,11 @@ impl From<MintRangedEvent> for PoolUpdateEvent {
 impl From<BurnRangedEvent> for PoolUpdateEvent {
     fn from(value: BurnRangedEvent) -> Self {
         let conc_liq: Int256 = value.liq.into();
-        assert!(conc_liq <= Int256::default());
         assert!(value.base_flow <= 0 && value.quote_flow <= 0);
-        let full_liq_impact = (Int256::from(-value.base_flow) * Int256::from(-value.quote_flow))
-            .sqrt()
-            .to_int256()
-            .unwrap();
-        assert!(full_liq_impact >= Int256(conc_liq.0.abs()));
-        let amb_liq: Int256 = conc_liq - full_liq_impact;
+        let full_liq_impact =
+            (Int256::from(value.base_flow) * Int256::from(value.quote_flow)).sqrt();
+        assert!(full_liq_impact >= Uint256(conc_liq.0.unsigned_abs()));
+        let amb_liq: Int256 = conc_liq - full_liq_impact.to_int256().unwrap();
         PoolUpdateEvent {
             block: value.block_height,
             base: value.base,
@@ -118,11 +116,12 @@ impl From<BurnRangedEvent> for PoolUpdateEvent {
             pool_idx: value.pool_idx,
             base_flow: value.base_flow,
             quote_flow: value.quote_flow,
-            conc_liq,
-            ambient_liq: amb_liq,
+            conc_liq: -conc_liq,
+            ambient_liq: -amb_liq,
             bid_tick: Some(value.bid_tick),
             ask_tick: Some(value.ask_tick),
             is_liq: true,
+            is_burn: true,
             ..Default::default()
         }
     }
@@ -174,6 +173,7 @@ impl From<BurnAmbientEvent> for PoolUpdateEvent {
             quote_flow: value.quote_flow,
             ambient_liq: -(liq),
             is_liq: true,
+            is_burn: true,
             ..Default::default()
         }
     }
@@ -268,7 +268,10 @@ impl From<BurnKnockoutEvent> for PoolUpdateEvent {
             quote_flow: value.quote_flow,
             ambient_liq: ambient_liq.into(),
             conc_liq: conc_liq.into(),
+            is_knockout: true,
+            is_bid: value.is_bid,
             is_liq: true,
+            is_burn: true,
             ..Default::default()
         }
     }
@@ -296,6 +299,8 @@ impl From<WithdrawKnockoutEvent> for PoolUpdateEvent {
             base_flow: value.base_flow,
             quote_flow: value.quote_flow,
             ambient_liq: ambient_impact.into(),
+            is_knockout: true,
+            is_bid: value.is_bid,
             is_liq: true,
             ..Default::default()
         }
