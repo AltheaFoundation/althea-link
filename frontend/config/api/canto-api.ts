@@ -13,12 +13,12 @@ const CANTO_DATA_BASE_URL = (chainId: number) => {
 
 // exported endpoints
 export const CANTO_DATA_API_ENDPOINTS = {
-  allValidators: "/v1/staking/validators",
+  allValidators: "/validators",
   stakingApr: "/v1/staking/apr",
   allCTokens: "/v1/lending/cTokens",
   singleCToken: (address: string) => `/v1/lending/cToken/${address}`,
   allPairs: "/v1/dex/pairs",
-  allProposals: "/v1/gov/proposals",
+  allProposals: "/proposals",
 };
 /**
  * @notice Gets data from Canto API
@@ -34,16 +34,13 @@ export async function getCantoApiData<T>(
     return NEW_ERROR("getCantoApiData: chainId not supported");
   }
   // get response from api
-  const { data, error } = await tryFetch<{ block: string; results: string }>(
+  const { data, error } = await tryFetch<T>(
     CANTO_DATA_BASE_URL(chainId) + endpointSuffix
   );
   if (error) {
     return NEW_ERROR("getCantoApiData", error);
   }
-  // parse results string
-  const parsedResults =
-    typeof data.results === "string"
-      ? (JSON.parse(data.results) as T)
-      : data.results;
-  return NO_ERROR(parsedResults);
+
+  // return the data directly since it's already in the correct format
+  return NO_ERROR(data);
 }

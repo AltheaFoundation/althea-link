@@ -114,9 +114,9 @@ export default function Page() {
     );
   }
 
-  const isActive = formatProposalStatus(proposal.status) == "ACTIVE";
+  const isActive = formatProposalStatus(proposal.status.toString()) == "ACTIVE";
 
-  const votesData = calculateVotePercentages(proposal.final_vote);
+  const votesData = calculateVotePercentages(proposal.final_tally_result);
 
   const VoteBox = ({ option }: { option: VoteOption }) => (
     <VotingInfoBox
@@ -157,31 +157,25 @@ export default function Page() {
           </div>
           <div
             style={{
-              borderRight:
-                proposal.status == "PROPOSAL_STATUS_VOTING_PERIOD"
-                  ? "none"
-                  : "1px solid",
+              borderRight: proposal.status == 2 ? "none" : "1px solid",
               padding: "10px",
             }}
           >
             <Text>#{proposal.proposal_id}</Text>
           </div>
 
-          {!(proposal.status == "PROPOSAL_STATUS_VOTING_PERIOD") && (
+          {!(proposal.status == 2) && (
             <div style={{ padding: "10px" }} className={styles.headerColumn2}>
               <div className={styles.circleContainer}>
                 <div
                   className={styles.circle}
                   style={{
-                    backgroundColor:
-                      proposal.status == "PROPOSAL_STATUS_PASSED"
-                        ? "green"
-                        : "red",
+                    backgroundColor: proposal.status == 3 ? "green" : "red",
                   }}
                 />
               </div>
               <div>
-                <Text>{formatProposalStatus(proposal.status)}</Text>
+                <Text>{formatProposalStatus(proposal.status.toString())}</Text>
               </div>
             </div>
           )}
@@ -193,12 +187,12 @@ export default function Page() {
           }}
         >
           <Text font="macan" size="x-lg">
-            {proposal.title}
+            {proposal.content.title}
           </Text>
         </div>
 
         <div>
-          <Text opacity={0.4}>{proposal.description}</Text>
+          <Text opacity={0.4}>{proposal.content.description}</Text>
         </div>
       </div>
       <div className={styles.proposalInfoContainer}>
@@ -326,7 +320,7 @@ export default function Page() {
               </div>
               <div>
                 <Text font="macan" size={isMobile ? "md" : "x-sm"}>
-                  {formatProposalType(proposal.type_url)}
+                  {formatProposalType(proposal.content.type_url)}
                 </Text>
               </div>
             </div>
@@ -383,7 +377,9 @@ export default function Page() {
                 </div>
                 <div>
                   <Text font="macan-font" size={isMobile ? "md" : "x-sm"}>
-                    {formatTime(proposal.submit_time)}
+                    {formatTime(
+                      proposal.submit_time.secs_since_epoch.toString()
+                    )}
                   </Text>
                 </div>
               </div>
@@ -399,7 +395,9 @@ export default function Page() {
                 </div>
                 <div>
                   <Text font="macan-font" size={isMobile ? "md" : "x-sm"}>
-                    {formatTime(proposal.voting_end_time)}
+                    {formatTime(
+                      proposal.voting_end_time.secs_since_epoch.toString()
+                    )}
                   </Text>
                 </div>
               </div>

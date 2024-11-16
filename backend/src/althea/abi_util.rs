@@ -1,4 +1,5 @@
 use clarity::{Address, Uint256};
+use log::info;
 
 /// Parses an Address from ABI-encoded `input`, with the relevant data beginning
 /// at byte index `start`. Addresses are 20 bytes long packed on the right side.
@@ -40,4 +41,20 @@ pub fn parse_i32(input: &[u8], start: usize) -> i32 {
     // i32 is smooshed against the right side
     let data = &input[start + 28..end];
     i32::from_be_bytes(data.try_into().unwrap())
+}
+
+/// Cleans a protobuf encoded string by removing control characters and formatting codes
+pub fn clean_proto_string(input: &str) -> String {
+    info!("Input string: {}", input);
+
+    let parts: Vec<&str> = input.split('\u{0012}').collect();
+    info!("Split parts: {:?}", parts);
+
+    if parts.len() > 1 {
+        let title = parts[0].replace('\u{001b}', "").trim().to_string();
+        info!("Cleaned title: {}", title);
+        title
+    } else {
+        input.trim().to_string()
+    }
 }

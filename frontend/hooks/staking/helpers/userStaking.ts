@@ -44,7 +44,7 @@ const endpointUserStaking = (
   const { data: endpoint, error } = getUserAPIEndPoint(chainId);
   if (error) throw error;
   // get suffix based on endpoint type
-  const suffix = "/v1/staking/delegations/" + altheaAddress;
+  const suffix = "/delegations?address=" + altheaAddress;
   // return endpoint with suffix
   return endpoint + suffix;
 };

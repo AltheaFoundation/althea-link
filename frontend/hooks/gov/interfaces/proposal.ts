@@ -1,29 +1,41 @@
 export interface Proposal {
   proposal_id: number;
-  title: string;
-  description: string;
-  type_url: string;
+  content: {
+    type_url: string;
+    title: string;
+    description: string;
+  };
   status: ProposalStatus;
-  submit_time: string;
-  voting_start_time: string;
-  voting_end_time: string;
-  deposit_end_time: string;
-  total_deposit: {
-    denom: string;
-    amount: string;
-  }[];
-  final_vote: {
+  final_tally_result: {
     yes: string;
     abstain: string;
     no: string;
     no_with_veto: string;
   };
+  submit_time: {
+    secs_since_epoch: number;
+    nanos_since_epoch: number;
+  };
+  deposit_end_time: {
+    secs_since_epoch: number;
+    nanos_since_epoch: number;
+  };
+  total_deposit: string[];
+  voting_start_time: {
+    secs_since_epoch: number;
+    nanos_since_epoch: number;
+  };
+  voting_end_time: {
+    secs_since_epoch: number;
+    nanos_since_epoch: 0;
+  };
+  last_updated: number;
 }
 
-type ProposalStatus =
-  | "PROPOSAL_STATUS_UNSPECIFIED"
-  | "PROPOSAL_STATUS_DEPOSIT_PERIOD"
-  | "PROPOSAL_STATUS_VOTING_PERIOD"
-  | "PROPOSAL_STATUS_PASSED"
-  | "PROPOSAL_STATUS_REJECTED"
-  | "PROPOSAL_STATUS_FAILED";
+type ProposalStatus = 1 | 2 | 3 | 4 | 5;
+// where:
+// 1 = Deposit Period
+// 2 = Voting Period
+// 3 = Passed
+// 4 = Rejected
+// 5 = Failed

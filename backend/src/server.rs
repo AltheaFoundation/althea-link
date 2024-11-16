@@ -32,18 +32,16 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
             .app_data(db.clone())
             .app_data(contact.clone())
             .route("/", web::get().to(index))
-            // Debug endpoints
-            .service(
-                web::scope("/debug")
-                    .service(get_validators)
-                    .service(get_proposals)
-                    .service(get_delegations)
-                    .service(query_all_init_pools)
-                    .service(query_pool)
-                    .service(query_all_mint_ranged)
-                    .service(query_all_burn_ranged)
-                    .service(query_all_mint_ambient),
-            )
+            // chain endpoints
+            .service(get_validators)
+            .service(get_proposals)
+            .service(get_delegations)
+            // pool endpoints
+            .service(query_all_init_pools)
+            .service(query_pool)
+            .service(query_all_mint_ranged)
+            .service(query_all_burn_ranged)
+            .service(query_all_mint_ambient)
             // Graphcache-go endpoints
             .service(
                 web::scope("/gcgo")

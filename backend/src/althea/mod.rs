@@ -26,8 +26,8 @@ pub mod governance;
 pub mod token_mappings;
 pub mod validators;
 
-pub const ALTHEA_GRPC_URL: &str = "http://chainripper-2.althea.net:9090";
-pub const ALTHEA_ETH_RPC_URL: &str = "http://chainripper-2.althea.net:8545";
+pub const ALTHEA_GRPC_URL: &str = "http://66.172.36.142:3890";
+pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althea";
 pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
 pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
 pub const CACHE_DURATION: u64 = 300;

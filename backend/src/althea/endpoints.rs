@@ -312,6 +312,7 @@ pub async fn user_positions(
 /// - `active` (optional): Filter validators by their active status
 ///   - `?active=true` - Returns only active validators
 ///   - `?active=false` - Returns only inactive validators
+///   - `?operatorAddress=althea...` - Returns only the validator with the given operator address
 ///   - If omitted, returns all validators regardless of status
 ///
 /// # Response
@@ -324,9 +325,12 @@ pub async fn user_positions(
 /// - `GET /validators` - Returns all validators
 /// - `GET /validators?active=true` - Returns only active validators
 /// - `GET /validators?active=false` - Returns only inactive validators
+/// - `GET /validators?operatorAddress=althea...` - Returns only the validator with the given operator address
 #[derive(Deserialize)]
 pub struct ValidatorQuery {
     active: Option<bool>,
+    #[serde(rename = "operatorAddress")]
+    operator_address: Option<String>,
 }
 
 #[get("/validators")]
@@ -335,8 +339,24 @@ pub async fn get_validators(
     db: web::Data<Arc<DB>>,
     contact: web::Data<Arc<Contact>>,
 ) -> impl Responder {
-    info!("Querying validators with filter: {:?}", query.active);
+    info!(
+        "Querying validators with filter - active: {:?}, operator_address: {:?}",
+        query.active, query.operator_address
+    );
 
+    // If operator_address is provided, fetch specific validator
+    if let Some(addr) = &query.operator_address {
+        match super::validators::fetch_validator_by_address(&db, &contact, addr).await {
+            Ok(Some(validator)) => return HttpResponse::Ok().json(vec![validator]),
+            Ok(None) => return HttpResponse::NotFound().body("Validator not found"),
+            Err(e) => {
+                error!("Error getting validator: {}", e);
+                return HttpResponse::InternalServerError().finish();
+            }
+        }
+    }
+
+    // Otherwise use existing logic for filtered validators
     match super::validators::fetch_validators_filtered(&db, &contact, query.active).await {
         Ok(validators) => {
             if validators.is_empty() {
@@ -466,11 +486,11 @@ pub async fn get_delegations(
     };
 
     match fetch_delegations(&db, &contact, delegator_address).await {
-        Ok(delegations) => {
-            if delegations.is_empty() {
+        Ok(response) => {
+            if response.delegations.is_empty() {
                 HttpResponse::NotFound().body("No delegations found")
             } else {
-                HttpResponse::Ok().json(delegations)
+                HttpResponse::Ok().json(response)
             }
         }
         Err(e) => {

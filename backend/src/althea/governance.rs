@@ -6,11 +6,11 @@ use log::{error, info};
 use rocksdb::DB;
 use serde::{Deserialize, Serialize};
 
+use crate::althea::CACHE_DURATION;
+
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::sleep;
-
-use crate::althea::CACHE_DURATION;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProposalInfo {
@@ -31,6 +31,7 @@ pub struct ProposalContent {
     pub type_url: String,
     pub title: String,
     pub description: String,
+    pub value: Vec<u8>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -39,6 +40,20 @@ pub struct TallyResult {
     pub abstain: String,
     pub no: String,
     pub no_with_veto: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ParamChange {
+    pub subspace: String,
+    pub key: String,
+    pub value: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UpgradePlan {
+    pub name: String,
+    pub height: i64,
+    pub info: String,
 }
 
 impl ProposalInfo {
@@ -114,12 +129,32 @@ fn cache_proposals(db: &rocksdb::DB, proposals: &[ProposalInfo]) {
 
 impl From<Proposal> for ProposalInfo {
     fn from(p: Proposal) -> Self {
+        // Parse the encoded title string which contains multiple fields
+        let (title, description) = if let Some(content) = &p.content {
+            let raw_value = content.value.to_vec();
+            let value_str: String = raw_value.into_iter().map(|b| b as char).collect();
+
+            // Split on the control characters
+            let parts: Vec<&str> = value_str
+                .split(['\u{001b}', '\u{0012}', '\u{001a}'].as_ref())
+                .collect();
+
+            // parts[1] should be the title, parts[2] should be the description
+            let clean_title = parts.get(1).unwrap_or(&"").trim();
+            let clean_description = parts.get(2).unwrap_or(&"").trim();
+
+            (clean_title.to_string(), clean_description.to_string())
+        } else {
+            (String::new(), String::new())
+        };
+
         ProposalInfo {
             proposal_id: p.proposal_id,
             content: p.content.map(|c| ProposalContent {
                 type_url: c.type_url,
-                title: c.value.to_vec().into_iter().map(|b| b as char).collect(),
-                description: String::new(),
+                title,
+                description,
+                value: c.value,
             }),
             status: p.status,
             final_tally_result: p.final_tally_result.map(|t| TallyResult {

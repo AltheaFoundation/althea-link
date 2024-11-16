@@ -19,7 +19,7 @@ pub struct ValidatorInfo {
     pub description: Option<ValidatorDescription>,
     pub unbonding_height: i64,
     pub unbonding_time: Option<SystemTime>,
-    pub commission: Option<ValidatorCommission>,
+    pub commission: Option<String>,
     pub min_self_delegation: String,
     pub last_updated: u64,
 }
@@ -31,19 +31,6 @@ pub struct ValidatorDescription {
     pub website: String,
     pub security_contact: String,
     pub details: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ValidatorCommission {
-    pub commission_rates: CommissionRates,
-    pub update_time: SystemTime,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CommissionRates {
-    pub rate: String,
-    pub max_rate: String,
-    pub max_change_rate: String,
 }
 
 pub async fn fetch_validators(
@@ -115,15 +102,17 @@ fn cache_validators(db: &rocksdb::DB, validators: &[ValidatorInfo]) {
 
 impl From<Validator> for ValidatorInfo {
     fn from(v: Validator) -> Self {
-        let commission_rates = v
-            .commission
-            .as_ref()
-            .and_then(|c| c.commission_rates.as_ref())
-            .map(|r| CommissionRates {
-                rate: r.rate.clone(),
-                max_rate: r.max_rate.clone(),
-                max_change_rate: r.max_change_rate.clone(),
-            });
+        let commission = v.commission.and_then(|c| {
+            c.commission_rates.map(|r| {
+                // Convert rate to decimal format by dividing by 10^18
+                if let Ok(rate_val) = r.rate.parse::<u128>() {
+                    let decimal = rate_val as f64 / 1_000_000_000_000_000_000.0;
+                    format!("{:.18}", decimal)
+                } else {
+                    "0.000000000000000000".to_string()
+                }
+            })
+        });
 
         ValidatorInfo {
             operator_address: v.operator_address,
@@ -145,11 +134,7 @@ impl From<Validator> for ValidatorInfo {
             unbonding_time: v
                 .unbonding_time
                 .map(|t| SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(t.seconds as u64)),
-            commission: v.commission.map(|c| ValidatorCommission {
-                commission_rates: commission_rates.unwrap(),
-                update_time: SystemTime::UNIX_EPOCH
-                    + std::time::Duration::from_secs(c.update_time.unwrap().seconds as u64),
-            }),
+            commission,
             min_self_delegation: v.min_self_delegation,
             last_updated: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
@@ -195,4 +180,15 @@ pub fn start_validator_cache_refresh_task(db: Arc<DB>, contact: Contact) {
             tokio::time::sleep(tokio::time::Duration::from_secs(CACHE_DURATION)).await;
         }
     });
+}
+
+pub async fn fetch_validator_by_address(
+    db: &rocksdb::DB,
+    contact: &deep_space::Contact,
+    operator_address: &str,
+) -> Result<Option<ValidatorInfo>, Box<dyn std::error::Error>> {
+    let validators = fetch_validators(db, contact).await?;
+    Ok(validators
+        .into_iter()
+        .find(|v| v.operator_address == operator_address))
 }

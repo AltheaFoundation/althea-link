@@ -19,6 +19,7 @@ deep_space = {version="2", features=["ethermint"]}
 cosmos-sdk-proto-althea = "0.18"
 althea_proto = "0.9"
 futures = "0.3"
+tonic = { version = "0.10", features = ["transport"] }
 sha256 = "1"
 prost-types ="0.13"
 chrono = "0.4"

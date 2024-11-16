@@ -24,22 +24,22 @@ export const ProposalRow = ({
   const votes = active
     ? {
         yes: Number(
-          formatBalance(proposal.final_vote.yes, 18, {
+          formatBalance(proposal.final_tally_result.yes, 18, {
             precision: 2,
           })
         ),
         no: Number(
-          formatBalance(proposal.final_vote.no, 18, {
+          formatBalance(proposal.final_tally_result.no, 18, {
             precision: 2,
           })
         ),
         veto: Number(
-          formatBalance(proposal.final_vote.no_with_veto, 18, {
+          formatBalance(proposal.final_tally_result.no_with_veto, 18, {
             precision: 2,
           })
         ),
         abstain: Number(
-          formatBalance(proposal.final_vote.abstain, 18, {
+          formatBalance(proposal.final_tally_result.abstain, 18, {
             precision: 2,
           })
         ),
@@ -101,7 +101,7 @@ export const ProposalRow = ({
             className={styles.tableData}
             size={isMobile ? "md" : "x-sm"}
           >
-            {formatProposalType(proposal.type_url)}
+            {formatProposalType(proposal.content.type_url)}
           </Text>
         </Container>
       </Container>
@@ -111,7 +111,7 @@ export const ProposalRow = ({
       >
         <div className={styles.rowTitle}>
           <Text font="macan-font" size={isMobile ? "md" : "sm"}>
-            {proposal.title}
+            {proposal.content.title}
           </Text>
         </div>
       </Container>
@@ -164,14 +164,12 @@ export const ProposalRow = ({
                     className={styles.circle}
                     style={{
                       backgroundColor:
-                        proposal.status == "PROPOSAL_STATUS_PASSED"
-                          ? "#01BD09"
-                          : "#EF4444",
+                        proposal.status == 3 ? "#01BD09" : "#EF4444",
                     }}
                   />
                 </div>
                 <Text font="macan-font" className={styles.tableData} size="md">
-                  {formatProposalStatus(proposal.status)}
+                  {formatProposalStatus(proposal.status.toString())}
                 </Text>
               </Container>
             )}
@@ -223,7 +221,9 @@ export const ProposalRow = ({
                   >
                     <Countdown
                       endTimestamp={BigInt(
-                        new Date(proposal.voting_end_time).getTime()
+                        new Date(
+                          proposal.voting_end_time.secs_since_epoch
+                        ).getTime()
                       )}
                       timeFormat="h m s"
                     />
@@ -259,7 +259,9 @@ export const ProposalRow = ({
 
               <Container direction="row" className={styles.proposalVotingDate}>
                 <Text font="macan-font" className={styles.tableData} size="lg">
-                  {new Date(proposal.voting_end_time).toDateString()}
+                  {new Date(
+                    proposal.voting_end_time.secs_since_epoch
+                  ).toDateString()}
                 </Text>
               </Container>
             </Container>
@@ -322,14 +324,12 @@ export const ProposalRow = ({
                   className={styles.circle}
                   style={{
                     backgroundColor:
-                      proposal.status == "PROPOSAL_STATUS_PASSED"
-                        ? "#01BD09"
-                        : "#EF4444",
+                      proposal.status == 3 ? "#01BD09" : "#EF4444",
                   }}
                 />
               </div>
               <Text font="macan-font" className={styles.tableData} size="x-sm">
-                {formatProposalStatus(proposal.status)}
+                {formatProposalStatus(proposal.status.toString())}
               </Text>
             </Container>
           )}
@@ -380,7 +380,9 @@ export const ProposalRow = ({
                 <Text font="macan-font" className={styles.tableData} size="sm">
                   <Countdown
                     endTimestamp={BigInt(
-                      new Date(proposal.voting_end_time).getTime()
+                      new Date(
+                        proposal.voting_end_time.secs_since_epoch
+                      ).getTime()
                     )}
                     timeFormat="h m s"
                   />
@@ -417,7 +419,9 @@ export const ProposalRow = ({
 
             <Container direction="row" className={styles.proposalVotingDate}>
               <Text font="macan-font" className={styles.tableData} size="sm">
-                {new Date(proposal.voting_end_time).toDateString()}
+                {new Date(
+                  proposal.voting_end_time.secs_since_epoch
+                ).toDateString()}
               </Text>
             </Container>
           </Container>

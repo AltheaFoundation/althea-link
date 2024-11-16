@@ -47,14 +47,11 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
     return proposals.filter((proposal) => {
       switch (currentFilter) {
         case ProposalFilter.PASSED:
-          return proposal.status === "PROPOSAL_STATUS_PASSED";
+          return proposal.status === 3;
         case ProposalFilter.REJECTED:
-          return proposal.status === "PROPOSAL_STATUS_REJECTED";
+          return proposal.status === 4;
         default:
-          return (
-            proposal.status === "PROPOSAL_STATUS_REJECTED" ||
-            proposal.status === "PROPOSAL_STATUS_PASSED"
-          );
+          return proposal.status === 3 || proposal.status === 4;
       }
     });
   }, [currentFilter, proposals]);
@@ -62,7 +59,7 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
   const activeProposals = useMemo(() => {
     setCurrentPage(1);
     return proposals.filter((proposal) => {
-      return proposal.status === "PROPOSAL_STATUS_VOTING_PERIOD";
+      return proposal.status === 2;
     });
   }, [proposals]);
 
@@ -206,10 +203,7 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
               paginatedProposals.length > 0
                 ? [
                     ...paginatedProposals
-                      .filter(
-                        (proposal) =>
-                          proposal.status != "PROPOSAL_STATUS_VOTING_PERIOD"
-                      )
+                      .filter((proposal) => proposal.status != 2)
                       .map((proposal) =>
                         ProposalRow({ proposal, active: false, isMobile })
                       ),
