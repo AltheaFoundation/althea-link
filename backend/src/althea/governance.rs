@@ -1,4 +1,5 @@
 use bincode;
+use chrono;
 use cosmos_sdk_proto_althea::cosmos::base::query::v1beta1::PageRequest;
 use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::{Proposal, QueryProposalsRequest};
 use deep_space::Contact;
@@ -18,11 +19,11 @@ pub struct ProposalInfo {
     pub content: Option<ProposalContent>,
     pub status: i32,
     pub final_tally_result: Option<TallyResult>,
-    pub submit_time: Option<SystemTime>,
-    pub deposit_end_time: Option<SystemTime>,
+    pub submit_time: Option<String>,
+    pub deposit_end_time: Option<String>,
     pub total_deposit: Vec<String>,
-    pub voting_start_time: Option<SystemTime>,
-    pub voting_end_time: Option<SystemTime>,
+    pub voting_start_time: Option<String>,
+    pub voting_end_time: Option<String>,
     pub last_updated: u64,
 }
 
@@ -163,23 +164,31 @@ impl From<Proposal> for ProposalInfo {
                 no: t.no,
                 no_with_veto: t.no_with_veto,
             }),
-            submit_time: p
-                .submit_time
-                .map(|t| SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(t.seconds as u64)),
-            deposit_end_time: p
-                .deposit_end_time
-                .map(|t| SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(t.seconds as u64)),
+            submit_time: p.submit_time.map(|t| {
+                chrono::DateTime::from_timestamp(t.seconds, 0)
+                    .unwrap()
+                    .to_rfc3339_opts(chrono::SecondsFormat::Nanos, true)
+            }),
+            deposit_end_time: p.deposit_end_time.map(|t| {
+                chrono::DateTime::from_timestamp(t.seconds, 0)
+                    .unwrap()
+                    .to_rfc3339_opts(chrono::SecondsFormat::Nanos, true)
+            }),
             total_deposit: p
                 .total_deposit
                 .into_iter()
                 .map(|c| format!("{}{}", c.amount, c.denom))
                 .collect(),
-            voting_start_time: p
-                .voting_start_time
-                .map(|t| SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(t.seconds as u64)),
-            voting_end_time: p
-                .voting_end_time
-                .map(|t| SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(t.seconds as u64)),
+            voting_start_time: p.voting_start_time.map(|t| {
+                chrono::DateTime::from_timestamp(t.seconds, 0)
+                    .unwrap()
+                    .to_rfc3339_opts(chrono::SecondsFormat::Nanos, true)
+            }),
+            voting_end_time: p.voting_end_time.map(|t| {
+                chrono::DateTime::from_timestamp(t.seconds, 0)
+                    .unwrap()
+                    .to_rfc3339_opts(chrono::SecondsFormat::Nanos, true)
+            }),
             last_updated: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
