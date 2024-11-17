@@ -1,3 +1,4 @@
+use crate::althea::abi_util::format_decimal_18;
 use crate::althea::CACHE_DURATION;
 use crate::Arc;
 use cosmos_sdk_proto_althea::cosmos::base::query::v1beta1::PageRequest;
@@ -8,6 +9,7 @@ use rocksdb::DB;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValidatorInfo {
     pub operator_address: String,
@@ -102,17 +104,9 @@ fn cache_validators(db: &rocksdb::DB, validators: &[ValidatorInfo]) {
 
 impl From<Validator> for ValidatorInfo {
     fn from(v: Validator) -> Self {
-        let commission = v.commission.and_then(|c| {
-            c.commission_rates.map(|r| {
-                // Convert rate to decimal format by dividing by 10^18
-                if let Ok(rate_val) = r.rate.parse::<u128>() {
-                    let decimal = rate_val as f64 / 1_000_000_000_000_000_000.0;
-                    format!("{:.18}", decimal)
-                } else {
-                    "0.000000000000000000".to_string()
-                }
-            })
-        });
+        let commission = v
+            .commission
+            .and_then(|c| c.commission_rates.map(|r| format_decimal_18(r.rate)));
 
         ValidatorInfo {
             operator_address: v.operator_address,

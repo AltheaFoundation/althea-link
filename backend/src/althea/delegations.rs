@@ -7,6 +7,7 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::vec::Vec;
 
+use crate::althea::abi_util::format_u128_to_decimal_18;
 use crate::althea::CACHE_DURATION;
 use tokio;
 
@@ -142,9 +143,8 @@ pub async fn fetch_delegations(
                     .find(|r| r.validator_address == *validator_addr)
                     .and_then(|r| r.reward.first())
                     .map(|r| {
-                        // Convert to u128, divide by 10^14 to get the correct decimal position
                         let amount = r.amount.parse::<u128>().unwrap_or_default();
-                        format!("{}.000000000000000000", amount / 100_000_000_000_000)
+                        format_u128_to_decimal_18(amount, 100_000_000_000_000)
                     })
                     .unwrap_or_else(|| "0.000000000000000000".to_string()),
             }],
@@ -158,7 +158,7 @@ pub async fn fetch_delegations(
             .first()
             .map(|t| {
                 let amount = t.amount.parse::<u128>().unwrap_or_default();
-                format!("{}.000000000000000000", amount / 100_000_000_000_000)
+                format_u128_to_decimal_18(amount, 100_000_000_000_000)
             })
             .unwrap_or_else(|| "0.000000000000000000".to_string()),
     }];

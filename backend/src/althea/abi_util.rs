@@ -58,3 +58,18 @@ pub fn clean_proto_string(input: &str) -> String {
         input.trim().to_string()
     }
 }
+
+/// Converts a string representing a number with 18 decimal places
+pub fn format_decimal_18(input: impl AsRef<str>) -> String {
+    if let Ok(val) = input.as_ref().parse::<u128>() {
+        let decimal = val as f64 / 1_000_000_000_000_000_000.0;
+        format!("{:.18}", decimal)
+    } else {
+        "0.000000000000000000".to_string()
+    }
+}
+
+/// Converts a u128 number to a decimal string with 18 decimal places
+pub fn format_u128_to_decimal_18(amount: u128, divisor: u128) -> String {
+    format!("{}.000000000000000000", amount / divisor)
+}
