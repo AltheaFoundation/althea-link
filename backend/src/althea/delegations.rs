@@ -56,7 +56,7 @@ fn get_cached_delegations(
     db: &rocksdb::DB,
     delegator: &CosmosAddress,
 ) -> Option<DelegatorResponse> {
-    let key = format!("{}{}", DELEGATIONS_KEY_PREFIX, delegator.to_string());
+    let key = format!("{}{}", DELEGATIONS_KEY_PREFIX, delegator);
     match db.get(key.as_bytes()).unwrap() {
         Some(data) => {
             let delegations: DelegatorResponse = bincode::deserialize(&data).unwrap();
@@ -79,7 +79,7 @@ fn get_cached_delegations(
 }
 
 fn cache_delegations(db: &rocksdb::DB, delegator: &CosmosAddress, response: &DelegatorResponse) {
-    let key = format!("{}{}", DELEGATIONS_KEY_PREFIX, delegator.to_string());
+    let key = format!("{}{}", DELEGATIONS_KEY_PREFIX, delegator);
     let encoded = bincode::serialize(response).unwrap();
     db.put(key.as_bytes(), encoded).unwrap();
 }
