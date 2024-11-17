@@ -12,23 +12,11 @@ export interface Proposal {
     no: string;
     no_with_veto: string;
   };
-  submit_time: {
-    secs_since_epoch: number;
-    nanos_since_epoch: number;
-  };
-  deposit_end_time: {
-    secs_since_epoch: number;
-    nanos_since_epoch: number;
-  };
+  submit_time: string;
+  deposit_end_time: string;
   total_deposit: string[];
-  voting_start_time: {
-    secs_since_epoch: number;
-    nanos_since_epoch: number;
-  };
-  voting_end_time: {
-    secs_since_epoch: number;
-    nanos_since_epoch: 0;
-  };
+  voting_start_time: string;
+  voting_end_time: string;
   last_updated: number;
 }
 

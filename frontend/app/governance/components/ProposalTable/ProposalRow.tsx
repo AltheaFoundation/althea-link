@@ -221,9 +221,7 @@ export const ProposalRow = ({
                   >
                     <Countdown
                       endTimestamp={BigInt(
-                        new Date(
-                          proposal.voting_end_time.secs_since_epoch
-                        ).getTime()
+                        new Date(proposal.voting_end_time).getTime()
                       )}
                       timeFormat="h m s"
                     />
@@ -259,9 +257,7 @@ export const ProposalRow = ({
 
               <Container direction="row" className={styles.proposalVotingDate}>
                 <Text font="macan-font" className={styles.tableData} size="lg">
-                  {new Date(
-                    proposal.voting_end_time.secs_since_epoch
-                  ).toDateString()}
+                  {new Date(proposal.voting_end_time).toDateString()}
                 </Text>
               </Container>
             </Container>
@@ -380,9 +376,7 @@ export const ProposalRow = ({
                 <Text font="macan-font" className={styles.tableData} size="sm">
                   <Countdown
                     endTimestamp={BigInt(
-                      new Date(
-                        proposal.voting_end_time.secs_since_epoch
-                      ).getTime()
+                      new Date(proposal.voting_end_time).getTime()
                     )}
                     timeFormat="h m s"
                   />
@@ -419,9 +413,7 @@ export const ProposalRow = ({
 
             <Container direction="row" className={styles.proposalVotingDate}>
               <Text font="macan-font" className={styles.tableData} size="sm">
-                {new Date(
-                  proposal.voting_end_time.secs_since_epoch
-                ).toDateString()}
+                {new Date(proposal.voting_end_time).toDateString()}
               </Text>
             </Container>
           </Container>

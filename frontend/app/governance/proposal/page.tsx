@@ -377,9 +377,7 @@ export default function Page() {
                 </div>
                 <div>
                   <Text font="macan-font" size={isMobile ? "md" : "x-sm"}>
-                    {formatTime(
-                      proposal.submit_time.secs_since_epoch.toString()
-                    )}
+                    {formatTime(proposal.submit_time.toString())}
                   </Text>
                 </div>
               </div>
@@ -395,9 +393,7 @@ export default function Page() {
                 </div>
                 <div>
                   <Text font="macan-font" size={isMobile ? "md" : "x-sm"}>
-                    {formatTime(
-                      proposal.voting_end_time.secs_since_epoch.toString()
-                    )}
+                    {formatTime(proposal.voting_end_time.toString())}
                   </Text>
                 </div>
               </div>
