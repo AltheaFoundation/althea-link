@@ -8,8 +8,8 @@ First, create a `.env` file in the root of the project and add the following env
 
 ```bash
 NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID= # wallet connect
-NEXT_PUBLIC_CANTO_MAINNET_API_URL= # This is the url of the althea api backend server
-NEXT_PUBLIC_CANTO_TESTNET_API_URL= # This is the url of the althea api backend server
+NEXT_PUBLIC_ALTHEA_MAINNET_API_URL= # This is the url of the althea api backend server
+NEXT_PUBLIC_ALTHEA_TESTNET_API_URL= # This is the url of the althea api backend server
 NEXT_PUBLIC_AMBIENT_API_URL=
 NEXT_PUBLIC_CANTO_DUST_BOT_URL=
 

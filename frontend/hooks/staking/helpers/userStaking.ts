@@ -11,7 +11,7 @@ import * as NETWORKS from "@/config/networks";
 import { ethToAlthea } from "@gravity-bridge/address-converter";
 
 const cantoMainnetUserAPIEndpoint =
-  process.env.NEXT_PUBLIC_CANTO_MAINNET_API_URL; //process.env.NEXT_PUBLIC_CANTO_USER_API_URL;
+  process.env.NEXT_PUBLIC_ALTHEA_MAINNET_API_URL; //process.env.NEXT_PUBLIC_CANTO_USER_API_URL;
 const cantoTestnetUserAPIEndpoint = "https://localhost:9000";
 
 function getUserAPIEndPoint(chainId: number | string) {
