@@ -3,8 +3,8 @@ import { NEW_ERROR, NO_ERROR, PromiseWithError } from "../interfaces";
 import { tryFetch } from "@/utils/async";
 
 // canto api
-const cantoMainnetDataBaseUrl = process.env.NEXT_PUBLIC_CANTO_MAINNET_API_URL;
-const cantoTestnetDataBaseUrl = process.env.NEXT_PUBLIC_CANTO_TESTNET_API_URL;
+const cantoMainnetDataBaseUrl = process.env.NEXT_PUBLIC_ALTHEA_MAINNET_API_URL;
+const cantoTestnetDataBaseUrl = process.env.NEXT_PUBLIC_ALTHEA_TESTNET_API_URL;
 
 // get url from chainId
 const CANTO_DATA_BASE_URL = (chainId: number) => {
