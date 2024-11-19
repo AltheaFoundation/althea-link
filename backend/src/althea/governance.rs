@@ -1,9 +1,13 @@
 use bincode;
 use chrono;
 use cosmos_sdk_proto_althea::cosmos::base::query::v1beta1::PageRequest;
+use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::TextProposal;
 use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::{Proposal, QueryProposalsRequest};
+use cosmos_sdk_proto_althea::cosmos::params::v1beta1::ParameterChangeProposal;
+use deep_space::utils::decode_any;
 use deep_space::Contact;
 use log::{error, info};
+use prost_types::Any;
 use rocksdb::DB;
 use serde::{Deserialize, Serialize};
 
@@ -32,7 +36,7 @@ pub struct ProposalContent {
     pub type_url: String,
     pub title: String,
     pub description: String,
-    pub value: Vec<u8>,
+    pub changes: Option<Vec<ParamChange>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -55,6 +59,19 @@ pub struct UpgradePlan {
     pub name: String,
     pub height: i64,
     pub info: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableTextProposal {
+    pub title: String,
+    pub description: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableParameterChangeProposal {
+    pub title: String,
+    pub description: String,
+    pub changes: Vec<ParamChange>,
 }
 
 impl ProposalInfo {
@@ -128,35 +145,60 @@ fn cache_proposals(db: &rocksdb::DB, proposals: &[ProposalInfo]) {
     db.put(key, encoded).unwrap();
 }
 
+// This enum is just used internally for decoding
+enum ProposalContentType {
+    TextProposal(TextProposal),
+    ParameterChangeProposal(ParameterChangeProposal),
+}
+
+fn decode_proposal_content(input: Any) -> ProposalContentType {
+    match input.type_url.as_str() {
+        "/cosmos.params.v1beta1.ParameterChangeProposal" => {
+            ProposalContentType::ParameterChangeProposal(decode_any(input).unwrap())
+        }
+        "/cosmos.gov.v1beta1.TextProposal" => {
+            ProposalContentType::TextProposal(decode_any(input).unwrap())
+        }
+        _ => {
+            panic!("Unknown proposal content type: {}", input.type_url);
+        }
+    }
+}
+
 impl From<Proposal> for ProposalInfo {
     fn from(p: Proposal) -> Self {
-        // Parse the encoded title string which contains multiple fields
-        let (title, description) = if let Some(content) = &p.content {
-            let raw_value = content.value.to_vec();
-            let value_str: String = raw_value.into_iter().map(|b| b as char).collect();
-
-            // Split on the control characters
-            let parts: Vec<&str> = value_str
-                .split(['\u{001b}', '\u{0012}', '\u{001a}'].as_ref())
-                .collect();
-
-            // parts[1] should be the title, parts[2] should be the description
-            let clean_title = parts.get(1).unwrap_or(&"").trim();
-            let clean_description = parts.get(2).unwrap_or(&"").trim();
-
-            (clean_title.to_string(), clean_description.to_string())
-        } else {
-            (String::new(), String::new())
-        };
+        let content = p.content.map(|c| {
+            let type_url = c.type_url.clone();
+            let decoded = decode_proposal_content(c.clone());
+            match decoded {
+                ProposalContentType::TextProposal(text) => ProposalContent {
+                    type_url,
+                    title: text.title,
+                    description: text.description,
+                    changes: None,
+                },
+                ProposalContentType::ParameterChangeProposal(param) => ProposalContent {
+                    type_url,
+                    title: param.title,
+                    description: param.description,
+                    changes: Some(
+                        param
+                            .changes
+                            .into_iter()
+                            .map(|c| ParamChange {
+                                subspace: c.subspace,
+                                key: c.key,
+                                value: c.value,
+                            })
+                            .collect(),
+                    ),
+                },
+            }
+        });
 
         ProposalInfo {
             proposal_id: p.proposal_id,
-            content: p.content.map(|c| ProposalContent {
-                type_url: c.type_url,
-                title,
-                description,
-                value: c.value,
-            }),
+            content,
             status: p.status,
             final_tally_result: p.final_tally_result.map(|t| TallyResult {
                 yes: t.yes,
@@ -227,4 +269,66 @@ pub fn start_proposal_cache_refresh_task(db: Arc<DB>, contact: Contact) {
             sleep(tokio::time::Duration::from_secs(CACHE_DURATION)).await;
         }
     });
+}
+
+impl ProposalContent {
+    pub fn get_decoded_value(&self) -> Result<String, Box<dyn std::error::Error>> {
+        match self.type_url.as_str() {
+            "/cosmos.gov.v1beta1.TextProposal" => Ok(format!(
+                "Title: {}\nDescription: {}",
+                self.title, self.description
+            )),
+            "/cosmos.params.v1beta1.ParameterChangeProposal" => {
+                let changes_str = self
+                    .changes
+                    .as_ref()
+                    .map(|changes| {
+                        changes
+                            .iter()
+                            .map(|c| {
+                                format!(
+                                    "Subspace: {}, Key: {}, Value: {}",
+                                    c.subspace, c.key, c.value
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                            .join("\n")
+                    })
+                    .unwrap_or_default();
+
+                Ok(format!(
+                    "Title: {}\nDescription: {}\nChanges:\n{}",
+                    self.title, self.description, changes_str
+                ))
+            }
+            _ => Err("Unknown proposal type".into()),
+        }
+    }
+}
+
+impl From<TextProposal> for SerializableTextProposal {
+    fn from(tp: TextProposal) -> Self {
+        SerializableTextProposal {
+            title: tp.title,
+            description: tp.description,
+        }
+    }
+}
+
+impl From<ParameterChangeProposal> for SerializableParameterChangeProposal {
+    fn from(pcp: ParameterChangeProposal) -> Self {
+        SerializableParameterChangeProposal {
+            title: pcp.title,
+            description: pcp.description,
+            changes: pcp
+                .changes
+                .into_iter()
+                .map(|c| ParamChange {
+                    subspace: c.subspace,
+                    key: c.key,
+                    value: c.value,
+                })
+                .collect(),
+        }
+    }
 }
