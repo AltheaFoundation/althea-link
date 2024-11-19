@@ -1,9 +1,15 @@
 use bincode;
 use chrono;
 use cosmos_sdk_proto_althea::cosmos::base::query::v1beta1::PageRequest;
+use cosmos_sdk_proto_althea::cosmos::distribution::v1beta1::CommunityPoolSpendProposal;
 use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::TextProposal;
 use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::{Proposal, QueryProposalsRequest};
 use cosmos_sdk_proto_althea::cosmos::params::v1beta1::ParameterChangeProposal;
+use cosmos_sdk_proto_althea::cosmos::upgrade::v1beta1::{
+    CancelSoftwareUpgradeProposal, SoftwareUpgradeProposal,
+};
+use cosmos_sdk_proto_althea::ibc::core::client::v1::ClientUpdateProposal;
+
 use deep_space::utils::decode_any;
 use deep_space::Contact;
 use log::{error, info};
@@ -37,6 +43,11 @@ pub struct ProposalContent {
     pub title: String,
     pub description: String,
     pub changes: Option<Vec<ParamChange>>,
+    pub recipient: Option<String>,
+    pub amount: Option<Vec<Coin>>,
+    pub plan: Option<UpgradePlan>,
+    pub subject_client_id: Option<String>,
+    pub substitute_client_id: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -72,6 +83,12 @@ pub struct SerializableParameterChangeProposal {
     pub title: String,
     pub description: String,
     pub changes: Vec<ParamChange>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Coin {
+    pub amount: String,
+    pub denom: String,
 }
 
 impl ProposalInfo {
@@ -149,6 +166,10 @@ fn cache_proposals(db: &rocksdb::DB, proposals: &[ProposalInfo]) {
 enum ProposalContentType {
     TextProposal(TextProposal),
     ParameterChangeProposal(ParameterChangeProposal),
+    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
+    CommunityPoolSpendProposal(CommunityPoolSpendProposal),
+    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
+    ClientUpdateProposal(ClientUpdateProposal),
 }
 
 fn decode_proposal_content(input: Any) -> ProposalContentType {
@@ -158,6 +179,18 @@ fn decode_proposal_content(input: Any) -> ProposalContentType {
         }
         "/cosmos.gov.v1beta1.TextProposal" => {
             ProposalContentType::TextProposal(decode_any(input).unwrap())
+        }
+        "/cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal" => {
+            ProposalContentType::CancelSoftwareUpgradeProposal(decode_any(input).unwrap())
+        }
+        "/cosmos.distribution.v1beta1.CommunityPoolSpendProposal" => {
+            ProposalContentType::CommunityPoolSpendProposal(decode_any(input).unwrap())
+        }
+        "/cosmos.upgrade.v1beta1.SoftwareUpgradeProposal" => {
+            ProposalContentType::SoftwareUpgradeProposal(decode_any(input).unwrap())
+        }
+        "/ibc.core.client.v1.ClientUpdateProposal" => {
+            ProposalContentType::ClientUpdateProposal(decode_any(input).unwrap())
         }
         _ => {
             panic!("Unknown proposal content type: {}", input.type_url);
@@ -176,6 +209,11 @@ impl From<Proposal> for ProposalInfo {
                     title: text.title,
                     description: text.description,
                     changes: None,
+                    recipient: None,
+                    amount: None,
+                    plan: None,
+                    subject_client_id: None,
+                    substitute_client_id: None,
                 },
                 ProposalContentType::ParameterChangeProposal(param) => ProposalContent {
                     type_url,
@@ -192,6 +230,68 @@ impl From<Proposal> for ProposalInfo {
                             })
                             .collect(),
                     ),
+                    recipient: None,
+                    amount: None,
+                    plan: None,
+                    subject_client_id: None,
+                    substitute_client_id: None,
+                },
+                ProposalContentType::CancelSoftwareUpgradeProposal(cancel) => ProposalContent {
+                    type_url,
+                    title: cancel.title,
+                    description: cancel.description,
+                    changes: None,
+                    recipient: None,
+                    amount: None,
+                    plan: None,
+                    subject_client_id: None,
+                    substitute_client_id: None,
+                },
+                ProposalContentType::CommunityPoolSpendProposal(spend) => ProposalContent {
+                    type_url,
+                    title: spend.title,
+                    description: spend.description,
+                    changes: None,
+                    recipient: Some(spend.recipient),
+                    amount: Some(
+                        spend
+                            .amount
+                            .into_iter()
+                            .map(|c| Coin {
+                                amount: c.amount,
+                                denom: c.denom,
+                            })
+                            .collect(),
+                    ),
+                    plan: None,
+                    subject_client_id: None,
+                    substitute_client_id: None,
+                },
+                ProposalContentType::SoftwareUpgradeProposal(upgrade) => ProposalContent {
+                    type_url,
+                    title: upgrade.title,
+                    description: upgrade.description,
+                    changes: None,
+                    recipient: None,
+                    amount: None,
+                    plan: upgrade.plan.map(|p| UpgradePlan {
+                        name: p.name,
+                        height: p.height,
+                        info: p.info,
+                    }),
+                    subject_client_id: None,
+                    substitute_client_id: None,
+                },
+                ProposalContentType::ClientUpdateProposal(client_update) => ProposalContent {
+                    type_url,
+                    title: client_update.title,
+                    description: client_update.description,
+                    changes: None,
+                    recipient: None,
+                    amount: None,
+                    plan: None,
+                    subject_client_id: Some(client_update.subject_client_id),
+                    substitute_client_id: Some(client_update.substitute_client_id),
                 },
             }
         });
@@ -301,6 +401,55 @@ impl ProposalContent {
                     self.title, self.description, changes_str
                 ))
             }
+            "/cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal" => Ok(format!(
+                "Title: {}\nDescription: {}",
+                self.title, self.description
+            )),
+            "/cosmos.distribution.v1beta1.CommunityPoolSpendProposal" => {
+                let amount_str = self
+                    .amount
+                    .as_ref()
+                    .map(|amounts| {
+                        amounts
+                            .iter()
+                            .map(|c| format!("{}{}", c.amount, c.denom))
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    })
+                    .unwrap_or_default();
+
+                Ok(format!(
+                    "Title: {}\nDescription: {}\nRecipient: {}\nAmount: {}",
+                    self.title,
+                    self.description,
+                    self.recipient.as_deref().unwrap_or(""),
+                    amount_str
+                ))
+            }
+            "/cosmos.upgrade.v1beta1.SoftwareUpgradeProposal" => {
+                let plan_str = self
+                    .plan
+                    .as_ref()
+                    .map(|p| {
+                        format!(
+                            "\nPlan:\n  Name: {}\n  Height: {}\n  Info: {}",
+                            p.name, p.height, p.info
+                        )
+                    })
+                    .unwrap_or_default();
+
+                Ok(format!(
+                    "Title: {}\nDescription: {}{}",
+                    self.title, self.description, plan_str
+                ))
+            }
+            "/ibc.core.client.v1.ClientUpdateProposal" => Ok(format!(
+                "Title: {}\nDescription: {}\nSubject Client ID: {}\nSubstitute Client ID: {}",
+                self.title,
+                self.description,
+                self.subject_client_id.as_deref().unwrap_or(""),
+                self.substitute_client_id.as_deref().unwrap_or("")
+            )),
             _ => Err("Unknown proposal type".into()),
         }
     }
