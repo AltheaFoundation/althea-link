@@ -71,11 +71,11 @@ describe("network getters", () => {
         network: NETWORKS.COSMOS_HUB,
       },
       {
-        chainId: 7700,
+        chainId: 258432,
         network: NETWORKS.CANTO_MAINNET_EVM,
       },
       {
-        chainId: "canto_7700-1",
+        chainId: "althea_258432-1",
         network: NETWORKS.CANTO_MAINNET_COSMOS,
       },
       {
@@ -101,11 +101,11 @@ describe("network getters", () => {
         endpoint: null,
       },
       {
-        chainId: 7700,
+        chainId: 258432,
         endpoint: NETWORKS.CANTO_MAINNET_COSMOS.restEndpoint,
       },
       {
-        chainId: "canto_7700-1",
+        chainId: "althea_258432-1",
         endpoint: NETWORKS.CANTO_MAINNET_COSMOS.restEndpoint,
       },
       {
@@ -133,14 +133,14 @@ describe("network getters", () => {
         chainObject: null,
       },
       {
-        chainId: 7700,
+        chainId: 258432,
         chainObject: {
           chainId: NETWORKS.CANTO_MAINNET_EVM.chainId,
           cosmosChainId: NETWORKS.CANTO_MAINNET_COSMOS.chainId,
         },
       },
       {
-        chainId: 7701,
+        chainId: 258432,
         chainObject: {
           chainId: NETWORKS.CANTO_TESTNET_EVM.chainId,
           cosmosChainId: NETWORKS.CANTO_TESTNET_COSMOS.chainId,
@@ -154,7 +154,7 @@ describe("network getters", () => {
         }
       },
       {
-        chainId: "canto_7700-1",
+        chainId: "althea_258432-1",
         chainObject: null,
       },
       {

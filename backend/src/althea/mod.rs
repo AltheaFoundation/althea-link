@@ -3,8 +3,11 @@ use crate::Opts;
 use actix_web::rt::System;
 use actix_web::web;
 use ambient::pools::InitPoolEvent;
-use ambient::{query_latest, search_for_pools, search_for_positions};
+use ambient::{initialize_templates, query_latest, search_for_pool_events};
 use clarity::{Address, Uint256};
+use cosmos::delegations::start_delegation_cache_refresh_task;
+use cosmos::governance::start_proposal_cache_refresh_task;
+use cosmos::validators::start_validator_cache_refresh_task;
 use database::pools::get_init_pools;
 use database::{get_latest_searched_block, save_latest_searched_block};
 use deep_space::Contact;
@@ -18,21 +21,16 @@ use web30::client::Web3;
 
 pub mod abi_util;
 pub mod ambient;
+pub mod cosmos;
 pub mod database;
-pub mod delegations;
 pub mod endpoints;
 pub mod error;
-pub mod governance;
-pub mod token_mappings;
-pub mod validators;
 
 pub const ALTHEA_GRPC_URL: &str = "http://66.172.36.142:3890";
 pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althea";
 pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
 pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
 pub const CACHE_DURATION: u64 = 300;
-// const ALTHEA_GRPC_URL: &str = "http://localhost:9090";
-// const ALTHEA_ETH_RPC_URL: &str = "http://localhost:8545";
 
 pub const ALTHEA_PREFIX: &str = "althea";
 pub const TIMEOUT: Duration = Duration::from_secs(45);
@@ -81,6 +79,7 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
 
         let web3 = get_althea_web3(TIMEOUT);
         runner.block_on(async move {
+            initialize_templates(&db, &web3, &templates).await.unwrap();
             loop {
                 let start_block =
                     get_latest_searched_block(&db).unwrap_or(DEFAULT_START_SEARCH_BLOCK.into());
@@ -94,11 +93,8 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                     start_block + DEFAULT_SEARCH_RANGE.into(),
                     current_block.unwrap(),
                 );
-                if let Err(e) = search_for_pools(&db, &web3, start_block, end_block).await {
-                    error!("Error searching for pools: {}", e);
-                }
                 if let Err(e) =
-                    search_for_positions(&db, &web3, &tokens, &templates, start_block, end_block)
+                    search_for_pool_events(&db, &web3, &tokens, &templates, start_block, end_block)
                         .await
                 {
                     error!("Error searching for positions: {}", e);
@@ -159,7 +155,3 @@ pub fn register_endpoints(cfg: &mut web::ServiceConfig) {
         .service(endpoints::get_proposals)
         .service(endpoints::get_delegations);
 }
-
-pub use delegations::start_delegation_cache_refresh_task;
-pub use governance::start_proposal_cache_refresh_task;
-pub use validators::start_validator_cache_refresh_task;

@@ -15,7 +15,6 @@ rocksdb = "0.22.0"
 log = "0.4"
 env_logger = "0.11"
 openssl-probe = "0.1"
-deep_space = {version="2", features=["ethermint"]}
 cosmos-sdk-proto-althea = "0.18"
 althea_proto = "0.9"
 futures = "0.3"
@@ -25,9 +24,13 @@ prost-types ="0.13"
 chrono = "0.4"
 bincode = "1.3.3"
 serde = { version = "1", features = ["derive"] }
-clarity = "1.4"
 num_cpus = "1.14"
 serde_json = "1.0"
 prost = "0.12"
 actix-web-httpauth = "0.8"
-web30 = "1.4"
+num-traits = "0.2"
+num-integer = "0.1"
+
+deep_space = {version="2", features=["ethermint"]}
+clarity = "1.5"
+web30 = "1.5"

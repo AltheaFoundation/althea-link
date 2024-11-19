@@ -7,7 +7,8 @@ use serde::{Deserialize, Serialize};
 use web30::{client::Web3, types::TransactionRequest};
 
 use crate::althea::{
-    abi_util::{parse_u128, parse_u64},
+    abi_util::{parse_u128, parse_u16, parse_u64, parse_u8},
+    database::pools::Pool,
     error::AltheaError,
     DEFAULT_QUERIER,
 };
@@ -153,4 +154,57 @@ pub async fn get_price(
         )
         .await?;
     Ok(parse_u128(&price_res, 0))
+}
+
+// function queryPoolTemplate (uint256 poolIdx) public view returns (PoolSpecs.Pool memory pool)
+// struct Pool {
+//      uint8 schema_;
+//      uint16 feeRate_;
+//      uint8 protocolTake_;
+//      uint16 tickSize_;
+//      uint8 jitThresh_;
+//      uint8 knockoutBits_;
+//      uint8 oracleFlags_;
+//  }
+pub const QUERY_TEMPLATE_SIG: &str = "queryPoolTemplate(uint256)";
+
+pub async fn get_template(
+    web30: &Web3,
+    croc_query: Address,
+    pool_idx: Uint256,
+) -> Result<Pool, AltheaError> {
+    let template_res = web30
+        .simulate_transaction(
+            TransactionRequest::quick_tx(
+                Address::from_str(DEFAULT_QUERIER).unwrap(),
+                croc_query,
+                encode_call(QUERY_TEMPLATE_SIG, &[pool_idx.into()])?,
+            ),
+            None,
+        )
+        .await?;
+
+    let mut start: usize = 0;
+    let schema = parse_u8(&template_res, start);
+    start += 32;
+    let fee_rate = parse_u16(&template_res, start);
+    start += 32;
+    let protocol_take = parse_u8(&template_res, start);
+    start += 32;
+    let tick_size = parse_u16(&template_res, start);
+    start += 32;
+    let jit_thresh = parse_u8(&template_res, start);
+    start += 32;
+    let knockout_bits = parse_u8(&template_res, start);
+    start += 32;
+    let oracle_flags = parse_u8(&template_res, start);
+    Ok(Pool {
+        schema,
+        fee_rate,
+        protocol_take,
+        tick_size,
+        jit_thresh,
+        knockout_bits,
+        oracle_flags,
+    })
 }

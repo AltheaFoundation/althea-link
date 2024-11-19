@@ -3,6 +3,7 @@ use std::fmt;
 use clarity::error::Error as ClarityError;
 use web30::jsonrpc::error::Web3Error;
 
+#[derive(Debug)]
 pub enum AltheaError {
     EthereumRestError(Web3Error),
     ClarityError(ClarityError),

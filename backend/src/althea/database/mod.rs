@@ -4,6 +4,7 @@ use log::debug;
 pub mod curve;
 pub mod pools;
 pub mod positions;
+pub mod tracking;
 
 use super::InitPoolEvent;
 
