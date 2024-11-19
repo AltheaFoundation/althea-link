@@ -226,6 +226,21 @@ pub struct StrangeInnerStruct {
     pub liq_change: f64,
     pub reset_rewards: bool,
 }
+
+/// Retrieves all known user positions in a pool
+///
+/// # Query
+///
+/// A query string with the following parameters:
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - user: The user's address as a EIP 55 string
+/// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
+/// - quote: The address of the quote token in the pool as a EIP 55 string
+/// - pool_idx: A number representing the pool's template index, needed for identifying the specific pool
+///
+/// # Response
+///
+/// A json response body containing an array of UserPosition objects, otherwise a 404 Not Found response
 #[get("/user_pool_positions")]
 pub async fn user_pool_positions(
     req: web::Query<UserPoolPositionsRequest>,
@@ -275,6 +290,17 @@ pub struct UserPositionsRequest {
     pub user: Address,
 }
 
+/// Retrieves all known positions for a user
+///
+/// # Query
+///
+/// A query string with the following parameters:
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - user: The user's address as a EIP 55 string
+///
+/// # Response
+///
+/// A json response body containing an array of UserPosition objects, otherwise a 404 Not Found response
 #[get("/user_positions")]
 pub async fn user_positions(
     req: web::Query<UserPositionsRequest>,
@@ -340,6 +366,21 @@ impl From<TrackedPool> for PoolLiqCurveResp {
     }
 }
 
+/// Retrieves the liquidity curve for a pool
+///
+/// # Query
+///
+/// A query string with the following parameters:
+///
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
+/// - quote: The address of the quote token in the pool as a EIP 55 string
+/// - pool_idx: A number representing the pool's template index, needed for identifying the specific pool
+///
+/// # Response
+///
+/// A json response body containing a PoolLiqCurveResp object, otherwise a 404 Not Found response if the pool is unknown.
+/// Notably the response includes the ambient liquidity and a collection of liquidity bumps for the pool (sorted by tick)
 #[get("/pool_liq_curve")]
 pub async fn pool_liq_curve(
     req: web::Query<PoolLiqCurveRequest>,
@@ -395,6 +436,22 @@ impl From<TrackedPool> for PoolStatsResp {
     }
 }
 
+/// Retrieves the statistics for a pool
+///
+/// # Query
+///
+/// A query string with the following parameters:
+///
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
+/// - quote: The address of the quote token in the pool as a EIP 55 string
+/// - pool_idx: A number representing the pool's template index, needed for identifying the specific pool
+/// - hist_time: An unused parameter added for compatibility with legacy frontend queries
+///
+/// # Response
+///
+/// A json response body containing a PoolStatsResp object, otherwise a 404 Not Found response if the pool is unknown.
+/// Notably the response includes baseTvl, quoteTvl, lastPriceSwap, and feeRate for the pool (other fields are unused by the backend and included for legacy compatibility)
 #[get("/pool_stats")]
 pub async fn pool_stats(
     req: web::Query<PoolStatsRequest>,
