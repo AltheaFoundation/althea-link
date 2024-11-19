@@ -1,5 +1,7 @@
-use bincode;
+use althea_proto::canto::erc20::v1::{RegisterCoinProposal, RegisterErc20Proposal};
+
 use chrono;
+
 use cosmos_sdk_proto_althea::cosmos::base::query::v1beta1::PageRequest;
 use cosmos_sdk_proto_althea::cosmos::distribution::v1beta1::CommunityPoolSpendProposal;
 use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::TextProposal;
@@ -9,7 +11,6 @@ use cosmos_sdk_proto_althea::cosmos::upgrade::v1beta1::{
     CancelSoftwareUpgradeProposal, SoftwareUpgradeProposal,
 };
 use cosmos_sdk_proto_althea::ibc::core::client::v1::ClientUpdateProposal;
-
 use deep_space::utils::decode_any;
 use deep_space::Contact;
 use log::{error, info};
@@ -28,6 +29,8 @@ pub struct ProposalInfo {
     pub proposal_id: u64,
     pub content: Option<ProposalContent>,
     pub status: i32,
+    #[serde(skip)]
+    pub status_value: i32,
     pub final_tally_result: Option<TallyResult>,
     pub submit_time: Option<String>,
     pub deposit_end_time: Option<String>,
@@ -42,12 +45,22 @@ pub struct ProposalContent {
     pub type_url: String,
     pub title: String,
     pub description: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub changes: Option<Vec<ParamChange>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub recipient: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub amount: Option<Vec<Coin>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub plan: Option<UpgradePlan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub subject_client_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub substitute_client_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<SerializableMetadata>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub erc20address: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -91,6 +104,66 @@ pub struct Coin {
     pub denom: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableMetadata {
+    pub description: String,
+    pub denom_units: Vec<SerializableDenomUnit>,
+    pub base: String,
+    pub display: String,
+    pub name: String,
+    pub symbol: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableDenomUnit {
+    pub denom: String,
+    pub exponent: u32,
+    pub aliases: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableCancelSoftwareUpgradeProposal {
+    pub title: String,
+    pub description: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableCommunityPoolSpendProposal {
+    pub title: String,
+    pub description: String,
+    pub recipient: String,
+    pub amount: Vec<Coin>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableSoftwareUpgradeProposal {
+    pub title: String,
+    pub description: String,
+    pub plan: Option<UpgradePlan>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableClientUpdateProposal {
+    pub title: String,
+    pub description: String,
+    pub subject_client_id: String,
+    pub substitute_client_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableRegisterCoinProposal {
+    pub title: String,
+    pub description: String,
+    pub metadata: Option<SerializableMetadata>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SerializableRegisterErc20Proposal {
+    pub title: String,
+    pub description: String,
+    pub erc20address: String,
+}
+
 impl ProposalInfo {
     pub fn is_active(&self) -> bool {
         self.status == 2
@@ -102,8 +175,7 @@ pub async fn fetch_proposals(
     contact: &deep_space::Contact,
 ) -> Result<Vec<ProposalInfo>, Box<dyn std::error::Error>> {
     info!("Fetching proposals");
-    let cached = get_cached_proposals(db);
-    if let Some(proposals) = cached {
+    if let Some(proposals) = get_cached_proposals(db) {
         return Ok(proposals);
     }
 
@@ -127,7 +199,10 @@ pub async fn fetch_proposals(
         .map(ProposalInfo::from)
         .collect();
 
-    cache_proposals(db, &all_proposals);
+    if !all_proposals.is_empty() {
+        cache_proposals(db, &all_proposals);
+    }
+
     info!(
         "Successfully fetched and stored {} proposals",
         all_proposals.len()
@@ -137,64 +212,214 @@ pub async fn fetch_proposals(
 
 fn get_cached_proposals(db: &rocksdb::DB) -> Option<Vec<ProposalInfo>> {
     const PROPOSALS_CACHE_KEY: &[u8] = b"proposals";
-    match db.get(PROPOSALS_CACHE_KEY).unwrap() {
-        Some(data) => {
-            let proposals: Vec<ProposalInfo> = bincode::deserialize(&data).unwrap();
-            let now = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs();
 
-            // Cache for 5 minutes
-            if now - proposals[0].last_updated < CACHE_DURATION {
-                Some(proposals)
-            } else {
+    match db.get(PROPOSALS_CACHE_KEY) {
+        Ok(Some(data)) => match serde_json::from_slice(&data) {
+            Ok(proposals) => {
+                let proposals: Vec<ProposalInfo> = proposals;
+                if proposals.is_empty() {
+                    let _ = db.delete(PROPOSALS_CACHE_KEY);
+                    return None;
+                }
+
+                let now = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+
+                if now - proposals[0].last_updated < CACHE_DURATION {
+                    Some(proposals)
+                } else {
+                    let _ = db.delete(PROPOSALS_CACHE_KEY);
+                    None
+                }
+            }
+            Err(e) => {
+                error!("Failed to deserialize cached proposals: {}", e);
+                let _ = db.delete(PROPOSALS_CACHE_KEY);
                 None
             }
+        },
+        Ok(None) => None,
+        Err(e) => {
+            error!("Failed to read from cache: {}", e);
+            None
         }
-        None => None,
     }
 }
 
 fn cache_proposals(db: &rocksdb::DB, proposals: &[ProposalInfo]) {
-    let key = b"proposals";
-    let encoded = bincode::serialize(proposals).unwrap();
-    db.put(key, encoded).unwrap();
-}
+    const PROPOSALS_CACHE_KEY: &[u8] = b"proposals";
 
-// This enum is just used internally for decoding
-enum ProposalContentType {
-    TextProposal(TextProposal),
-    ParameterChangeProposal(ParameterChangeProposal),
-    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
-    CommunityPoolSpendProposal(CommunityPoolSpendProposal),
-    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
-    ClientUpdateProposal(ClientUpdateProposal),
-}
-
-fn decode_proposal_content(input: Any) -> ProposalContentType {
-    match input.type_url.as_str() {
-        "/cosmos.params.v1beta1.ParameterChangeProposal" => {
-            ProposalContentType::ParameterChangeProposal(decode_any(input).unwrap())
+    match serde_json::to_vec(proposals) {
+        Ok(encoded) => {
+            if let Err(e) = db.put(PROPOSALS_CACHE_KEY, encoded) {
+                error!("Failed to cache proposals: {}", e);
+            }
         }
+        Err(e) => {
+            error!("Failed to serialize proposals: {}", e);
+            let _ = db.delete(PROPOSALS_CACHE_KEY);
+        }
+    }
+}
+
+fn decode_proposal_content(input: Any) -> Result<ProposalContent, Box<dyn std::error::Error>> {
+    let type_url = input.type_url.clone();
+
+    match input.type_url.as_str() {
         "/cosmos.gov.v1beta1.TextProposal" => {
-            ProposalContentType::TextProposal(decode_any(input).unwrap())
+            let decoded: TextProposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: None,
+                recipient: None,
+                amount: None,
+                plan: None,
+                subject_client_id: None,
+                substitute_client_id: None,
+                metadata: None,
+                erc20address: None,
+            })
+        }
+        "/cosmos.params.v1beta1.ParameterChangeProposal" => {
+            let decoded: ParameterChangeProposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: Some(
+                    decoded
+                        .changes
+                        .into_iter()
+                        .map(|c| ParamChange {
+                            subspace: c.subspace,
+                            key: c.key,
+                            value: c.value,
+                        })
+                        .collect(),
+                ),
+                recipient: None,
+                amount: None,
+                plan: None,
+                subject_client_id: None,
+                substitute_client_id: None,
+                metadata: None,
+                erc20address: None,
+            })
         }
         "/cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal" => {
-            ProposalContentType::CancelSoftwareUpgradeProposal(decode_any(input).unwrap())
+            let decoded: CancelSoftwareUpgradeProposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: None,
+                recipient: None,
+                amount: None,
+                plan: None,
+                subject_client_id: None,
+                substitute_client_id: None,
+                metadata: None,
+                erc20address: None,
+            })
         }
         "/cosmos.distribution.v1beta1.CommunityPoolSpendProposal" => {
-            ProposalContentType::CommunityPoolSpendProposal(decode_any(input).unwrap())
+            let decoded: CommunityPoolSpendProposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: None,
+                recipient: Some(decoded.recipient),
+                amount: Some(
+                    decoded
+                        .amount
+                        .into_iter()
+                        .map(|c| Coin {
+                            amount: c.amount,
+                            denom: c.denom,
+                        })
+                        .collect(),
+                ),
+                plan: None,
+                subject_client_id: None,
+                substitute_client_id: None,
+                metadata: None,
+                erc20address: None,
+            })
         }
         "/cosmos.upgrade.v1beta1.SoftwareUpgradeProposal" => {
-            ProposalContentType::SoftwareUpgradeProposal(decode_any(input).unwrap())
+            let decoded: SoftwareUpgradeProposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: None,
+                recipient: None,
+                amount: None,
+                plan: decoded.plan.map(|p| UpgradePlan {
+                    name: p.name,
+                    height: p.height,
+                    info: p.info,
+                }),
+                subject_client_id: None,
+                substitute_client_id: None,
+                metadata: None,
+                erc20address: None,
+            })
         }
         "/ibc.core.client.v1.ClientUpdateProposal" => {
-            ProposalContentType::ClientUpdateProposal(decode_any(input).unwrap())
+            let decoded: ClientUpdateProposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: None,
+                recipient: None,
+                amount: None,
+                plan: None,
+                subject_client_id: Some(decoded.subject_client_id),
+                substitute_client_id: Some(decoded.substitute_client_id),
+                metadata: None,
+                erc20address: None,
+            })
         }
-        _ => {
-            panic!("Unknown proposal content type: {}", input.type_url);
+        "/canto.erc20.v1.RegisterCoinProposal" => {
+            let decoded: RegisterCoinProposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: None,
+                recipient: None,
+                amount: None,
+                plan: None,
+                subject_client_id: None,
+                substitute_client_id: None,
+                metadata: decoded.metadata.map(|m| m.into()),
+                erc20address: None,
+            })
         }
+        "/canto.erc20.v1.RegisterErc20Proposal" => {
+            let decoded: RegisterErc20Proposal = decode_any(input)?;
+            Ok(ProposalContent {
+                type_url,
+                title: decoded.title,
+                description: decoded.description,
+                changes: None,
+                recipient: None,
+                amount: None,
+                plan: None,
+                subject_client_id: None,
+                substitute_client_id: None,
+                metadata: None,
+                erc20address: Some(decoded.erc20address),
+            })
+        }
+        unknown => Err(format!("Unknown proposal content type: {}", unknown).into()),
     }
 }
 
@@ -202,97 +427,24 @@ impl From<Proposal> for ProposalInfo {
     fn from(p: Proposal) -> Self {
         let content = p.content.map(|c| {
             let type_url = c.type_url.clone();
-            let decoded = decode_proposal_content(c.clone());
-            match decoded {
-                ProposalContentType::TextProposal(text) => ProposalContent {
-                    type_url,
-                    title: text.title,
-                    description: text.description,
-                    changes: None,
-                    recipient: None,
-                    amount: None,
-                    plan: None,
-                    subject_client_id: None,
-                    substitute_client_id: None,
-                },
-                ProposalContentType::ParameterChangeProposal(param) => ProposalContent {
-                    type_url,
-                    title: param.title,
-                    description: param.description,
-                    changes: Some(
-                        param
-                            .changes
-                            .into_iter()
-                            .map(|c| ParamChange {
-                                subspace: c.subspace,
-                                key: c.key,
-                                value: c.value,
-                            })
-                            .collect(),
-                    ),
-                    recipient: None,
-                    amount: None,
-                    plan: None,
-                    subject_client_id: None,
-                    substitute_client_id: None,
-                },
-                ProposalContentType::CancelSoftwareUpgradeProposal(cancel) => ProposalContent {
-                    type_url,
-                    title: cancel.title,
-                    description: cancel.description,
-                    changes: None,
-                    recipient: None,
-                    amount: None,
-                    plan: None,
-                    subject_client_id: None,
-                    substitute_client_id: None,
-                },
-                ProposalContentType::CommunityPoolSpendProposal(spend) => ProposalContent {
-                    type_url,
-                    title: spend.title,
-                    description: spend.description,
-                    changes: None,
-                    recipient: Some(spend.recipient),
-                    amount: Some(
-                        spend
-                            .amount
-                            .into_iter()
-                            .map(|c| Coin {
-                                amount: c.amount,
-                                denom: c.denom,
-                            })
-                            .collect(),
-                    ),
-                    plan: None,
-                    subject_client_id: None,
-                    substitute_client_id: None,
-                },
-                ProposalContentType::SoftwareUpgradeProposal(upgrade) => ProposalContent {
-                    type_url,
-                    title: upgrade.title,
-                    description: upgrade.description,
-                    changes: None,
-                    recipient: None,
-                    amount: None,
-                    plan: upgrade.plan.map(|p| UpgradePlan {
-                        name: p.name,
-                        height: p.height,
-                        info: p.info,
-                    }),
-                    subject_client_id: None,
-                    substitute_client_id: None,
-                },
-                ProposalContentType::ClientUpdateProposal(client_update) => ProposalContent {
-                    type_url,
-                    title: client_update.title,
-                    description: client_update.description,
-                    changes: None,
-                    recipient: None,
-                    amount: None,
-                    plan: None,
-                    subject_client_id: Some(client_update.subject_client_id),
-                    substitute_client_id: Some(client_update.substitute_client_id),
-                },
+            match decode_proposal_content(c) {
+                Ok(content) => content,
+                Err(e) => {
+                    error!("Failed to decode proposal content: {}", e);
+                    ProposalContent {
+                        type_url,
+                        title: "Error Decoding Proposal".to_string(),
+                        description: format!("Failed to decode proposal: {}", e),
+                        changes: None,
+                        recipient: None,
+                        amount: None,
+                        plan: None,
+                        subject_client_id: None,
+                        substitute_client_id: None,
+                        metadata: None,
+                        erc20address: None,
+                    }
+                }
             }
         });
 
@@ -300,6 +452,7 @@ impl From<Proposal> for ProposalInfo {
             proposal_id: p.proposal_id,
             content,
             status: p.status,
+            status_value: p.status,
             final_tally_result: p.final_tally_result.map(|t| TallyResult {
                 yes: t.yes,
                 abstain: t.abstain,
@@ -450,6 +603,24 @@ impl ProposalContent {
                 self.subject_client_id.as_deref().unwrap_or(""),
                 self.substitute_client_id.as_deref().unwrap_or("")
             )),
+            "/canto.erc20.v1.RegisterCoinProposal" => {
+                let metadata_str = self
+                    .metadata
+                    .as_ref()
+                    .map(|m| format!("\nMetadata: {:?}", m))
+                    .unwrap_or_default();
+
+                Ok(format!(
+                    "Title: {}\nDescription: {}{}",
+                    self.title, self.description, metadata_str
+                ))
+            }
+            "/canto.erc20.v1.RegisterErc20Proposal" => Ok(format!(
+                "Title: {}\nDescription: {}\nERC20 Address: {}",
+                self.title,
+                self.description,
+                self.erc20address.as_deref().unwrap_or("")
+            )),
             _ => Err("Unknown proposal type".into()),
         }
     }
@@ -478,6 +649,27 @@ impl From<ParameterChangeProposal> for SerializableParameterChangeProposal {
                     value: c.value,
                 })
                 .collect(),
+        }
+    }
+}
+
+impl From<cosmos_sdk_proto_althea::cosmos::bank::v1beta1::Metadata> for SerializableMetadata {
+    fn from(m: cosmos_sdk_proto_althea::cosmos::bank::v1beta1::Metadata) -> Self {
+        SerializableMetadata {
+            description: m.description,
+            denom_units: m
+                .denom_units
+                .into_iter()
+                .map(|du| SerializableDenomUnit {
+                    denom: du.denom,
+                    exponent: du.exponent,
+                    aliases: du.aliases,
+                })
+                .collect(),
+            base: m.base,
+            display: m.display,
+            name: m.name,
+            symbol: m.symbol,
         }
     }
 }

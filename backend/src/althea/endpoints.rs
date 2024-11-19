@@ -1,18 +1,3 @@
-use actix_web::{
-    get, post,
-    web::{self, Json},
-    HttpResponse, Responder,
-};
-use clarity::{Address, Uint256};
-use deep_space::Address as CosmosAddress;
-use deep_space::Contact;
-use log::error;
-use log::info;
-use num_traits::ToPrimitive;
-use rocksdb::DB;
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-
 use super::database::{
     positions::Position::{Ambient, Ranged},
     tracking::{LiquidityBump, TrackedPool},
@@ -34,6 +19,22 @@ use crate::althea::{
     },
     ALTHEA_MAINNET_EVM_CHAIN_ID,
 };
+use actix_web::{
+    get, post,
+    web::{self, Json},
+    HttpResponse, Responder,
+};
+use clarity::{Address, Uint256};
+
+use deep_space::Address as CosmosAddress;
+use deep_space::Contact;
+use log::error;
+use log::info;
+use num_traits::ToPrimitive;
+use rocksdb::DB;
+use serde::{Deserialize, Serialize};
+
+use std::sync::Arc;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct PoolRequest {
@@ -587,7 +588,7 @@ pub async fn get_proposals(
         match fetch_proposals(&db, &contact).await {
             Ok(proposals) => Ok(proposals
                 .into_iter()
-                .filter(|p| p.status == query.status.unwrap())
+                .filter(|p| p.status_value == query.status.unwrap())
                 .collect::<Vec<_>>()),
             Err(e) => Err(e),
         }
