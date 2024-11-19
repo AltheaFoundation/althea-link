@@ -411,7 +411,7 @@ function getProposalVoteTransactionFlowData(
 ): AnalyticsTransactionFlowData {
   return {
     govProposalId: voteTxParams.proposalId,
-    govProposalTitle: voteTxParams.proposal?.title,
+    govProposalTitle: voteTxParams.proposal?.content.title,
     govVoteOption: voteTxParams.voteOption,
   };
 }
@@ -536,6 +536,6 @@ export function getAnalyticsProposalInfo(
   const proposal = proposals.find((p) => p.proposal_id === Number(proposalId));
   return {
     govProposalId: proposal?.proposal_id,
-    govProposalTitle: proposal?.title,
+    govProposalTitle: proposal?.content.title,
   };
 }
