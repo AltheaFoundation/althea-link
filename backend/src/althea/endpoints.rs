@@ -1,4 +1,5 @@
 use super::database::{
+    get_syncing,
     positions::Position::{Ambient, Ranged},
     tracking::{LiquidityBump, TrackedPool},
 };
@@ -60,6 +61,9 @@ pub struct PoolRequest {
 #[post("/init_pool")]
 pub async fn query_pool(req: Json<PoolRequest>, db: web::Data<Arc<DB>>) -> impl Responder {
     let req = req.into_inner();
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying pool {:?}", req);
     let pool = get_init_pool(&db, req.base, req.quote, req.pool_idx);
     match pool {
@@ -79,6 +83,9 @@ pub async fn query_pool(req: Json<PoolRequest>, db: web::Data<Arc<DB>>) -> impl 
 /// The response body will be a JSON array of `InitPoolEvent` objects representing the moment of creation of the pools
 #[get("/init_pools")]
 pub async fn query_all_init_pools(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all InitPools");
     let pools = get_init_pools(&db);
     if pools.is_empty() {
@@ -99,6 +106,9 @@ pub async fn query_all_init_pools(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `MintRangedEvent` objects representing the moment of creation of the pools
 #[get("/all_mint_ranged")]
 pub async fn query_all_mint_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all MintRanged events");
     let events = get_all_mint_ranged(&db, None);
     if events.is_empty() {
@@ -119,6 +129,9 @@ pub async fn query_all_mint_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `MintAmbientEvent` objects representing the moment of creation of the pools
 #[get("/all_mint_ambient")]
 pub async fn query_all_mint_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all MintAmbinet events");
     let events = get_all_mint_ambient(&db, None);
     if events.is_empty() {
@@ -139,6 +152,9 @@ pub async fn query_all_mint_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `BurnRangedEvent` objects representing the moment of creation of the pools
 #[get("/all_burn_ranged")]
 pub async fn query_all_burn_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all BurnRanged events");
     let events = get_all_burn_ranged(&db, None);
     if events.is_empty() {
@@ -159,7 +175,10 @@ pub async fn query_all_burn_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `BurnAmbientEvent` objects representing the moment of creation of the pools
 #[get("/all_burn_ambient")]
 pub async fn query_all_burn_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
-    info!("Querying all MintAmbinet events");
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
+    info!("Querying all MintAmbient events");
     let events = get_all_burn_ambient(&db, None);
     if events.is_empty() {
         HttpResponse::NotFound().body("No BurnAmbientEvents found, try again later")
@@ -228,11 +247,29 @@ pub struct StrangeInnerStruct {
     pub liq_change: f64,
     pub reset_rewards: bool,
 }
+
+/// Retrieves all known user positions in a pool
+///
+/// # Query
+///
+/// A query string with the following parameters:
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - user: The user's address as a EIP 55 string
+/// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
+/// - quote: The address of the quote token in the pool as a EIP 55 string
+/// - pool_idx: A number representing the pool's template index, needed for identifying the specific pool
+///
+/// # Response
+///
+/// A json response body containing an array of UserPosition objects, otherwise a 404 Not Found response
 #[get("/user_pool_positions")]
 pub async fn user_pool_positions(
     req: web::Query<UserPoolPositionsRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let positions =
         get_active_user_pool_positions(&db, req.user, req.base, req.quote, req.pool_idx);
     if positions.is_empty() {
@@ -277,11 +314,25 @@ pub struct UserPositionsRequest {
     pub user: Address,
 }
 
+/// Retrieves all known positions for a user
+///
+/// # Query
+///
+/// A query string with the following parameters:
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - user: The user's address as a EIP 55 string
+///
+/// # Response
+///
+/// A json response body containing an array of UserPosition objects, otherwise a 404 Not Found response
 #[get("/user_positions")]
 pub async fn user_positions(
     req: web::Query<UserPositionsRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let positions = get_active_user_positions(&db, req.user);
     if positions.is_empty() {
         HttpResponse::NotFound().body("No positions found for user");
@@ -342,11 +393,29 @@ impl From<TrackedPool> for PoolLiqCurveResp {
     }
 }
 
+/// Retrieves the liquidity curve for a pool
+///
+/// # Query
+///
+/// A query string with the following parameters:
+///
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
+/// - quote: The address of the quote token in the pool as a EIP 55 string
+/// - pool_idx: A number representing the pool's template index, needed for identifying the specific pool
+///
+/// # Response
+///
+/// A json response body containing a PoolLiqCurveResp object, otherwise a 404 Not Found response if the pool is unknown.
+/// Notably the response includes the ambient liquidity and a collection of liquidity bumps for the pool (sorted by tick)
 #[get("/pool_liq_curve")]
 pub async fn pool_liq_curve(
     req: web::Query<PoolLiqCurveRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
 
     match pool {
@@ -397,11 +466,30 @@ impl From<TrackedPool> for PoolStatsResp {
     }
 }
 
+/// Retrieves the statistics for a pool
+///
+/// # Query
+///
+/// A query string with the following parameters:
+///
+/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
+/// - quote: The address of the quote token in the pool as a EIP 55 string
+/// - pool_idx: A number representing the pool's template index, needed for identifying the specific pool
+/// - hist_time: An unused parameter added for compatibility with legacy frontend queries
+///
+/// # Response
+///
+/// A json response body containing a PoolStatsResp object, otherwise a 404 Not Found response if the pool is unknown.
+/// Notably the response includes baseTvl, quoteTvl, lastPriceSwap, and feeRate for the pool (other fields are unused by the backend and included for legacy compatibility)
 #[get("/pool_stats")]
 pub async fn pool_stats(
     req: web::Query<PoolStatsRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
 
     match pool {
