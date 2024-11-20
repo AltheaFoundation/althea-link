@@ -1,4 +1,5 @@
 use super::database::{
+    get_syncing,
     positions::Position::{Ambient, Ranged},
     tracking::{LiquidityBump, TrackedPool},
 };
@@ -59,6 +60,9 @@ pub struct PoolRequest {
 #[post("/init_pool")]
 pub async fn query_pool(req: Json<PoolRequest>, db: web::Data<Arc<DB>>) -> impl Responder {
     let req = req.into_inner();
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying pool {:?}", req);
     let pool = get_init_pool(&db, req.base, req.quote, req.pool_idx);
     match pool {
@@ -78,6 +82,9 @@ pub async fn query_pool(req: Json<PoolRequest>, db: web::Data<Arc<DB>>) -> impl 
 /// The response body will be a JSON array of `InitPoolEvent` objects representing the moment of creation of the pools
 #[get("/init_pools")]
 pub async fn query_all_init_pools(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all InitPools");
     let pools = get_init_pools(&db);
     if pools.is_empty() {
@@ -98,6 +105,9 @@ pub async fn query_all_init_pools(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `MintRangedEvent` objects representing the moment of creation of the pools
 #[get("/all_mint_ranged")]
 pub async fn query_all_mint_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all MintRanged events");
     let events = get_all_mint_ranged(&db, None);
     if events.is_empty() {
@@ -118,6 +128,9 @@ pub async fn query_all_mint_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `MintAmbientEvent` objects representing the moment of creation of the pools
 #[get("/all_mint_ambient")]
 pub async fn query_all_mint_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all MintAmbinet events");
     let events = get_all_mint_ambient(&db, None);
     if events.is_empty() {
@@ -138,6 +151,9 @@ pub async fn query_all_mint_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `BurnRangedEvent` objects representing the moment of creation of the pools
 #[get("/all_burn_ranged")]
 pub async fn query_all_burn_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     info!("Querying all BurnRanged events");
     let events = get_all_burn_ranged(&db, None);
     if events.is_empty() {
@@ -158,7 +174,10 @@ pub async fn query_all_burn_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
 /// The response body will be a JSON array of `BurnAmbientEvent` objects representing the moment of creation of the pools
 #[get("/all_burn_ambient")]
 pub async fn query_all_burn_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
-    info!("Querying all MintAmbinet events");
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
+    info!("Querying all MintAmbient events");
     let events = get_all_burn_ambient(&db, None);
     if events.is_empty() {
         HttpResponse::NotFound().body("No BurnAmbientEvents found, try again later")
@@ -247,6 +266,9 @@ pub async fn user_pool_positions(
     req: web::Query<UserPoolPositionsRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let positions =
         get_active_user_pool_positions(&db, req.user, req.base, req.quote, req.pool_idx);
     if positions.is_empty() {
@@ -307,6 +329,9 @@ pub async fn user_positions(
     req: web::Query<UserPositionsRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let positions = get_active_user_positions(&db, req.user);
     if positions.is_empty() {
         HttpResponse::NotFound().body("No positions found for user");
@@ -387,6 +412,9 @@ pub async fn pool_liq_curve(
     req: web::Query<PoolLiqCurveRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
 
     match pool {
@@ -458,6 +486,9 @@ pub async fn pool_stats(
     req: web::Query<PoolStatsRequest>,
     db: web::Data<Arc<DB>>,
 ) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
     let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
 
     match pool {

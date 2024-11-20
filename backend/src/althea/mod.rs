@@ -9,7 +9,7 @@ use cosmos::delegations::start_delegation_cache_refresh_task;
 use cosmos::governance::start_proposal_cache_refresh_task;
 use cosmos::validators::start_validator_cache_refresh_task;
 use database::pools::get_init_pools;
-use database::{get_latest_searched_block, save_latest_searched_block};
+use database::{get_latest_searched_block, save_latest_searched_block, save_syncing};
 use deep_space::Contact;
 use log::{error, info};
 use std::cmp::min;
@@ -89,10 +89,13 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                     thread::sleep(Duration::from_secs(10));
                     continue;
                 }
-                let end_block = min(
-                    start_block + DEFAULT_SEARCH_RANGE.into(),
-                    current_block.unwrap(),
-                );
+                let current_block = current_block.unwrap();
+                if current_block - start_block < 500u32.into() {
+                    save_syncing(&db, false);
+                } else {
+                    save_syncing(&db, true);
+                }
+                let end_block = min(start_block + DEFAULT_SEARCH_RANGE.into(), current_block);
                 if let Err(e) =
                     search_for_pool_events(&db, &web3, &tokens, &templates, start_block, end_block)
                         .await
