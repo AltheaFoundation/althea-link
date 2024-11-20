@@ -12,7 +12,7 @@ pub mod server;
 pub mod tls;
 
 #[derive(Parser, Clone)]
-#[clap(version = "1.0", author = "Your Name")]
+#[clap(version = "1.0", author = "Christian Borst")]
 pub struct Opts {
     /// The ERC20 tokens for which pools have been deployed
     #[clap(short, long, value_delimiter = ',')]

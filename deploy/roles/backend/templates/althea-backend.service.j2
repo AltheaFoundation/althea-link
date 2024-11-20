@@ -6,9 +6,11 @@ After=network.target
 Type=simple
 User=root
 Group=root
-ExecStart=althea-link-backend
+ExecStart=althea-link-backend --https \
+--cert-file=/etc/letsencrypt/live/{{ link_server_name }}/fullchain.pem \
+--key-file=/etc/letsencrypt/live/{{ link_server_name }}/privkey.pem 
 Restart=always
-Environment=RUST_LOG=info port=8080 https=true cert_file=/etc/letsencrypt/live/{{ link_server_name }}/cert.pem key_file=/etc/letsencrypt/live/{{ link_server_name }}/chain.pem 
+Environment=RUST_LOG=info
 
 [Install]
 WantedBy=multi-user.target

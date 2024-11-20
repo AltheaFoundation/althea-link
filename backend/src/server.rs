@@ -7,6 +7,7 @@ use crate::althea::endpoints::{
 };
 use crate::tls::{load_certs, load_private_key};
 use crate::Opts;
+use actix_cors::Cors;
 use actix_web::{middleware, web, App, HttpServer, Responder};
 use deep_space::Contact;
 use log::info;
@@ -32,6 +33,12 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
         App::new()
             .app_data(db.clone())
             .app_data(contact.clone())
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header(),
+            )
             .route("/", web::get().to(index))
             // Cosmos-layer endpoints
             .service(get_validators)
