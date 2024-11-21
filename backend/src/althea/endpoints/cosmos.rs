@@ -19,6 +19,13 @@ use serde::Deserialize;
 
 use std::sync::Arc;
 
+#[derive(Deserialize)]
+pub struct ValidatorQuery {
+    active: Option<bool>,
+    #[serde(rename = "operatorAddress")]
+    operator_address: Option<String>,
+}
+
 /// Retrieves validators from the Althea chain
 ///
 /// # Query Parameters
@@ -40,13 +47,6 @@ use std::sync::Arc;
 /// - `GET /validators?active=true` - Returns only active validators
 /// - `GET /validators?active=false` - Returns only inactive validators
 /// - `GET /validators?operatorAddress=althea...` - Returns only the validator with the given operator address
-#[derive(Deserialize)]
-pub struct ValidatorQuery {
-    active: Option<bool>,
-    #[serde(rename = "operatorAddress")]
-    operator_address: Option<String>,
-}
-
 #[get("/validators")]
 pub async fn get_validators(
     query: web::Query<ValidatorQuery>,
@@ -86,6 +86,12 @@ pub async fn get_validators(
     }
 }
 
+#[derive(Deserialize)]
+pub struct ProposalQuery {
+    status: Option<i32>,
+    active: Option<bool>,
+}
+
 /// Retrieves proposals from the Althea chain
 ///
 /// # Query Parameters
@@ -120,12 +126,6 @@ pub async fn get_validators(
 /// - `GET /proposals?status=3` - Returns only passed proposals
 /// - `GET /proposals?status=4` - Returns only rejected proposals
 /// - `GET /proposals?status=5` - Returns only failed proposals
-#[derive(Deserialize)]
-pub struct ProposalQuery {
-    status: Option<i32>,
-    active: Option<bool>,
-}
-
 #[get("/proposals")]
 pub async fn get_proposals(
     query: web::Query<ProposalQuery>,
@@ -221,6 +221,18 @@ pub async fn get_delegations(
     }
 }
 
+/// Retrieves the apr from the Cosmos staking layer
+///
+/// # Query
+///
+/// A simple GET request
+///
+/// # Response
+///
+/// Returns a JSON object with the following fields:
+///
+/// - `apr`: The current annual percentage rate for staking rewards
+/// - `last_updated`: The timestamp of the last APR update
 #[get("/apr")]
 pub async fn get_staking_info(db: web::Data<Arc<DB>>) -> impl Responder {
     info!("Fetching staking info");

@@ -18,6 +18,21 @@ pub struct FrontendConstants {
     pub templates: Vec<Uint256>,
 }
 
+/// Returns all the constants that the frontend needs from one convenient endpoint
+///
+/// # Query
+///
+/// A simple GET request
+///
+/// # Response
+///
+/// Returns a JSON object with the following fields:
+///
+/// - `dex`: The address of the CrocSwapDEX contract
+/// - `query`: The address of the CrocQuery contract
+/// - `multicall`: The address of the Multicall3 contract
+/// - `tokens`: A list of the ERC20 tokens for which pools have been deployed
+/// - `templates`: A list of the poolIdx values for which pool templates exist
 #[get("/constants")]
 pub async fn get_constants(opts: web::Data<Arc<Opts>>) -> impl Responder {
     let constants = FrontendConstants {
