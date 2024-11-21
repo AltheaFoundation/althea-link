@@ -5,6 +5,7 @@
     state: present
     update_cache: yes
   become: true
+  ignore_errors: true
 
 - name: Copy site
   ansible.posix.synchronize:
