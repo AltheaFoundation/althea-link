@@ -1,7 +1,8 @@
 use crate::database::compact_db;
 use crate::Opts;
 use actix_web::rt::System;
-use actix_web::web;
+use actix_web::web::{self, to};
+use ambient::events::INIT_POOL_SIGNATURE;
 use ambient::pools::InitPoolEvent;
 use ambient::{initialize_templates, query_latest, search_for_pool_events};
 use clarity::{Address, Uint256};
@@ -35,10 +36,6 @@ pub const CACHE_DURATION: u64 = 300;
 
 pub const ALTHEA_PREFIX: &str = "althea";
 pub const TIMEOUT: Duration = Duration::from_secs(45);
-/// The core Ambient DEX contract
-const CROC_SWAP_CTR: &str = "0x7580bFE88Dd3d07947908FAE12d95872a260F2D8";
-/// The Ambient query helper contract
-const CROC_QUERY_CTR: &str = "0x7878ae4EAd0C3f4993173f2B40F84f4B89DD6995";
 const DEFAULT_START_SEARCH_BLOCK: u128 = 0u128;
 const DEFAULT_SEARCH_RANGE: u128 = 1000u128;
 /// Tokens we care to index pools for - any user may create pools permissionlessly
@@ -81,7 +78,9 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
 
         let web3 = get_althea_web3(TIMEOUT);
         runner.block_on(async move {
-            initialize_templates(&db, &web3, &templates).await.unwrap();
+            initialize_templates(&db, &web3, opts.query_contract, &templates)
+                .await
+                .unwrap();
             loop {
                 let start_block =
                     get_latest_searched_block(&db).unwrap_or(DEFAULT_START_SEARCH_BLOCK.into());
@@ -97,10 +96,22 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                 } else {
                     save_syncing(&db, true);
                 }
+                if current_block == start_block {
+                    // We are caught up, sleep for a bit
+                    thread::sleep(Duration::from_secs(3));
+                    continue;
+                }
                 let end_block = min(start_block + DEFAULT_SEARCH_RANGE.into(), current_block);
-                if let Err(e) =
-                    search_for_pool_events(&db, &web3, &tokens, &templates, start_block, end_block)
-                        .await
+                if let Err(e) = search_for_pool_events(
+                    &db,
+                    &web3,
+                    opts.dex_contract,
+                    &tokens,
+                    &templates,
+                    start_block,
+                    end_block,
+                )
+                .await
                 {
                     error!("Error searching for positions: {}", e);
                 }
@@ -112,7 +123,7 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                         .iter()
                         .map(|p| (p.base, p.quote, p.pool_idx))
                         .collect::<Vec<_>>();
-                    if let Err(e) = query_latest(&db, &web3, &pools).await {
+                    if let Err(e) = query_latest(&db, &web3, opts.query_contract, &pools).await {
                         error!("Error querying latest: {}", e);
                     }
                 }
@@ -126,33 +137,35 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                     info!("Halt after indexing set - halting");
                     std::process::exit(0);
                 }
-
-                thread::sleep(Duration::from_secs(10));
             }
         });
     });
 }
 
 fn get_tokens(opts: &Opts) -> Vec<Address> {
-    if opts.pool_tokens.is_empty() {
+    let tokens = if opts.pool_tokens.is_empty() {
         DEFAULT_TOKEN_ADDRESSES
             .iter()
             .map(|v| Address::from_str(v).unwrap())
             .collect::<Vec<_>>()
     } else {
         opts.pool_tokens.clone()
-    }
+    };
+    info!("Using pool tokens: {:?}", tokens);
+    tokens
 }
 
 fn get_templates(opts: &Opts) -> Vec<Uint256> {
-    if opts.pool_templates.is_empty() {
+    let templates = if opts.pool_templates.is_empty() {
         DEFAULT_POOL_TEMPLATES.to_vec()
     } else {
         opts.pool_templates.clone()
     }
     .iter()
     .map(|v| (*v).into())
-    .collect::<Vec<_>>()
+    .collect::<Vec<_>>();
+    info!("Using pool templates {:?}", templates);
+    templates
 }
 
 pub fn register_endpoints(cfg: &mut web::ServiceConfig) {

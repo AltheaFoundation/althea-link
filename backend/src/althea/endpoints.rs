@@ -89,7 +89,7 @@ pub async fn query_all_init_pools(db: web::Data<Arc<DB>>) -> impl Responder {
     info!("Querying all InitPools");
     let pools = get_init_pools(&db);
     if pools.is_empty() {
-        HttpResponse::NotFound().body("No pools found, try again later")
+        HttpResponse::NotFound().body("No pools found")
     } else {
         HttpResponse::Ok().json(pools)
     }
@@ -112,7 +112,7 @@ pub async fn query_all_mint_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
     info!("Querying all MintRanged events");
     let events = get_all_mint_ranged(&db, None);
     if events.is_empty() {
-        HttpResponse::NotFound().body("No MintRangedEvents found, try again later")
+        HttpResponse::NotFound().body("No MintRangedEvents found")
     } else {
         HttpResponse::Ok().json(events)
     }
@@ -135,7 +135,7 @@ pub async fn query_all_mint_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
     info!("Querying all MintAmbinet events");
     let events = get_all_mint_ambient(&db, None);
     if events.is_empty() {
-        HttpResponse::NotFound().body("No MintAmbientEvents found, try again later")
+        HttpResponse::NotFound().body("No MintAmbientEvents found")
     } else {
         HttpResponse::Ok().json(events)
     }
@@ -158,7 +158,7 @@ pub async fn query_all_burn_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
     info!("Querying all BurnRanged events");
     let events = get_all_burn_ranged(&db, None);
     if events.is_empty() {
-        HttpResponse::NotFound().body("No BurnRangedEvents found, try again later")
+        HttpResponse::NotFound().body("No BurnRangedEvents found")
     } else {
         HttpResponse::Ok().json(events)
     }
@@ -181,7 +181,7 @@ pub async fn query_all_burn_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
     info!("Querying all MintAmbient events");
     let events = get_all_burn_ambient(&db, None);
     if events.is_empty() {
-        HttpResponse::NotFound().body("No BurnAmbientEvents found, try again later")
+        HttpResponse::NotFound().body("No BurnAmbientEvents found")
     } else {
         HttpResponse::Ok().json(events)
     }

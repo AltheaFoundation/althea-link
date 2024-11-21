@@ -14,6 +14,14 @@ pub mod tls;
 #[derive(Parser, Clone)]
 #[clap(version = "1.0", author = "Christian Borst")]
 pub struct Opts {
+    /// The address of the CrocSwapDEX contract
+    #[clap(short, long)]
+    dex_contract: Address,
+
+    /// The address of the CrocQuery contract
+    #[clap(short, long)]
+    query_contract: Address,
+
     /// The ERC20 tokens for which pools have been deployed
     #[clap(short, long, value_delimiter = ',')]
     pool_tokens: Vec<Address>,
@@ -38,7 +46,7 @@ pub struct Opts {
     #[clap(long, requires("https"))]
     key_file: Option<String>,
 
-    #[clap(short, long, default_value = "backend_db_path")]
+    #[clap(long, default_value = "backend_db_path")]
     database_path: String,
 
     /// If true the database will be reindexed checking all avaialble data before returning to

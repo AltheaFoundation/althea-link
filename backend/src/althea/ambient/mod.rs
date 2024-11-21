@@ -16,16 +16,19 @@ use positions::{
 use swap::SwapEvent;
 use web30::client::Web3;
 
-use crate::althea::{
-    database::{
-        pools::{save_init_pool, save_swap},
-        positions::{
-            ambient::{save_burn_ambient, save_mint_ambient},
-            ranged::{save_burn_ranged, save_harvest, save_mint_ranged},
+use crate::{
+    althea::{
+        database::{
+            pools::{save_init_pool, save_swap},
+            positions::{
+                ambient::{save_burn_ambient, save_mint_ambient},
+                ranged::{save_burn_ranged, save_harvest, save_mint_ranged},
+            },
+            tracking::{mark_pool_dirty, set_dirty_pool, update_pool},
         },
-        tracking::{mark_pool_dirty, set_dirty_pool, update_pool},
+        error,
     },
-    error, CROC_SWAP_CTR,
+    Opts,
 };
 
 use super::{
@@ -49,7 +52,6 @@ use super::{
         tracking::{get_all_dirty_pools, updates::PoolUpdateEvent, DirtyPoolTracker},
     },
     error::AltheaError,
-    CROC_QUERY_CTR,
 };
 
 pub mod croc_query;
@@ -63,53 +65,53 @@ pub mod swap;
 pub async fn search_for_pool_events(
     db: &Arc<rocksdb::DB>,
     web3: &Web3,
+    dex_ctr: Address,
     tokens: &[Address],
     templates: &[Uint256],
     start_block: Uint256,
     end_block: Uint256,
 ) -> Result<(), AltheaError> {
-    let ctr = Address::from_str(CROC_SWAP_CTR).unwrap();
     info!("Searching for pool events");
     let init_events = web3.check_for_events(
         start_block,
         Some(end_block),
-        vec![ctr],
+        vec![dex_ctr],
         vec![INIT_POOL_SIGNATURE],
     );
     let swap_events = web3.check_for_events(
         start_block,
         Some(end_block),
-        vec![ctr],
+        vec![dex_ctr],
         vec![SWAP_SIGNATURE],
     );
     let mint_ranged_events = web3.check_for_events(
         start_block,
         Some(end_block),
-        vec![ctr],
+        vec![dex_ctr],
         vec![MINT_RANGED_SIGNATURE],
     );
     let mint_ambient_events = web3.check_for_events(
         start_block,
         Some(end_block),
-        vec![ctr],
+        vec![dex_ctr],
         vec![MINT_AMBIENT_SIGNATURE],
     );
     let burn_ranged_events = web3.check_for_events(
         start_block,
         Some(end_block),
-        vec![ctr],
+        vec![dex_ctr],
         vec![BURN_RANGED_SIGNATURE],
     );
     let burn_ambient_events = web3.check_for_events(
         start_block,
         Some(end_block),
-        vec![ctr],
+        vec![dex_ctr],
         vec![BURN_AMBIENT_SIGNATURE],
     );
     let harvest_events = web3.check_for_events(
         start_block,
         Some(end_block),
-        vec![ctr],
+        vec![dex_ctr],
         vec![HARVEST_SIGNATURE],
     );
     let (init, swap, mint_ranged, mint_ambient, burn_ranged, burn_ambient, harvest) = join!(
@@ -313,13 +315,14 @@ pub fn track_pool(db: &Arc<rocksdb::DB>, pool: DirtyPoolTracker) -> Result<(), A
 pub async fn query_latest(
     db: &Arc<rocksdb::DB>,
     web30: &Web3,
+    query_ctr: Address,
     pools: &[(Address, Address, Uint256)],
 ) -> Result<(), AltheaError> {
     info!("Querying latest pool data");
 
     let mut futures = vec![];
     for pool in pools {
-        futures.push(query_pool(db, web30, pool.0, pool.1, pool.2));
+        futures.push(query_pool(db, web30, query_ctr, pool.0, pool.1, pool.2));
     }
 
     let results = join_all(futures).await;
@@ -333,14 +336,14 @@ pub async fn query_latest(
 pub async fn query_pool(
     db: &Arc<rocksdb::DB>,
     web30: &Web3,
+    query_ctr: Address,
     base: Address,
     quote: Address,
     pool_idx: Uint256,
 ) -> Result<(), AltheaError> {
-    let croc_query = Address::from_str(CROC_QUERY_CTR).unwrap();
-    let curve = croc_query::get_curve(web30, croc_query, base, quote, pool_idx);
-    let price = croc_query::get_price(web30, croc_query, base, quote, pool_idx);
-    let liq = croc_query::get_liquidity(web30, croc_query, base, quote, pool_idx);
+    let curve = croc_query::get_curve(web30, query_ctr, base, quote, pool_idx);
+    let price = croc_query::get_price(web30, query_ctr, base, quote, pool_idx);
+    let liq = croc_query::get_liquidity(web30, query_ctr, base, quote, pool_idx);
 
     let (curve, price, liq) = join!(curve, price, liq);
 
@@ -371,12 +374,12 @@ pub async fn query_pool(
 pub async fn initialize_templates(
     db: &Arc<rocksdb::DB>,
     web30: &Web3,
+    query_ctr: Address,
     templates: &[Uint256],
 ) -> Result<(), AltheaError> {
-    let croc_query = Address::from_str(CROC_QUERY_CTR).unwrap();
     for template in templates {
         if get_pool_template(db, *template).is_none() {
-            let pool_template = get_template(web30, croc_query, *template).await?;
+            let pool_template = get_template(web30, query_ctr, *template).await?;
             save_pool_template(db, *template, pool_template);
         }
     }
