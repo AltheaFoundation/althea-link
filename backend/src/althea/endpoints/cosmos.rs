@@ -232,14 +232,16 @@ pub async fn get_delegations(
 /// Returns a JSON object with the following fields:
 ///
 /// - `apr`: The current annual percentage rate for staking rewards
-/// - `last_updated`: The timestamp of the last APR update
 #[get("/apr")]
-pub async fn get_staking_info(db: web::Data<Arc<DB>>) -> impl Responder {
+pub async fn get_staking_info(
+    db: web::Data<Arc<DB>>,
+    contact: web::Data<Arc<Contact>>,
+) -> impl Responder {
     info!("Fetching staking info");
-    match fetch_staking_info(&db).await {
+    match fetch_staking_info(&db, &contact).await {
         Ok(info) => HttpResponse::Ok().json(info),
         Err(e) => {
-            error!("Error fetching staking info: {}", e);
+            error!("Failed to fetch staking info: {}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
