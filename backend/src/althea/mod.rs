@@ -13,6 +13,7 @@ use cosmos::validators::start_validator_cache_refresh_task;
 use database::pools::get_init_pools;
 use database::{get_latest_searched_block, save_latest_searched_block, save_syncing};
 use deep_space::Contact;
+use endpoints::cosmos::{get_delegations, get_proposals, get_staking_info, get_validators};
 use log::{error, info};
 use std::cmp::min;
 use std::str::FromStr;
@@ -169,8 +170,8 @@ fn get_templates(opts: &Opts) -> Vec<Uint256> {
 }
 
 pub fn register_endpoints(cfg: &mut web::ServiceConfig) {
-    cfg.service(endpoints::get_validators)
-        .service(endpoints::get_proposals)
-        .service(endpoints::get_delegations)
-        .service(endpoints::get_staking_info);
+    cfg.service(get_validators)
+        .service(get_proposals)
+        .service(get_delegations)
+        .service(get_staking_info);
 }

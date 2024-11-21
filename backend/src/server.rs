@@ -1,9 +1,12 @@
 use std::sync::Arc;
 
-use crate::althea::endpoints::{
-    get_delegations, get_proposals, get_staking_info, get_validators, pool_liq_curve, pool_stats,
-    query_all_burn_ambient, query_all_burn_ranged, query_all_init_pools, query_all_mint_ambient,
-    query_all_mint_ranged, query_pool, user_pool_positions, user_positions,
+use crate::althea::endpoints::ambient::{
+    pool_liq_curve, pool_stats, query_all_burn_ambient, query_all_burn_ranged,
+    query_all_init_pools, query_all_mint_ambient, query_all_mint_ranged, query_pool,
+    user_pool_positions, user_positions,
+};
+use crate::althea::endpoints::cosmos::{
+    get_delegations, get_proposals, get_staking_info, get_validators,
 };
 use crate::tls::{load_certs, load_private_key};
 use crate::Opts;
