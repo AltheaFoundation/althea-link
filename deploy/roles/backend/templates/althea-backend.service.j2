@@ -10,8 +10,8 @@ ExecStart=althea-link-backend --https \
 --cert-file=/etc/letsencrypt/live/{{ link_server_name }}/fullchain.pem \
 --key-file=/etc/letsencrypt/live/{{ link_server_name }}/privkey.pem \
 --pool-templates=36000 \
---pool-tokens="0x898dA72aB7628E1F12001A06Bc2af98A25502Cd0,0xc4Cb4eA86F9271A20eB72Ac9D7ca75637419FC08,0x892e95d3e908CAF025205Ec4C575B4423374fd17"
---dex-contract="0xDA7d20C76cBD8b0c33e4A322E80488CC69fE5cdb"
+--pool-tokens="0x898dA72aB7628E1F12001A06Bc2af98A25502Cd0,0xc4Cb4eA86F9271A20eB72Ac9D7ca75637419FC08,0x892e95d3e908CAF025205Ec4C575B4423374fd17" \
+--dex-contract="0xDA7d20C76cBD8b0c33e4A322E80488CC69fE5cdb" \
 --query-contract="0x1E27d2e0B1Abb3bEC2F915152F0597EFdacf3da1"
 
 Restart=always
