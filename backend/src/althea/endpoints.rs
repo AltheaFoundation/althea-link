@@ -612,7 +612,7 @@ pub async fn get_delegations(
     }
 }
 
-#[get("/staking_info")]
+#[get("/apr")]
 pub async fn get_staking_info(db: web::Data<Arc<DB>>) -> impl Responder {
     info!("Fetching staking info");
     match fetch_staking_info(&db).await {
