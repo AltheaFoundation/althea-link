@@ -8,6 +8,7 @@ use crate::althea::endpoints::ambient::{
 use crate::althea::endpoints::cosmos::{
     get_delegations, get_proposals, get_staking_info, get_validators,
 };
+use crate::althea::endpoints::get_constants;
 use crate::tls::{load_certs, load_private_key};
 use crate::Opts;
 use actix_cors::Cors;
@@ -32,10 +33,12 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
     .expect("Failed to create Contact");
     let contact = web::Data::new(Arc::new(contact));
 
+    let op = opts.clone();
     let server = HttpServer::new(move || {
         App::new()
             .app_data(db.clone())
             .app_data(contact.clone())
+            .app_data(op.clone())
             .wrap(
                 Cors::default()
                     .allow_any_origin()
@@ -43,6 +46,7 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
                     .allow_any_header(),
             )
             .route("/", web::get().to(index))
+            .service(get_constants)
             // Cosmos-layer endpoints
             .service(get_validators)
             .service(get_proposals)

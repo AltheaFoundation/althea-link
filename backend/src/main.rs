@@ -22,6 +22,10 @@ pub struct Opts {
     #[clap(short, long)]
     query_contract: Address,
 
+    /// The address of the Multicall3 contract
+    #[clap(short, long)]
+    multicall_contract: Address,
+
     /// The ERC20 tokens for which pools have been deployed
     #[clap(short, long, value_delimiter = ',')]
     pool_tokens: Vec<Address>,
