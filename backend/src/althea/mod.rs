@@ -1,8 +1,7 @@
 use crate::database::compact_db;
 use crate::Opts;
 use actix_web::rt::System;
-use actix_web::web::{self, to};
-use ambient::events::INIT_POOL_SIGNATURE;
+use actix_web::web::{self};
 use ambient::pools::InitPoolEvent;
 use ambient::{initialize_templates, query_latest, search_for_pool_events};
 use clarity::{Address, Uint256};

@@ -1,4 +1,4 @@
-use std::{str::FromStr, sync::Arc};
+use std::sync::Arc;
 
 use clarity::{Address, Uint256};
 use croc_query::get_template;
@@ -16,8 +16,7 @@ use positions::{
 use swap::SwapEvent;
 use web30::client::Web3;
 
-use crate::{
-    althea::{
+use crate::althea::{
         database::{
             pools::{save_init_pool, save_swap},
             positions::{
@@ -27,9 +26,7 @@ use crate::{
             tracking::{mark_pool_dirty, set_dirty_pool, update_pool},
         },
         error,
-    },
-    Opts,
-};
+    };
 
 use super::{
     database::{
