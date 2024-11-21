@@ -1,14 +1,12 @@
-use crate::althea::{abi_util::format_decimal_18, ALTHEA_GRPC_URL, CACHE_DURATION};
-use cosmos_sdk_proto_althea::cosmos::mint::v1beta1::query_client::QueryClient as MintQueryClient;
-use cosmos_sdk_proto_althea::cosmos::staking::v1beta1::query_client::QueryClient as StakingQueryClient;
-use cosmos_sdk_proto_althea::cosmos::staking::v1beta1::QueryPoolRequest;
+use crate::althea::{abi_util::format_decimal_18, CACHE_DURATION};
+
+use deep_space::Contact;
 use log::{error, info};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tonic::transport::Endpoint;
 
 #[derive(Debug, Clone)]
 pub struct StakingInfo {
@@ -68,6 +66,7 @@ impl<'de> Deserialize<'de> for StakingInfo {
 
 pub async fn fetch_staking_info(
     db: &rocksdb::DB,
+    contact: &deep_space::Contact,
 ) -> Result<StakingInfo, Box<dyn std::error::Error>> {
     info!("Fetching staking info");
     let cached = get_cached_staking_info(db);
@@ -75,44 +74,23 @@ pub async fn fetch_staking_info(
         return Ok(info);
     }
 
-    let channel = Endpoint::from_static(ALTHEA_GRPC_URL).connect().await?;
+    // Fetch  annual provisions
+    let annual_provisions = contact.get_annual_provisions().await?;
 
-    // Fetch annual provisions
-    let mut mint_client = MintQueryClient::new(channel.clone());
-    let annual_provisions_req = tonic::Request::new(
-        cosmos_sdk_proto_althea::cosmos::mint::v1beta1::QueryAnnualProvisionsRequest {},
-    );
-    let annual_provisions_bytes = mint_client
-        .annual_provisions(annual_provisions_req)
-        .await?
-        .into_inner()
-        .annual_provisions;
-
-    // Handle empty response
-    let annual_provisions = if annual_provisions_bytes.is_empty() {
-        "0".to_string()
-    } else {
-        String::from_utf8(annual_provisions_bytes)
-            .map_err(|e| format!("Invalid UTF-8 in annual_provisions: {}", e))?
-    };
+    let annual_provisions = annual_provisions.to_string();
 
     let annual_provisions = format_decimal_18(&annual_provisions);
 
-    // Fetch pool info
-    let mut staking_client = StakingQueryClient::new(channel);
-    let pool_req = tonic::Request::new(QueryPoolRequest {});
-    let pool = staking_client
-        .pool(pool_req)
-        .await?
-        .into_inner()
-        .pool
-        .ok_or("Pool not found")?;
+    // Fetch  pool info
+    let pool = contact.get_staking_pool_info().await?;
 
-    // Format bonded_tokens
-    let bonded_tokens = format_decimal_18(&pool.bonded_tokens);
+    let bonded_tokens = pool.bonded_tokens.to_string();
 
-    // Calculate APR
+    let bonded_tokens = format_decimal_18(&bonded_tokens);
+
+    // Calculate and log APR
     let apr = calculate_apr(&annual_provisions, &bonded_tokens);
+    info!("Calculated APR: {}", apr);
 
     let staking_info = StakingInfo {
         apr,
@@ -132,27 +110,37 @@ pub async fn fetch_staking_info(
 fn calculate_apr(annual_provisions: &str, bonded_tokens: &str) -> String {
     let annual_provisions = match Decimal::from_str(annual_provisions) {
         Ok(ap) => ap,
-        Err(_) => return "0.000000000000000000".to_string(),
+        Err(e) => {
+            error!("Failed to parse annual provisions: {}", e);
+            return "0.000000000000000000".to_string();
+        }
     };
 
     let bonded_tokens = match Decimal::from_str(bonded_tokens) {
-        Ok(bt) => bt / Decimal::from(10u64.pow(18)), // Convert to decimal form
-        Err(_) => return "0.000000000000000000".to_string(),
+        Ok(bt) => bt,
+        Err(e) => {
+            error!("Failed to parse bonded tokens: {}", e);
+            return "0.000000000000000000".to_string();
+        }
     };
 
     // If bonded tokens is 0, return 0 to avoid division by zero
     if bonded_tokens.is_zero() {
+        info!("Bonded tokens is zero, returning 0");
         return "0.000000000000000000".to_string();
     }
 
     // If annual provisions is 0, return 0
     if annual_provisions.is_zero() {
+        info!("Annual provisions is zero, returning 0");
         return "0.000000000000000000".to_string();
     }
 
-    // Now both values are in decimal form, we can divide them directly
-    let apr = annual_provisions / bonded_tokens;
-    apr.to_string()
+    // Calculate APR as a percentage
+    let apr = (annual_provisions / bonded_tokens) * Decimal::from(100);
+
+    // Format to 6 decimal places
+    format!("{:.6}", apr)
 }
 
 fn get_cached_staking_info(db: &rocksdb::DB) -> Option<StakingInfo> {
@@ -212,12 +200,12 @@ fn cache_staking_info(
     Ok(())
 }
 
-pub fn start_staking_info_cache_refresh_task(db: Arc<rocksdb::DB>) {
+pub fn start_staking_info_cache_refresh_task(db: Arc<rocksdb::DB>, contact: Contact) {
     tokio::spawn(async move {
         loop {
             if get_cached_staking_info(&db).is_none() {
                 info!("Staking info cache expired, refreshing...");
-                match fetch_staking_info(&db).await {
+                match fetch_staking_info(&db, &contact).await {
                     Ok(_) => info!("Successfully refreshed staking info cache"),
                     Err(e) => error!("Failed to refresh staking info cache: {}", e),
                 }

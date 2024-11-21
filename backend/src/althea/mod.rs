@@ -69,8 +69,8 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
     let contact = get_althea_contact(TIMEOUT);
     start_validator_cache_refresh_task(db.clone(), contact.clone());
     start_proposal_cache_refresh_task(db.clone(), contact.clone());
-    start_delegation_cache_refresh_task(db.clone(), contact);
-    start_staking_info_cache_refresh_task(db.clone());
+    start_delegation_cache_refresh_task(db.clone(), contact.clone());
+    start_staking_info_cache_refresh_task(db.clone(), contact.clone());
 
     thread::spawn(move || {
         let db = db.clone();
