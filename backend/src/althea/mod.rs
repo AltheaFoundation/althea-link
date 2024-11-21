@@ -7,6 +7,7 @@ use ambient::{initialize_templates, query_latest, search_for_pool_events};
 use clarity::{Address, Uint256};
 use cosmos::delegations::start_delegation_cache_refresh_task;
 use cosmos::governance::start_proposal_cache_refresh_task;
+use cosmos::staking::start_staking_info_cache_refresh_task;
 use cosmos::validators::start_validator_cache_refresh_task;
 use database::pools::get_init_pools;
 use database::{get_latest_searched_block, save_latest_searched_block, save_syncing};
@@ -72,6 +73,7 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
     start_validator_cache_refresh_task(db.clone(), contact.clone());
     start_proposal_cache_refresh_task(db.clone(), contact.clone());
     start_delegation_cache_refresh_task(db.clone(), contact);
+    start_staking_info_cache_refresh_task(db.clone());
 
     thread::spawn(move || {
         let db = db.clone();
@@ -156,5 +158,6 @@ fn get_templates(opts: &Opts) -> Vec<Uint256> {
 pub fn register_endpoints(cfg: &mut web::ServiceConfig) {
     cfg.service(endpoints::get_validators)
         .service(endpoints::get_proposals)
-        .service(endpoints::get_delegations);
+        .service(endpoints::get_delegations)
+        .service(endpoints::get_staking_info);
 }

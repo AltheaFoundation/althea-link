@@ -7,6 +7,7 @@ use crate::althea::{
     cosmos::{
         delegations::fetch_delegations,
         governance::{fetch_proposals, fetch_proposals_filtered},
+        staking::fetch_staking_info,
         validators::{fetch_validator_by_address, fetch_validators_filtered},
     },
     database::{
@@ -680,13 +681,32 @@ pub async fn get_delegations(
     match fetch_delegations(&db, &contact, delegator_address).await {
         Ok(response) => {
             if response.delegations.is_empty() {
-                HttpResponse::NotFound().body("No delegations found")
+                HttpResponse::Ok().json(serde_json::json!({
+                    "delegations": null,
+                    "unbondingDelegations": null,
+                    "rewards": {
+                        "rewards": [],
+                        "total": []
+                    }
+                }))
             } else {
                 HttpResponse::Ok().json(response)
             }
         }
         Err(e) => {
             error!("Error fetching delegations: {}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+#[get("/apr")]
+pub async fn get_staking_info(db: web::Data<Arc<DB>>) -> impl Responder {
+    info!("Fetching staking info");
+    match fetch_staking_info(&db).await {
+        Ok(info) => HttpResponse::Ok().json(info),
+        Err(e) => {
+            error!("Error fetching staking info: {}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
