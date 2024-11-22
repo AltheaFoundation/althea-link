@@ -56,7 +56,7 @@ export async function stakingTx(
     CANTO_MAINNET_EVM.chainId
   );
 
-  console.log(checkPubKeyError);
+
   if (!txParams || !txParams.ethAccount) {
     return NEW_ERROR(
       "Invalid transaction parameters or Ethereum address is missing."
