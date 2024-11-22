@@ -1,9 +1,13 @@
 use crate::server::start_server;
-use althea::start_ambient_indexer;
+use althea::{
+    database::{get_version, save_version},
+    start_ambient_indexer,
+};
 use clap::Parser;
 use clarity::Address;
 use env_logger::Env;
-use log::info;
+use log::{debug, info};
+use shadow_rs::{shadow, Format};
 use std::{net::IpAddr, sync::Arc};
 
 pub mod althea;
@@ -69,7 +73,13 @@ pub struct Opts {
     /// If true the database will be compacted on startup then the server will halt
     #[clap(long, default_value = "false")]
     compact_and_halt: bool,
+
+    /// If true, will force the use of a database whose version does not match the current commit hash
+    #[clap(short = 'f', long, default_value = "false")]
+    force_use_database: bool,
 }
+
+shadow!(build_mdta);
 
 #[tokio::main]
 async fn main() {
@@ -79,6 +89,8 @@ async fn main() {
     let db = database::open_database(opts.clone());
     let db = Arc::new(db);
 
+    check_version(&db, opts.clone(), build_mdta::COMMIT_HASH.to_string());
+
     // Start the background indexer service
     info!("Starting ambient indexer");
     start_ambient_indexer(opts.clone(), db.clone());
@@ -86,4 +98,28 @@ async fn main() {
     // Start the Actix web server
     info!("Starting web server");
     start_server(opts, db.clone()).await;
+}
+
+fn check_version(db: &rocksdb::DB, opts: Opts, commit_hash: String) {
+    let db_version = get_version(db);
+
+    if commit_hash.is_empty() && !opts.force_use_database {
+        panic!("No build commit hash found, run with -f to force use of database");
+    }
+    if let Some(db_version) = db_version {
+        debug!("Previous version found: {}", db_version);
+        if db_version != commit_hash {
+            if opts.force_use_database {
+                info!("Forcing use of database with old version {db_version}");
+            } else {
+                panic!(
+                    "Database version {db_version} does not match current commit hash {commit_hash}"
+                );
+            }
+        }
+    } else {
+        debug!("No previous version found");
+    }
+
+    save_version(db, &commit_hash);
 }

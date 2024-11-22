@@ -40,3 +40,19 @@ pub fn save_syncing(db: &rocksdb::DB, syncing: bool) {
     let value = if syncing { vec![1] } else { vec![0] };
     db.put(SYNCING_KEY.as_bytes(), value).unwrap();
 }
+
+pub const VERSION_KEY: &str = "version";
+pub fn get_version(db: &rocksdb::DB) -> Option<String> {
+    let v = db.get(VERSION_KEY.as_bytes()).unwrap();
+    #[allow(clippy::question_mark)]
+    if v.is_none() {
+        debug!("No version key");
+        return None;
+    }
+    Some(String::from_utf8(v.unwrap()).unwrap())
+}
+
+pub fn save_version(db: &rocksdb::DB, version: &str) {
+    debug!("Saving version {}", version);
+    db.put(VERSION_KEY.as_bytes(), version.as_bytes()).unwrap();
+}

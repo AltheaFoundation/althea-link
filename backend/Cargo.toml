@@ -31,9 +31,14 @@ serde_json = "1.0"
 actix-web-httpauth = "0.8"
 num-traits = "0.2"
 num-integer = "0.1"
+shadow-rs = {version = "0.36", features=["metadata"]}
+
 deep_space = {version="2.27.1", features=["ethermint"]}
 clarity = "1.5"
 web30 = "1.5"
+
+[build-dependencies]
+shadow-rs = "0.36"
 
 [dev-dependencies]
 actix = "0.13"
