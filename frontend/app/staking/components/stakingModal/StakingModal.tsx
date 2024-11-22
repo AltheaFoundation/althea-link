@@ -17,15 +17,20 @@ import Selector from "@/components/selector/selector";
 import Amount from "@/components/amount/amount";
 import { Validation } from "@/config/interfaces";
 import { levenshteinDistance } from "@/utils/staking/searchUtils";
-
+import { useChain } from "@cosmos-kit/react";
 import {
   CLAIM_STAKING_REWARD_FEE,
   DELEGATE_FEE,
   REDELEGATE_FEE,
   UNDELEGATE_FEE,
 } from "@/config/consts/fees";
+import { useToast } from "@/components/toast";
 import BigNumber from "bignumber.js";
 import { TX_ERROR_TYPES } from "@/config/consts/errors";
+import { useTx } from "@/hooks/cosmos/useTx";
+import { useFeeEstimation } from "@/hooks/cosmos/useFeeEstimation";
+import { cosmos } from "interchain";
+import { StdFee } from "@cosmjs/stargate";
 interface StakingModalParams {
   validator: ValidatorWithDelegations | null;
   cantoBalance: string;
@@ -68,6 +73,18 @@ export const StakingModal = (props: StakingModalParams) => {
         return "0";
     }
   };
+
+  //check if cosmos is connected
+  const { address } = useChain("althea");
+
+  // toast for cosmos signing
+  const toast = useToast();
+
+  // cosmos signer
+  const { tx, isSigning, setIsSigning } = useTx("althea");
+  const { estimateFee } = useFeeEstimation("althea");
+  const { delegate, undelegate, beginRedelegate } =
+    cosmos.staking.v1beta1.MessageComposer.withTypeUrl;
 
   const dropdownItems =
     searchQuery == ""
@@ -134,7 +151,79 @@ export const StakingModal = (props: StakingModalParams) => {
     ]
   );
 
-  console.log(txValidation.error);
+  const handleCosmosStakeTx = async () => {
+    try {
+      setIsSigning(true);
+      // Convert input amount to match the same format as stock transactions
+      const convertedAmount = new BigNumber(inputAmount)
+        .multipliedBy(new BigNumber(10).pow(18))
+        .toString();
+
+      let msg;
+      switch (selectedTx) {
+        case StakingTxTypes.DELEGATE:
+          msg = delegate({
+            delegatorAddress: address ?? "",
+            validatorAddress: props.validator?.operator_address ?? "",
+            amount: {
+              denom: "aalthea",
+              amount: convertedAmount,
+            },
+          });
+          break;
+        case StakingTxTypes.UNDELEGATE:
+          msg = undelegate({
+            delegatorAddress: address ?? "",
+            validatorAddress: props.validator?.operator_address ?? "",
+            amount: {
+              denom: "aalthea",
+              amount: convertedAmount,
+            },
+          });
+          break;
+        case StakingTxTypes.REDELEGATE:
+          msg = beginRedelegate({
+            delegatorAddress: address ?? "",
+            validatorSrcAddress: props.validator?.operator_address ?? "",
+            validatorDstAddress: validatorToRedelegate?.operator_address ?? "",
+            amount: {
+              denom: "aalthea",
+              amount: convertedAmount,
+            },
+          });
+          break;
+      }
+
+      if (!msg) return;
+
+      const fee: StdFee = {
+        amount: [{ denom: "aalthea", amount: feeMap(selectedTx) }],
+        gas: "600000",
+      };
+      await tx([msg], {
+        fee,
+        onSuccess: () => {
+          setIsSigning(false);
+          toast.add({
+            toastID: new Date().getTime().toString(),
+            primary: `${selectedTx} successful`,
+            state: "success",
+            duration: 5000,
+          });
+        },
+      });
+    } catch (error) {
+      console.error("Staking transaction failed:", error);
+      toast.add({
+        toastID: new Date().getTime().toString(),
+        primary: `${selectedTx} successful` + (error as Error).message,
+        state: "failure",
+        duration: 5000,
+      });
+    } finally {
+      setIsSigning(false);
+    }
+  };
 
   useEffect(() => {
     if (userDelegationBalance === "0") {
@@ -150,6 +239,26 @@ export const StakingModal = (props: StakingModalParams) => {
     selectedTx == StakingTxTypes.DELEGATE
       ? maxDelegateAmount()
       : userDelegationBalance;
+
+  const validateCosmosInput = (
+    amount: string,
+    selectedTx: StakingTxTypes,
+    validatorToRedelegate?: Validator | null
+  ) => {
+    if (!amount || Number(amount) <= 0) {
+      return true;
+    }
+
+    if (selectedTx === StakingTxTypes.REDELEGATE && !validatorToRedelegate) {
+      return true;
+    }
+
+    const amountBN = new BigNumber(amount);
+    const maxAmountBN = new BigNumber(maxAmount ?? "0");
+
+    return amountBN.gt(maxAmountBN);
+  };
+
   return (
     <Container className={styles.modalContainer}>
       <Spacer />
@@ -298,10 +407,12 @@ export const StakingModal = (props: StakingModalParams) => {
           }
         >
           GAS FEES :{" "}
-          {displayAmount(feeMap(selectedTx), 18, {
-            short: false,
-            commify: false,
-          })}{" "}
+          {address
+            ? "0.06"
+            : displayAmount(feeMap(selectedTx), 18, {
+                short: false,
+                commify: false,
+              })}{" "}
           ALTHEA
         </Text>
       </div>
@@ -309,10 +420,26 @@ export const StakingModal = (props: StakingModalParams) => {
       <div className={styles.buttonContainer}>
         <Button
           width="fill"
-          onClick={() => {
-            props.onConfirm(inputAmount, selectedTx, validatorToRedelegate);
-          }}
-          disabled={txValidation.error}
+          onClick={
+            address
+              ? handleCosmosStakeTx
+              : () =>
+                  props.onConfirm(
+                    inputAmount,
+                    selectedTx,
+                    validatorToRedelegate
+                  )
+          }
+          disabled={
+            isSigning ||
+            (address
+              ? validateCosmosInput(
+                  inputAmount,
+                  selectedTx,
+                  validatorToRedelegate
+                )
+              : txValidation.error)
+          }
         >
           {selectedTx}
         </Button>

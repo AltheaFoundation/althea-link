@@ -9,6 +9,8 @@ export const useFeeEstimation = (chainName: string) => {
 
   const gasPrice = chain.fees?.fee_tokens[0].average_gas_price || 0.025;
 
+
+
   const estimateFee = async (
     address: string,
     messages: EncodeObject[],
@@ -20,18 +22,14 @@ export const useFeeEstimation = (chainName: string) => {
       throw new Error('getSigningStargateClient error');
     }
 
-    const gasEstimation = await stargateClient.simulate(
-      address,
-      messages,
-      memo
-    );
+    const gasEstimation = await stargateClient.simulate(address, messages, memo);
     if (!gasEstimation) {
       throw new Error('estimate gas error');
     }
 
     const fee = calculateFee(
       Math.round(gasEstimation * (modifier || 1.5)),
-      GasPrice.fromString(gasPrice + "aalthea")
+      GasPrice.fromString(gasPrice + 'umfx')
     );
 
     return fee;

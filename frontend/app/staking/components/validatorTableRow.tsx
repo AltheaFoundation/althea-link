@@ -54,7 +54,7 @@ export const GenerateValidatorTableRow = (
         );
         onDelegate(validator);
       }}
-      disabled={validator.jailed || validator.rank > 10}
+      disabled={validator.jailed || validator.rank <= 10}
     >
       DELEGATE
     </Button>

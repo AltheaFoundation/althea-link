@@ -201,7 +201,7 @@ pub async fn get_delegations(
 
     match fetch_delegations(&db, &contact, delegator_address).await {
         Ok(response) => {
-            if response.delegations.is_empty() {
+            if response.delegations.is_empty() && response.unbonding_delegations.is_none() {
                 HttpResponse::Ok().json(serde_json::json!({
                     "delegations": null,
                     "unbondingDelegations": null,
@@ -211,7 +211,12 @@ pub async fn get_delegations(
                     }
                 }))
             } else {
-                HttpResponse::Ok().json(response)
+                // Construct response maintaining any existing unbonding delegations
+                HttpResponse::Ok().json(serde_json::json!({
+                    "delegations":  response.delegations,
+                    "unbondingDelegations": response.unbonding_delegations,
+                    "rewards": response.rewards
+                }))
             }
         }
         Err(e) => {

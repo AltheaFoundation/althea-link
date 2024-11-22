@@ -11,7 +11,7 @@ import { ChainProvider } from "@cosmos-kit/react";
 import { cosmosAminoConverters, cosmosProtoRegistry } from "interchain";
 import { wallets as keplr } from "@cosmos-kit/keplr";
 import { wallets as cosmostation } from "@cosmos-kit/cosmostation";
-
+import { ToastContainer } from "@/components/toast";
 import { wallets as station } from "@cosmos-kit/station";
 import { wallets as trust } from "@cosmos-kit/trust";
 import { wallets as leap } from "@cosmos-kit/leap";
@@ -149,16 +149,17 @@ export default function RootLayout({
             isLazy: true,
             endpoints: {
               altheatestnet: {
-                rpc: ["http://testnet.althea.net:26657"],
-                rest: ["http://testnet.althea.net:1317/"],
+                rpc: ["https://nodes.chandrastation.com/rpc/althea/"],
+                rest: ["https://nodes.chandrastation.com/api/althea//"],
               },
             },
           }}
         >
           <CantoWalletProvider>
             <ReactQueryClientProvider>
-              <div className="body">
-                {/* <InfoBar
+              <ToastContainer>
+                <div className="body">
+                  {/* <InfoBar
                 values={[
                   {
                     name: "contracts w/ CSR enabled:",
@@ -186,41 +187,42 @@ export default function RootLayout({
                   },
                 ]}
               /> */}
-                <NavBar />
-                {children}
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: isMobile ? "center" : "space-between",
-                    alignItems: "center",
-                    alignContent: "center",
-                    justifyItems: "center",
-                    position: "sticky",
-                    bottom: 0,
-                    marginBottom: isMobile ? "0px" : "24px",
-                    marginRight: isMobile ? "auto" : "0px",
-                    marginLeft: isMobile ? "auto" : "0px",
-                    marginTop: isMobile ? "0px" : "24px",
-                    padding: isMobile ? "0px 0px" : "20px 32px",
-                  }}
-                >
-                  {isMobile ? (
-                    <div />
-                  ) : (
-                    <>
-                      <StatusText />
-                      <WalletConnect
-                        setIsOpen={setIsWalletModalOpen}
-                        isOpen={isWalletModalOpen}
-                        onClose={() => setIsWalletModalOpen(false)}
-                      />
-                    </>
-                  )}
-                </div>
+                  <NavBar />
+                  {children}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: isMobile ? "center" : "space-between",
+                      alignItems: "center",
+                      alignContent: "center",
+                      justifyItems: "center",
+                      position: "sticky",
+                      bottom: 0,
+                      marginBottom: isMobile ? "0px" : "24px",
+                      marginRight: isMobile ? "auto" : "0px",
+                      marginLeft: isMobile ? "auto" : "0px",
+                      marginTop: isMobile ? "0px" : "24px",
+                      padding: isMobile ? "0px 0px" : "20px 32px",
+                    }}
+                  >
+                    {isMobile ? (
+                      <div />
+                    ) : (
+                      <>
+                        <StatusText />
+                        <WalletConnect
+                          setIsOpen={setIsWalletModalOpen}
+                          isOpen={isWalletModalOpen}
+                          onClose={() => setIsWalletModalOpen(false)}
+                        />
+                      </>
+                    )}
+                  </div>
 
-                <Footer />
-              </div>
+                  <Footer />
+                </div>
+              </ToastContainer>
             </ReactQueryClientProvider>
           </CantoWalletProvider>
         </ChainProvider>

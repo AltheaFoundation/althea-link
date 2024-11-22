@@ -5,17 +5,18 @@
   justify-content: space-between;
   height: 50px;
   border-bottom: 1px solid var(--border-stroke-color, #222);
-
-  //align-items: center;
+  border-radius: 0 !important;
+  overflow: hidden;
 }
+
 .Tab {
   width: 50%;
-  //border-bottom: 1px solid var(--border-stroke-color,#222);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  border-radius: 0 !important;
 }
 
 .activeTab {
@@ -27,4 +28,5 @@
   background-color: var(--card-surface-color, #b3b3b3);
   border-bottom: 1px solid var(--primary-dark-color, #222);
   cursor: pointer;
+  border-radius: 0 !important;
 }

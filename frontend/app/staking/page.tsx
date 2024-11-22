@@ -43,17 +43,20 @@ import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { getAnalyticsStakingInfo } from "@/utils/analytics";
 import LoadingComponent from "@/components/animated/loader";
 import Image from "next/image";
+import { useChain } from "@cosmos-kit/react";
+import { altheaToEth } from "@gravity-bridge/address-converter";
 const loadingGif = "/loading.gif";
 
 export default function StakingPage() {
   // connected user info
   const { txStore, signer, chainId } = useCantoSigner();
-
+  const { address } = useChain("althea");
+  const ethAddress = address ? altheaToEth(address) : signer?.account.address;
   // staking hook
   const { isLoading, validators, apr, userStaking, selection, transaction } =
     useStaking({
       chainId: chainId,
-      userEthAddress: signer?.account.address,
+      userEthAddress: ethAddress,
     });
   const { isMobile } = useScreenSize();
   // handle txs
@@ -726,7 +729,7 @@ export default function StakingPage() {
                   </div>
                   <Container direction="row" center={{ vertical: true }}>
                     <Text font="macan" size={isMobile ? "x-lg" : "lg"}>
-                      {formatPercent((parseFloat(apr) / 100).toString())}
+                      {apr} %
                     </Text>
                   </Container>
                 </div>

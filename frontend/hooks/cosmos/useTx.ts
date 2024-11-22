@@ -1,9 +1,8 @@
-import { isDeliverTxSuccess, SignerData, StdFee } from "@cosmjs/stargate";
-import { useChain } from "@cosmos-kit/react";
-import { cosmos } from "interchain";
-import { TxRaw } from "interchain/dist/codegen/cosmos/tx/v1beta1/tx";
-import { Event } from "interchain/dist/codegen/tendermint/abci/types";
-import { useState } from "react";
+import { DeliverTxResponse, isDeliverTxSuccess, StdFee } from '@cosmjs/stargate';
+import { useChain } from '@cosmos-kit/react';
+import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
+import { useState } from 'react';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 interface Msg {
   typeUrl: string;
@@ -14,87 +13,58 @@ export interface TxOptions {
   fee?: StdFee | null;
   memo?: string;
   onSuccess?: () => void;
+  returnError?: boolean;
+  simulate?: boolean;
 }
 
-export enum TxStatus {
-  Failed = "Transaction Failed",
-  Successful = "Transaction Successful",
-  Broadcasting = "Transaction Broadcasting",
-}
 
-const txRaw = cosmos.tx.v1beta1.TxRaw;
 
-export const useTx = (chainName: string, explicitSignerData: SignerData ) => {
-  const { address, getSigningStargateClient, estimateFee } =
-    useChain(chainName);
-  const [responseEvents, setResponseEvents] = useState<readonly Event[] | null>(
-    null
-  );
-  const [transactionHash, setTransactionHash] = useState<string | null>(null); 
+export const useTx = (chainName: string) => {
+  const { address, getSigningStargateClient, estimateFee } = useChain(chainName);
+
+  const [isSigning, setIsSigning] = useState(false);
 
   const tx = async (msgs: Msg[], options: TxOptions) => {
     if (!address) {
-      console.error("No address found");
-      return;
+     
+      return options.returnError ? { error: 'Wallet not connected' } : undefined;
     }
-
-    let signed: TxRaw;
-    let client: Awaited<ReturnType<typeof getSigningStargateClient>>;
-
+    setIsSigning(true);
+    let client: SigningStargateClient;
     try {
-      let fee: StdFee;
-      if (options?.fee) {
-        fee = options.fee;
-        client = await getSigningStargateClient();
-      } else {
-        try {
-          const [_fee, _client] = await Promise.all([
-            estimateFee(msgs).catch((err) => {
-              console.error("Failed to estimate fee:", err);
-              throw err;
-            }),
-            getSigningStargateClient().catch((err) => {
-              console.error("Failed to get signing stargate client:", err);
-              throw err;
-            }),
-          ]);
-          fee = _fee;
-          client = _client;
-        } catch (e: any) {
-          console.error(e);
-          return;
-        }
-      }
-    signed = await client.sign(address, msgs, fee, options.memo ?? "", explicitSignerData);
-    } catch (e: any) {
-      console.error(e);
-      return;
-    }
+      client = await getSigningStargateClient();
 
-    if (client && signed) {
-      await client
-        .broadcastTx(Uint8Array.from(txRaw.encode(signed).finish()))
-        .then((res) => {
-          //@ts-ignore
-          if (isDeliverTxSuccess(res)) {
-            if (options.onSuccess) options.onSuccess();
-            //@ts-ignore
-            setResponseEvents(res?.events);
-            setTransactionHash(res?.transactionHash);
-          } else {
-            console.error(res);
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        })
-        .finally(() => Promise.resolve());
-    } else {
-      console.error("Failed to sign transaction");
+      const signed = await client.sign(
+        address,
+        msgs,
+        options.fee || (await estimateFee(msgs)),
+        options.memo || ''
+      );
+
+     
+      setIsSigning(true);
+      const res: DeliverTxResponse = await client.broadcastTx(
+        Uint8Array.from(TxRaw.encode(signed).finish())
+      );
+      if (isDeliverTxSuccess(res)) {
+        if (options.onSuccess) options.onSuccess();
+        setIsSigning(false);
+       
+        return options.returnError ? { error: null } : undefined;
+      } else {
+        setIsSigning(false);
+       
+        return options.returnError ? { error: res?.rawLog || 'Unknown error' } : undefined;
+      }
+    } catch (e: any) {
+      console.error('Failed to broadcast or simulate: ', e);
+      setIsSigning(false);
+     
+      return options.returnError ? { error: e.message } : undefined;
+    } finally {
+      setIsSigning(false);
     }
   };
 
-  return { tx, responseEvents, transactionHash };
+  return { tx, isSigning, setIsSigning };
 };
-
-

@@ -19,15 +19,15 @@ export const PUB_KEY_FEE: Fee = {
 };
 
 export const DELEGATE_FEE: Fee = {
-  amount: "40000000000000000",
+  amount: "60000000000000000",
   denom: "aalthea",
-  gas: "300000",
+  gas: "600000",
 };
 
 export const UNDELEGATE_FEE: Fee = {
-  amount: "40000000000000000",
+  amount: "50000000000000000",
   denom: "aalthea",
-  gas: "400000",
+  gas: "600000",
 };
 
 export const REDELEGATE_FEE: Fee = {

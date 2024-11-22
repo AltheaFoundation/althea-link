@@ -127,13 +127,13 @@ fn calculate_apr(annual_provisions: &str, bonded_tokens: &str) -> String {
     // If bonded tokens is 0, return 0 to avoid division by zero
     if bonded_tokens.is_zero() {
         info!("Bonded tokens is zero, returning 0");
-        return "0.000000000000000000".to_string();
+        return "0".to_string();
     }
 
     // If annual provisions is 0, return 0
     if annual_provisions.is_zero() {
         info!("Annual provisions is zero, returning 0");
-        return "0.000000000000000000".to_string();
+        return "0".to_string();
     }
 
     // Calculate APR as a percentage
