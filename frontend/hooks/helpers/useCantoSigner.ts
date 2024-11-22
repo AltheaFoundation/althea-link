@@ -13,6 +13,7 @@ export default function useCantoSigner(): {
 } {
   const txStore = useStore(useTransactionStore, (state) => state);
   const { data: signer } = useWalletClient();
+ 
   // set chain id to canto network
   const chainId =
     signer?.chain.id === CANTO_TESTNET_EVM.chainId

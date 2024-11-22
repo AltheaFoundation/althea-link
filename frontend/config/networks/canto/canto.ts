@@ -102,3 +102,4 @@ export const metamaskChainConfig = {
   rpcUrls: [CANTO_MAINNET_EVM.rpcUrl],
   blockExplorerUrls: [CANTO_MAINNET_EVM.blockExplorer?.url],
 };
+

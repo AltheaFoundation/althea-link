@@ -75,6 +75,7 @@ export default function RootLayout({
       };
     },
   };
+
   return (
     <html lang="en">
       {/* <head>
@@ -149,8 +150,10 @@ export default function RootLayout({
             isLazy: true,
             endpoints: {
               altheatestnet: {
+
                 rpc: ["https://nodes.chandrastation.com/rpc/althea/"],
                 rest: ["https://nodes.chandrastation.com/api/althea//"],
+
               },
             },
           }}

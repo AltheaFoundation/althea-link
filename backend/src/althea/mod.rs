@@ -29,7 +29,9 @@ pub mod endpoints;
 pub mod error;
 
 pub const ALTHEA_GRPC_URL: &str = "http://66.172.36.142:3890";
+
 pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althea/";
+
 pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
 pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
 pub const CACHE_DURATION: u64 = 300;
