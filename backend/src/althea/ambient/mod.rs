@@ -17,16 +17,16 @@ use swap::SwapEvent;
 use web30::client::Web3;
 
 use crate::althea::{
-        database::{
-            pools::{save_init_pool, save_swap},
-            positions::{
-                ambient::{save_burn_ambient, save_mint_ambient},
-                ranged::{save_burn_ranged, save_harvest, save_mint_ranged},
-            },
-            tracking::{mark_pool_dirty, set_dirty_pool, update_pool},
+    database::{
+        pools::{save_init_pool, save_swap},
+        positions::{
+            ambient::{save_burn_ambient, save_mint_ambient},
+            ranged::{save_burn_ranged, save_harvest, save_mint_ranged},
         },
-        error,
-    };
+        tracking::{mark_pool_dirty, set_dirty_pool, update_pool},
+    },
+    error,
+};
 
 use super::{
     database::{
