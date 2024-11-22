@@ -219,7 +219,7 @@ export default function RootLayout({
     network_type: "mainnet",
     website: "https://althea.net/",
     pretty_name: "Althea",
-    chain_id: "althea_258432-1",
+    chain_id: "althea_6633438-1",
     bech32_prefix: "althea",
     daemon_name: "althea",
     node_home: "$HOME/.althea",
@@ -227,13 +227,13 @@ export default function RootLayout({
     apis: {
       rest: [
         {
-          address: "https://nodes.chandrastation.com/api/althea/",
+          address: "http://testnet.althea.net:1317/",
           provider: "Chandra Station",
         },
       ],
       rpc: [
         {
-          address: "https://nodes.chandrastation.com/rpc/althea/",
+          address: "http://testnet.althea.net:26657",
           provider: "Chandra Station",
         },
       ],
@@ -384,8 +384,8 @@ export default function RootLayout({
             isLazy: true,
             endpoints: {
               altheatestnet: {
-                rpc: ["https://nodes.chandrastation.com/rpc/althea/"],
-                rest: ["https://nodes.chandrastation.com/api/althea/"],
+                rpc: ["http://testnet.althea.net:26657"],
+                rest: ["http://testnet.althea.net:1317/"],
               },
             },
           }}

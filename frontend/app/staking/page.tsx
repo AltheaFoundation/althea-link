@@ -226,9 +226,7 @@ export default function StakingPage() {
     return { activeValidators, inActiveValidators };
   }, [validators]);
 
-  const topActiveValidators = activeValidators
-    .sort((a, b) => a.rank - b.rank)
-    .slice(10, activeValidators.length);
+  const topActiveValidators = activeValidators.sort((a, b) => a.rank - b.rank);
 
   const filteredValidators = useMemo(() => {
     if (searchQuery !== "") {
