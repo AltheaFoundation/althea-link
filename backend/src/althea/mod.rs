@@ -28,10 +28,10 @@ pub mod database;
 pub mod endpoints;
 pub mod error;
 
-pub const ALTHEA_GRPC_URL: &str = "http://testnet.althea.net:9090";
-pub const ALTHEA_ETH_RPC_URL: &str = "http://testnet.althea.net:8545";
-pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_6633438-1";
-pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 6633438;
+pub const ALTHEA_GRPC_URL: &str = "http://66.172.36.142:3890";
+pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althea";
+pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
+pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
 pub const CACHE_DURATION: u64 = 300;
 
 pub const ALTHEA_PREFIX: &str = "althea";

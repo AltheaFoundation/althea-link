@@ -12,7 +12,7 @@
       {
         "id": "0x56C03B8C4FA80Ba37F5A7b60CAAAEF749bB5b220",
         "nativeWrappedToken": true,
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x56C03B8C4FA80Ba37F5A7b60CAAAEF749bB5b220",
         "name": "Althea",
         "symbol": "ALTHEA",
@@ -35,7 +35,7 @@
 
       {
         "id": "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd",
         "name": "USDC",
         "symbol": "USDC",
@@ -56,7 +56,7 @@
       },
       {
         "id": "0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75",
         "name": "USDT",
         "symbol": "USDT",
@@ -77,7 +77,7 @@
       },
       {
         "id": "0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687",
         "name": "ETH",
         "symbol": "ETH",
@@ -98,7 +98,7 @@
       },
       {
         "id": "0xc71aAf8e486e3F33841BB56Ca3FD2aC3fa8D29a8",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xc71aAf8e486e3F33841BB56Ca3FD2aC3fa8D29a8",
         "name": "Wrapped Staked ETH",
         "symbol": "WSTETH",
@@ -119,7 +119,7 @@
       },
       {
         "id": "0xc03345448969Dd8C00e9E4A85d2d9722d093aF8E",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xc03345448969Dd8C00e9E4A85d2d9722d093aF8E",
         "name": "Graviton",
         "symbol": "GRAV",
@@ -136,7 +136,7 @@
       },
       {
         "id": "0xecEEEfCEE421D8062EF8d6b4D814efe4dc898265",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xecEEEfCEE421D8062EF8d6b4D814efe4dc898265",
         "name": "Atom",
         "symbol": "ATOM",
@@ -153,7 +153,7 @@
       },
       {
         "id": "0x0CE35b0D42608Ca54Eb7bcc8044f7087C18E7717",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x0CE35b0D42608Ca54Eb7bcc8044f7087C18E7717",
         "name": "Osmosis",
         "symbol": "OSMO",
@@ -170,7 +170,7 @@
       },
       {
         "id": "0x3452e23F9c4cC62c70B7ADAd699B264AF3549C19",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x3452e23F9c4cC62c70B7ADAd699B264AF3549C19",
         "name": "Comdex",
         "symbol": "CMDX",
@@ -187,7 +187,7 @@
       },
       {
         "id": "0x1D54EcB8583Ca25895c512A8308389fFD581F9c9",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x1D54EcB8583Ca25895c512A8308389fFD581F9c9",
         "name": "Injective",
         "symbol": "INJ",
@@ -204,7 +204,7 @@
       },
       {
         "id": "0x5db67696C3c088DfBf588d3dd849f44266ff0ffa",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x5db67696C3c088DfBf588d3dd849f44266ff0ffa",
         "name": "Crescent",
         "symbol": "CRE",
@@ -221,7 +221,7 @@
       },
       {
         "id": "0xFA3C22C069B9556A4B2f7EcE1Ee3B467909f4864",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xFA3C22C069B9556A4B2f7EcE1Ee3B467909f4864",
         "name": "Sommelier",
         "symbol": "SOMM",
@@ -238,7 +238,7 @@
       },
       {
         "id": "0x5aD523d94Efb56C400941eb6F34393b84c75ba39",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x5aD523d94Efb56C400941eb6F34393b84c75ba39",
         "name": "Akash",
         "symbol": "AKT",
@@ -255,7 +255,7 @@
       },
       {
         "id": "0xC5e00D3b04563950941f7137B5AfA3a534F0D6d6",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xC5e00D3b04563950941f7137B5AfA3a534F0D6d6",
         "name": "Kava",
         "symbol": "KAVA",
@@ -272,7 +272,7 @@
       },
       {
         "id": "0x15C3Eb3B621d1Bff62CbA1c9536B7c1AE9149b57",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x15C3Eb3B621d1Bff62CbA1c9536B7c1AE9149b57",
         "name": "Sentinel",
         "symbol": "DVPN",
@@ -289,7 +289,7 @@
       },
       {
         "id": "0xF5b24c0093b65408ACE53df7ce86a02448d53b25",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xF5b24c0093b65408ACE53df7ce86a02448d53b25",
         "name": "Evmos",
         "symbol": "EVMOS",
@@ -306,7 +306,7 @@
       },
       {
         "id": "0xc8B4d3e67238e38B20d38908646fF6F4F48De5EC",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xc8B4d3e67238e38B20d38908646fF6F4F48De5EC",
         "name": "Persistence",
         "symbol": "XPRT",
@@ -323,7 +323,7 @@
       },
       {
         "id": "0x50dE24B3f0B3136C50FA8A3B8ebc8BD80a269ce5",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x50dE24B3f0B3136C50FA8A3B8ebc8BD80a269ce5",
         "name": "PSTAKE staked ATOM",
         "symbol": "stkATOM",
@@ -340,7 +340,7 @@
       },
       {
         "id": "0x13974cf36984216C90D1F4FC815C156092feA396",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x13974cf36984216C90D1F4FC815C156092feA396",
         "name": "Stride",
         "symbol": "STRD",
@@ -357,7 +357,7 @@
       },
       {
         "id": "0x205CF44075E77A3543abC690437F3b2819bc450a",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x205CF44075E77A3543abC690437F3b2819bc450a",
         "name": "stEVMOS",
         "symbol": "stEVMOS",
@@ -374,7 +374,7 @@
       },
       {
         "id": "0x4A2a90D444DbB7163B5861b772f882BbA394Ca67",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x4A2a90D444DbB7163B5861b772f882BbA394Ca67",
         "name": "stATOM",
         "symbol": "stATOM",
@@ -391,7 +391,7 @@
       },
       {
         "id": "0xe01C6D4987Fc8dCE22988DADa92d56dA701d0Fe0",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xe01C6D4987Fc8dCE22988DADa92d56dA701d0Fe0",
         "name": "stJUNO",
         "symbol": "stJUNO",
@@ -408,7 +408,7 @@
       },
       {
         "id": "0x3515F25AB7637adcF1b69F4D384ed5936B83431F",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x3515F25AB7637adcF1b69F4D384ed5936B83431F",
         "name": "stOSMO",
         "symbol": "stOSMO",
@@ -425,7 +425,7 @@
       },
       {
         "id": "0x4AF57825b86Abf93D4F9D720bEF7c1C1b300A6F3",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x4AF57825b86Abf93D4F9D720bEF7c1C1b300A6F3",
         "name": "stSTARS",
         "symbol": "stSTARS",
@@ -442,7 +442,7 @@
       },
       {
         "id": "0xF0965c8f0755CF080a61C91EDd6707F0532c8fE7",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xF0965c8f0755CF080a61C91EDd6707F0532c8fE7",
         "name": "Quicksilver",
         "symbol": "QCK",
@@ -459,7 +459,7 @@
       },
       {
         "id": "0x9d6F2a9fDB32708e1AC07788cc29D6125ac73027",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0x9d6F2a9fDB32708e1AC07788cc29D6125ac73027",
         "name": "Quicksilver Liquid Staked ATOM",
         "symbol": "qATOM",
@@ -476,7 +476,7 @@
       },
       {
         "id": "0xB5124FA2b2cF92B2D469b249433BA1c96BDF536D",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xB5124FA2b2cF92B2D469b249433BA1c96BDF536D",
         "name": "Quicksilver Liquid Staked Regen",
         "symbol": "qREGEN",
@@ -493,7 +493,7 @@
       },
       {
         "id": "0xD32eB974468ed767338533842D2D4Cc90B9BAb46",
-        "chainId": 6633438,
+        "chainId": 258432,
         "address": "0xD32eB974468ed767338533842D2D4Cc90B9BAb46",
         "name": "Quicksilver Liquid Staked STARS",
         "symbol": "qSTARS",
