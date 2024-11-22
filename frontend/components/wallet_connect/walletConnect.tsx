@@ -181,7 +181,10 @@ export const WalletConnect = ({
             themed
           />
           <div className={styles.cosmos_balance}>
-            {balance.data?.formatted} {isMobile ? "" : "ALTHEA"}
+            {balance?.data?.formatted.split(".")[0] +
+              "." +
+              (balance?.data?.formatted.split(".")[1] || "").slice(0, 4)}{" "}
+            {isMobile ? "" : "ALTHEA"}
           </div>
           <Icon
             icon={{
@@ -275,7 +278,7 @@ export const WalletConnect = ({
         {isMobile && (
           <Modal
             open={isOpen}
-            onClose={onClose} // Use onClose prop
+            onClose={onClose}
             height="auto"
             width="18rem"
             title="Connect a wallet"
@@ -339,6 +342,8 @@ export const WalletConnect = ({
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
               {address && (

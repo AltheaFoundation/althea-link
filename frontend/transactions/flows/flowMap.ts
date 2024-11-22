@@ -78,10 +78,7 @@ export const TRANSACTION_FLOW_MAP: {
     validRetry: async (params) => validateCTokenLendingRetryTxParams(params),
   },
   [TransactionFlowType.CLM_CLAIM_REWARDS_TX]: {
-    tx: async (params) => {
-      const result = await clmClaimRewardsTx(params);
-      return result; 
-    },
+    tx: async (params) => clmClaimRewardsTx(params),
     validRetry: async (params) => validateClmClaimRewardsRetryTx(params),
   },
   [TransactionFlowType.STAKE_CANTO_TX]: {

@@ -41,26 +41,9 @@ import BigNumber from "bignumber.js";
 import { CANTO_MAINNET_EVM } from "@/config/networks";
 import { generateCantoPublicKeyWithTx } from "../cosmos/publicKey";
 
-function createCosmosMsg(txParams: StakingTransactionParams) {
-  switch (txParams.txType) {
-    case StakingTxTypes.CLAIM_REWARDS:
-      return txParams.validatorAddresses.map(validatorAddress => ({
-        typeUrl: "/cosmos.distribution.v1beta1.MsgClaimDelegationRewards",
-        value: MsgClaimDelegationRewards.fromPartial({
-          delegatorAddress: txParams.ethAccount,
-          validatorAddress: validatorAddress,
-        }),
-      }));
-    // Add other cases for different transaction types in the future
-    default:
-      return null;
-  }
-}
-
 export async function stakingTx(
   txParams: StakingTransactionParams
 ): PromiseWithError<TxCreatorFunctionReturn> {
-
   // convert user eth address into althea address
   const altheaAddress = ethToAlthea(txParams.ethAccount);
 
@@ -275,10 +258,8 @@ const _claimRewardsTx = (
 export function validateStakingTxParams(
   txParams: StakingTransactionParams
 ): Validation {
-  const isCosmosWallet = txParams.cosmos;
-
-  // Common validations
-  if (!isCosmosWallet && !isValidEthAddress(txParams.ethAccount)) {
+  // make sure userEthAddress is set and same as params
+  if (!isValidEthAddress(txParams.ethAccount)) {
     return {
       error: true,
       reason: TX_PARAM_ERRORS.PARAM_INVALID("ethAccount"),
@@ -350,19 +331,16 @@ export function validateStakingTxParams(
       );
     }
     case StakingTxTypes.CLAIM_REWARDS: {
-      const minBalance = isCosmosWallet 
-        ? CLAIM_STAKING_REWARD_FEE.amount // Adjust this constant for Cosmos if needed
-        : CLAIM_STAKING_REWARD_FEE.amount;
-
-      if (BigNumber(txParams.nativeBalance).isLessThan(minBalance)) {
+      if (
+        BigNumber(txParams.nativeBalance).isLessThan(
+          CLAIM_STAKING_REWARD_FEE.amount
+        )
+      ) {
         return {
           error: true,
           reason: TX_ERROR_TYPES.NOT_ENOUGH_NATIVE_BALANCE_STAKING,
         };
       }
-
-      // Add any Cosmos-specific validations here if needed
-
       return { error: false };
     }
     default:

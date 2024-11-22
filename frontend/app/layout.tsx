@@ -27,8 +27,6 @@ import StatusText from "@/components/status_text/statusText";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { althea, altheaAssets } from "@/provider/chainRegistry";
 import { modalThemeOverrides } from "@/provider/cosmosKitModal";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/router";
 import { useState } from "react";
 
 const nm_plex = IBM_Plex_Sans({
@@ -151,8 +149,8 @@ export default function RootLayout({
             isLazy: true,
             endpoints: {
               altheatestnet: {
-                rpc: ["https://nodes.chandrastation.com/rpc/althea/"],
-                rest: ["https://nodes.chandrastation.com/api/althea/"],
+                rpc: ["http://testnet.althea.net:26657"],
+                rest: ["http://testnet.althea.net:1317"],
               },
             },
           }}

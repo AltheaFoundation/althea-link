@@ -27,7 +27,6 @@ export type Transaction = {
   feTxType: CantoFETxType;
   bridge?: BridgeProgress;
   verifyTxComplete?: (txHash: string) => PromiseWithError<boolean>;
-  cosmosMsg?: {typeUrl: string, value: any} | {typeUrl: string, value: any};
 } & (
   | {
       type: "EVM";
@@ -41,11 +40,10 @@ export type Transaction = {
       type: "COSMOS";
       msg: UnsignedCosmosMessages;
     }
-    | {
+  | {
       type: "KEPLR";
       tx: () => PromiseWithError<unknown>;
       getHash: (...args: any[]) => ReturnWithError<string>;
-      msgParams?: any; 
     }
 );
 

@@ -18,11 +18,6 @@ import {
   newStakingFlow,
 } from "@/transactions/staking";
 
-// Add this interface to match the API response structure
-interface APRResponse {
-  apr: string;
-}
-
 export default function useStaking(
   params: StakingHookInputParams,
   options?: { refetchInterval?: number }
@@ -40,7 +35,7 @@ export default function useStaking(
           params.chainId,
           CANTO_DATA_API_ENDPOINTS.allValidators
         ),
-        getCantoApiData<APRResponse>(
+        getCantoApiData<string>(
           params.chainId,
           CANTO_DATA_API_ENDPOINTS.stakingApr
         ),
@@ -50,14 +45,11 @@ export default function useStaking(
       // check if all validators error
       if (allValidators.error) throw allValidators.error;
 
-      // Extract the apr string from the response
-      const aprValue = stakingApr.data?.apr ?? "0";
-
       // if user staking data error, return all validators only
       if (userStaking.error) {
         return {
           validators: allValidators.data,
-          apr: aprValue,
+          apr: stakingApr.data ?? "0",
           userStaking: {
             validators: [],
             unbonding: userStaking.data.unbondingDelegations ?? [],
@@ -86,7 +78,7 @@ export default function useStaking(
                   rew.validator_address ===
                   delegation.delegation.validator_address
               )
-              ?.reward?.find((bal) => bal.denom === "aalthea")?.amount ?? "0";
+              ?.reward?.find((bal) => bal.denom === "acanto")?.amount ?? "0";
           if (validator) {
             userValidators.push({
               ...validator,
@@ -129,7 +121,7 @@ export default function useStaking(
         : [];
       return {
         validators: allValidators.data,
-        apr: aprValue,
+        apr: stakingApr.data ?? "0",
         userStaking: {
           validators: userValidators,
           unbonding: userUnbondingDelegations,

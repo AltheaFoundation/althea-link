@@ -43,27 +43,17 @@ import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { getAnalyticsStakingInfo } from "@/utils/analytics";
 import LoadingComponent from "@/components/animated/loader";
 import Image from "next/image";
-import { useChain } from "@cosmos-kit/react";
-import { altheaToEth } from "@gravity-bridge/address-converter";
 const loadingGif = "/loading.gif";
 
 export default function StakingPage() {
   // connected user info
   const { txStore, signer, chainId } = useCantoSigner();
-  // if cosmos is connected
-  const { address } = useChain("althea");
-  const isCosmosWallet = !!address;
-  const userAddress = signer?.account.address || address;
-
-  const altheaToEthAddress = altheaToEth(
-    address ?? "althea1uwqjtgjhjctjc45ugy7ev5prprhehc7wdlsqmq"
-  ) as `0x${string}`;
 
   // staking hook
   const { isLoading, validators, apr, userStaking, selection, transaction } =
     useStaking({
       chainId: chainId,
-      userEthAddress: signer?.account.address || altheaToEthAddress,
+      userEthAddress: signer?.account.address,
     });
   const { isMobile } = useScreenSize();
   // handle txs
@@ -71,23 +61,20 @@ export default function StakingPage() {
     signer: GetWalletClientResult | undefined,
     validatorAddresses: string[]
   ) {
-    const { address } = useChain("althea");
-    const isCosmosWallet = !!address;
-    if (signer?.account || isCosmosWallet) {
+    if (signer && signer.account) {
       const newFlow = transaction.newStakingFlow({
         chainId: chainId,
-        ethAccount: (signer?.account.address || address) ?? "",
+        ethAccount: signer.account.address,
         txType: StakingTxTypes.CLAIM_REWARDS,
         validatorAddresses: validatorAddresses,
         nativeBalance: userStaking?.cantoBalance ?? "0",
-        cosmos: isCosmosWallet,
       });
       txStore?.addNewFlow({
         txFlow: newFlow,
-        ethAccount: (signer?.account.address || address) ?? "",
+        ethAccount: signer.account.address,
       });
     }
-    return NEW_ERROR("No wallet connected");
+    return NEW_ERROR("signer not available");
   }
 
   const stakingTxParams = (
@@ -239,9 +226,7 @@ export default function StakingPage() {
     return { activeValidators, inActiveValidators };
   }, [validators]);
 
-  const topActiveValidators = activeValidators
-    .sort((a, b) => a.rank - b.rank)
-    .slice(10, activeValidators.length);
+  const topActiveValidators = activeValidators.sort((a, b) => a.rank - b.rank);
 
   const filteredValidators = useMemo(() => {
     if (searchQuery !== "") {
@@ -308,27 +293,14 @@ export default function StakingPage() {
     () =>
       transaction.validateTxParams({
         chainId: chainId,
-        ethAccount: userAddress ?? "",
+        ethAccount: signer?.account.address ?? "",
         txType: StakingTxTypes.CLAIM_REWARDS,
         validatorAddresses: allUserValidatorsAddresses,
         nativeBalance: userStaking.cantoBalance,
-        cosmos: isCosmosWallet,
       }),
-    [
-      userStaking.cantoBalance,
-      isCosmosWallet,
-      userAddress,
-      allUserValidatorsAddresses,
-    ]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [userStaking.cantoBalance]
   );
-
-  const hasRewardsToClaim = useMemo(() => {
-    return (
-      userStaking.rewards?.total.some(
-        (reward) => parseFloat(reward.amount) > 0
-      ) ?? false
-    );
-  }, [userStaking.rewards]);
 
   return isLoading ? (
     <div className={styles.loaderContainer}>
@@ -754,7 +726,7 @@ export default function StakingPage() {
                   </div>
                   <Container direction="row" center={{ vertical: true }}>
                     <Text font="macan" size={isMobile ? "x-lg" : "lg"}>
-                      {Math.round(Number(apr))}%
+                      {formatPercent((parseFloat(apr) / 100).toString())}
                     </Text>
                   </Container>
                 </div>
@@ -793,10 +765,7 @@ export default function StakingPage() {
                     handleRewardsClaimClick(signer, allUserValidatorsAddresses)
                   }
                   disabled={
-                    !userAddress ||
-                    !hasUserStaked ||
-                    claimRewardsTxValidation.error ||
-                    !hasRewardsToClaim
+                    !signer || !hasUserStaked || claimRewardsTxValidation.error
                   }
                   themed={false}
                 >

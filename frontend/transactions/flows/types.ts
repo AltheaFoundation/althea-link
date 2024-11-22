@@ -1,5 +1,3 @@
-// how transactions are stored for the user (will allow retrying creating transactions)
-
 import { TransactionFlowType } from ".";
 import { BridgeTransactionParams } from "../bridge";
 import {
@@ -91,7 +89,6 @@ export type TransactionFlow = NewTransactionFlow & {
   error?: string; //yes
   analyticsTransactionFlowInfo?: AnalyticsTransactionFlowInfo;
   onSuccessCallback?: () => void;
-  cosmos?: boolean; 
 };
 
 // user can be on different accounts to make transactions, so we need to map the transaction flows to the account
