@@ -42,7 +42,7 @@ export const CANTO_MAINNET_COSMOS: CosmosNetwork = {
   ...cantoMainnetBaseInfo,
   id: "althea-mainnet",
   chainId: "althea_6633438-1",
-  restEndpoint: "http://testnet.althea.net:1317",
+  restEndpoint: "http://testnet.althea.net:1317/",
   addressPrefix: "althea",
   checkAddress: function (address) {
     return checkCosmosAddress(this.addressPrefix)(address);
@@ -83,7 +83,7 @@ export const CANTO_TESTNET_COSMOS: CosmosNetwork = {
   ...cantoMainnetBaseInfo,
   id: "althea-testnet",
   chainId: "althea_6633438-1",
-  restEndpoint: "http://testnet.althea.net:1317",
+  restEndpoint: "http://testnet.althea.net:1317/",
   addressPrefix: "althea",
   checkAddress: function (address) {
     return checkCosmosAddress(this.addressPrefix)(address);
@@ -107,7 +107,7 @@ export const chainConfig = {
   chainId: "althea_6633438-1",
   chainName: "Althea",
   rpc: "http://testnet.althea.net:26657",
-  rest: "http://testnet.althea.net:1317",
+  rest: "http://testnet.althea.net:1317/",
 
   bip44: {
     coinType: 118,

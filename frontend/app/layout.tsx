@@ -150,7 +150,7 @@ export default function RootLayout({
             endpoints: {
               altheatestnet: {
                 rpc: ["http://testnet.althea.net:26657"],
-                rest: ["http://testnet.althea.net:1317"],
+                rest: ["http://testnet.althea.net:1317/"],
               },
             },
           }}

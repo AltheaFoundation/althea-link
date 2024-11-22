@@ -14,7 +14,7 @@ export const althea: Chain = {
   apis: {
     rest: [
       {
-        address: "http://testnet.althea.net:1317",
+        address: "http://testnet.althea.net:1317/",
         provider: "Chandra Station",
       },
     ],
