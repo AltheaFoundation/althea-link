@@ -240,7 +240,7 @@ export const VoteGraphBox = ({
   };
 
   const maxPercentage = Math.max(
-    ...[yesPercentage, noPercentage, abstainPercentage, vetoPercentage]
+    ...[yesPercentage, noPercentage, abstainPercentage, vetoPercentage],
   );
   const maxIndex = [
     yesPercentage,

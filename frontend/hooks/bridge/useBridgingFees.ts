@@ -139,7 +139,7 @@ async function getLZFees(
   direction: "in" | "out",
   token: BridgeToken,
   fromNetwork: BaseNetwork,
-  toNetwork: BaseNetwork
+  toNetwork: BaseNetwork,
 ): PromiseWithError<BridgeFeesByMethod> {
   try {
     // check token for OFT
@@ -153,7 +153,7 @@ async function getLZFees(
       token.address,
       ZERO_ADDRESS,
       new BigNumber(1).multipliedBy(10 ** token.decimals).toString(),
-      createLzAdapterParams(ZERO_ADDRESS, direction === "in")
+      createLzAdapterParams(ZERO_ADDRESS, direction === "in"),
     );
     if (error) throw error;
     return NO_ERROR({
@@ -167,7 +167,7 @@ async function getLZFees(
           fromNetwork.nativeCurrency.decimals,
           {
             symbol: fromNetwork.nativeCurrency.symbol,
-          }
+          },
         ),
         description:
           "Gas will be higher than other transactions because you will be paying for gas on both the sending and receiving chains. The value shown here is an estimate and will vary with gas fees.",
@@ -178,7 +178,7 @@ async function getLZFees(
   }
 }
 async function getGravityBridgeOutFees(
-  token: BridgeToken
+  token: BridgeToken,
 ): PromiseWithError<BridgeFeesByMethod> {
   try {
     // check for token address (should always be there)

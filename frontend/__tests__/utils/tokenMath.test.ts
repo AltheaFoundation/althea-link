@@ -44,7 +44,7 @@ describe("test tokenMath", () => {
     tokens.forEach((token) => {
       const { data, error } = convertTokenAmountToNote(
         token.token.amount,
-        token.token.price
+        token.token.price,
       );
       if (token.error) {
         expect(data).toBeNull();
@@ -86,7 +86,7 @@ describe("test tokenMath", () => {
     tokens.forEach((token) => {
       const { data, error } = convertNoteAmountToToken(
         token.token.noteValue,
-        token.token.price
+        token.token.price,
       );
       if (token.error) {
         expect(data).toBeNull();
@@ -153,8 +153,8 @@ describe("test tokenMath", () => {
           amount.amount1,
           amount.amount2,
           amount.decimals1,
-          amount.decimals2
-        )
+          amount.decimals2,
+        ),
       ).toEqual(amount.expected);
     });
   });

@@ -13,7 +13,7 @@ const AMBIENT_ADDRESSES = {
 
 export function getAmbientAddress(
   chainId: number,
-  key: keyof typeof AMBIENT_ADDRESSES
+  key: keyof typeof AMBIENT_ADDRESSES,
 ): string | null {
   switch (chainId) {
     case CANTO_MAINNET_EVM.chainId:

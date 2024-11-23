@@ -30,11 +30,11 @@ export const NO_ERROR = <T>(data: T): ReturnWithError<T> => ({
 export function NEW_ERROR<T>(msg: string): ReturnWithError<T>;
 export function NEW_ERROR<T>(
   functionName: string,
-  err: Error | string | any
+  err: Error | string | any,
 ): ReturnWithError<T>;
 export function NEW_ERROR<T>(
   arg1: string,
-  arg2?: Error | string | any
+  arg2?: Error | string | any,
 ): ReturnWithError<T> {
   if (arg2) {
     return {

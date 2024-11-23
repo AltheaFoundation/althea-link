@@ -12,7 +12,7 @@ export const _approveTx = (
   tokenAddress: string,
   spender: string,
   amount: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: CantoFETxType.APPROVE_TOKEN,

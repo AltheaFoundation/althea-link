@@ -31,14 +31,14 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
   const handleRowClick = (proposalId: any) => {
     // Navigate to the appropriate page
     Analytics.actions.events.governance.proposalClicked(
-      getAnalyticsProposalInfo(proposalId, proposals)
+      getAnalyticsProposalInfo(proposalId, proposals),
     );
     router.push(`/governance/proposal?id=${proposalId}`);
   };
 
   // filter proposals
   const [currentFilter, setCurrentFilter] = useState<ProposalFilter>(
-    ProposalFilter.ALL
+    ProposalFilter.ALL,
   );
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -65,12 +65,12 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
 
   const totalPages = useMemo(
     () => Math.ceil(filteredProposals.length / PAGE_SIZE),
-    [filteredProposals.length]
+    [filteredProposals.length],
   );
 
   const paginatedProposals = filteredProposals.slice(
     (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    currentPage * PAGE_SIZE,
   );
 
   if (proposals.length == 0) {
@@ -118,14 +118,14 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
               onRowsClick={
                 activeProposals.length > 0
                   ? activeProposals.map(
-                      (proposal) => () => handleRowClick(proposal.proposal_id)
+                      (proposal) => () => handleRowClick(proposal.proposal_id),
                     )
                   : undefined
               }
               removeHeader={true}
               rowHeight={isMobile ? "180px" : "120px"}
               content={activeProposals.map((proposal) =>
-                ProposalRow({ proposal, active: true, isMobile })
+                ProposalRow({ proposal, active: true, isMobile }),
               )}
             />
           }
@@ -171,12 +171,12 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
               >
                 <ToggleGroup
                   options={Object.values(ProposalFilter).map(
-                    (filter) => filter.split(" ")[0]
+                    (filter) => filter.split(" ")[0],
                   )}
                   selected={currentFilter.split(" ")[0]}
                   setSelected={(value) => {
                     const proposalFilter = Object.values(ProposalFilter).find(
-                      (filter) => filter.split(" ")[0] === value
+                      (filter) => filter.split(" ")[0] === value,
                     );
                     Analytics.actions.events.governance.tabSwitched(value);
                     setCurrentFilter(proposalFilter || ProposalFilter.ALL);
@@ -193,7 +193,7 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
             onRowsClick={
               paginatedProposals.length > 0
                 ? paginatedProposals.map(
-                    (proposal) => () => handleRowClick(proposal.proposal_id)
+                    (proposal) => () => handleRowClick(proposal.proposal_id),
                   )
                 : undefined
             }
@@ -205,7 +205,7 @@ const ProposalTable = ({ proposals, isMobile }: TableProps) => {
                     ...paginatedProposals
                       .filter((proposal) => proposal.status != 2)
                       .map((proposal) =>
-                        ProposalRow({ proposal, active: false, isMobile })
+                        ProposalRow({ proposal, active: false, isMobile }),
                       ),
                     <Pagination
                       isMobile={isMobile}

@@ -2,7 +2,7 @@ import { ERC20Token } from "@/config/interfaces";
 import { AmbientPool } from "../interfaces/ambientPools";
 
 export function getUniqueUnderlyingTokensFromPairs(
-  pools: AmbientPool[]
+  pools: AmbientPool[],
 ): ERC20Token[] {
   // look for unique addresses and add tokens to set
   const uniqueAddresses = new Set<string>();

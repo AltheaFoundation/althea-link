@@ -24,7 +24,7 @@ export function sortTokens<T extends BaseToken>(tokens: T[]): T[] {
       a.balance || "0",
       b.balance || "0",
       a.decimals,
-      b.decimals
+      b.decimals,
     )
       ? -1
       : 1;

@@ -25,19 +25,19 @@ interface MessageClaimStakingRewardsMultipleValidatorsParams {
  * @returns {UnsignedCosmosMessages} eip and cosmos messages along with types object and fee
  */
 export function createMsgsClaimStakingRewards(
-  params: MessageClaimStakingRewardsMultipleValidatorsParams
+  params: MessageClaimStakingRewardsMultipleValidatorsParams,
 ): UnsignedCosmosMessages {
   const eipMsg = params.validatorAddresses.map((valAdd) =>
     eip712MsgClaimRewardsSingleValidator({
       delegatorCantoAddress: params.delegatorCantoAddress,
       validatorAddress: valAdd,
-    })
+    }),
   );
   const cosmosMsg = params.validatorAddresses.map((valAdd) =>
     protoMsgClaimRewardsSingleValidator({
       delegatorCantoAddress: params.delegatorCantoAddress,
       validatorAddress: valAdd,
-    })
+    }),
   );
 
   return {
@@ -57,7 +57,7 @@ interface MessageClaimStakingRewardsSingleValidatorParams {
 }
 
 function eip712MsgClaimRewardsSingleValidator(
-  params: MessageClaimStakingRewardsSingleValidatorParams
+  params: MessageClaimStakingRewardsSingleValidatorParams,
 ): EIP712Message {
   return {
     type: "cosmos-sdk/MsgWithdrawDelegationReward",
@@ -69,7 +69,7 @@ function eip712MsgClaimRewardsSingleValidator(
 }
 
 function protoMsgClaimRewardsSingleValidator(
-  params: MessageClaimStakingRewardsSingleValidatorParams
+  params: MessageClaimStakingRewardsSingleValidatorParams,
 ): CosmosNativeMessage {
   const message = new MsgWithdrawDelegatorReward({
     delegatorAddress: params.delegatorCantoAddress,

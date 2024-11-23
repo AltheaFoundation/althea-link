@@ -17,7 +17,7 @@ import { getTokenPriceInUSDC } from "@/utils/tokens";
 const poolQueries = (
   chainId: number,
   pool: BaseAmbientPool,
-  userEthAddress?: string
+  userEthAddress?: string,
 ): [
   PromiseWithError<AmbientPoolStatsReturn>,
   PromiseWithError<PoolPositionsReturn>,
@@ -27,7 +27,7 @@ const poolQueries = (
     chainId,
     pool.base.address,
     pool.quote.address,
-    pool.poolIdx
+    pool.poolIdx,
   ),
   userEthAddress
     ? queryPoolPositions(
@@ -35,10 +35,10 @@ const poolQueries = (
         userEthAddress,
         pool.base.address,
         pool.quote.address,
-        pool.poolIdx
+        pool.poolIdx,
       )
     : Promise.resolve(
-        NO_ERROR({ data: [], provenance: { hostname: "", serveTime: 0 } })
+        NO_ERROR({ data: [], provenance: { hostname: "", serveTime: 0 } }),
       ),
   userEthAddress
     ? queryUserAmbientRewards(chainId, userEthAddress, pool.rewardsLedger)
@@ -47,11 +47,13 @@ const poolQueries = (
 
 export async function getAllAmbientPoolsData(
   chainId: number,
-  userEthAddress?: string
+  userEthAddress?: string,
 ): PromiseWithError<AmbientPool[]> {
   const pools = getAmbientPoolsFromChainId(chainId);
   const poolData = await Promise.all(
-    pools.map((pool) => Promise.all(poolQueries(chainId, pool, userEthAddress)))
+    pools.map((pool) =>
+      Promise.all(poolQueries(chainId, pool, userEthAddress)),
+    ),
   );
   if (
     poolData.some((data) => data[0].error || data[1].error || data[2].error)
@@ -100,11 +102,11 @@ export async function getAllAmbientPoolsData(
       // get tvl of pool
       const { data: baseTvl } = convertTokenAmountToNote(
         statsObj.baseTvl,
-        new BigNumber(10).pow(36 - pools[idx].base.decimals).toString()
+        new BigNumber(10).pow(36 - pools[idx].base.decimals).toString(),
       );
       const { data: quoteTvl } = convertTokenAmountToNote(
         statsObj.quoteTvl,
-        new BigNumber(10).pow(36 - pools[idx].quote.decimals).toString()
+        new BigNumber(10).pow(36 - pools[idx].quote.decimals).toString(),
       );
       const tvl = baseTvl?.plus(quoteTvl ?? "0").toString() ?? "0";
       return {
@@ -119,7 +121,7 @@ export async function getAllAmbientPoolsData(
           },
         },
       };
-    })
+    }),
   );
 }
 
@@ -127,7 +129,7 @@ export async function getAllAmbientPoolsData(
 function ambientAPR(
   cantoPerBlock: string,
   tvlNote: string,
-  priceCanto: string
+  priceCanto: string,
 ) {
   // seconds per day / seconds per block
   const blockPerDay = new BigNumber(86400).dividedBy(5.8);

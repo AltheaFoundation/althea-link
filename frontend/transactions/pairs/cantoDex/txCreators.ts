@@ -23,7 +23,7 @@ export const _addCantoDexLiquidityTx = (
   amount1Min: string,
   amount2Min: string,
   deadline: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const cantoInPair = isToken1Canto || isToken2Canto;
   return {
@@ -72,7 +72,7 @@ export const _removeCantoDexLiquidityTx = (
   amount1Min: string,
   amount2Min: string,
   deadline: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const cantoInPair = isToken1Canto || isToken2Canto;
   return {

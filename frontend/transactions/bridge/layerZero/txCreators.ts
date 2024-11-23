@@ -22,7 +22,7 @@ export const _oftTransferTx = (
   gas: string,
   adapterParams: string,
   description: TransactionDescription,
-  bridgeInfo: { direction: "in" | "out"; amountFormatted: string }
+  bridgeInfo: { direction: "in" | "out"; amountFormatted: string },
 ): Transaction => ({
   bridge: {
     lastStatus: "NONE",
@@ -54,7 +54,7 @@ export const _oftDepositOrWithdrawTx = (
   deposit: boolean,
   oftAddress: string,
   amount: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: deposit ? CantoFETxType.OFT_DEPOSIT : CantoFETxType.OFT_WITHDRAW,

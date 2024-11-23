@@ -83,7 +83,7 @@ const Amount = (props: Props) => {
             props.min,
             props.limit?.limit ?? props.max,
             props.symbol,
-            props.decimals
+            props.decimals,
           )
         : { error: true, reason: TX_PARAM_ERRORS.AMBIENT_AMOUNT_ERROR() },
     [
@@ -94,7 +94,7 @@ const Amount = (props: Props) => {
       props.symbol,
       props.limit?.limit,
       props.ambientAmountError,
-    ]
+    ],
   );
 
   return (
@@ -140,7 +140,7 @@ const Amount = (props: Props) => {
             className={styles.max}
             onClick={() => {
               Analytics.actions.events.maxClicked(
-                props.maxName ?? "Max Button"
+                props.maxName ?? "Max Button",
               );
               props.onChange(
                 {
@@ -150,11 +150,11 @@ const Amount = (props: Props) => {
                       props.decimals,
                       {
                         precision: props.decimals,
-                      }
+                      },
                     ),
                   },
                 } as any,
-                true
+                true,
               );
             }}
           >

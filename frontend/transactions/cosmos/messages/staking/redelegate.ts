@@ -34,7 +34,7 @@ interface MessageRedelegateParams {
  * @returns {UnsignedCosmosMessages} eip and cosmos messages along with types object and fee
  */
 export function createMsgsRedelegate(
-  params: MessageRedelegateParams
+  params: MessageRedelegateParams,
 ): UnsignedCosmosMessages {
   const eipMsg = eip712MsgRedelegate(params);
   const cosmosMsg = protoMsgRedelegate(params);
@@ -63,7 +63,7 @@ function eip712MsgRedelegate(params: MessageRedelegateParams): EIP712Message {
 }
 
 function protoMsgRedelegate(
-  params: MessageRedelegateParams
+  params: MessageRedelegateParams,
 ): CosmosNativeMessage {
   const value = new Coin({
     denom: params.denom,

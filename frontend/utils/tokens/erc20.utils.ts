@@ -20,7 +20,7 @@ import { newContractInstance } from "../evm";
 export async function getEVMTokenBalanceList(
   chainId: number,
   tokens: ERC20Token[],
-  userEthAddress: string
+  userEthAddress: string,
 ): PromiseWithError<UserTokenBalances> {
   try {
     const multicallConfig = tokens.map((token) => ({
@@ -56,7 +56,7 @@ export async function getEVMTokenBalanceList(
             nativeBalance.value + ercBalance
           ).toString();
         }
-      })
+      }),
     );
     return NO_ERROR(balances);
   } catch (err) {
@@ -74,7 +74,7 @@ export async function getEVMTokenBalanceList(
 export async function getTokenBalance(
   chainId: number,
   tokenAddress: string,
-  account: string
+  account: string,
 ): PromiseWithError<BigNumber> {
   try {
     const { data: tokenContract, error } = newContractInstance<
@@ -102,7 +102,7 @@ export async function checkTokenAllowance(
   tokenAddress: string,
   account: string,
   spender: string,
-  amount: string
+  amount: string,
 ): PromiseWithError<{ hasEnoughAllowance: boolean; allowance: string }> {
   try {
     const { data: tokenContract, error } = newContractInstance<
@@ -114,7 +114,7 @@ export async function checkTokenAllowance(
       .call();
     return NO_ERROR({
       hasEnoughAllowance: new BigNumber(
-        allowance as string
+        allowance as string,
       ).isGreaterThanOrEqualTo(amount),
       allowance: allowance as string,
     });

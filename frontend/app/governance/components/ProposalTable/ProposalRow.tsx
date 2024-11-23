@@ -26,22 +26,22 @@ export const ProposalRow = ({
         yes: Number(
           formatBalance(proposal.final_tally_result.yes, 18, {
             precision: 2,
-          })
+          }),
         ),
         no: Number(
           formatBalance(proposal.final_tally_result.no, 18, {
             precision: 2,
-          })
+          }),
         ),
         veto: Number(
           formatBalance(proposal.final_tally_result.no_with_veto, 18, {
             precision: 2,
-          })
+          }),
         ),
         abstain: Number(
           formatBalance(proposal.final_tally_result.abstain, 18, {
             precision: 2,
-          })
+          }),
         ),
       }
     : null;
@@ -221,7 +221,7 @@ export const ProposalRow = ({
                   >
                     <Countdown
                       endTimestamp={BigInt(
-                        new Date(proposal.voting_end_time).getTime()
+                        new Date(proposal.voting_end_time).getTime(),
                       )}
                       timeFormat="h m s"
                     />
@@ -376,7 +376,7 @@ export const ProposalRow = ({
                 <Text font="macan-font" className={styles.tableData} size="sm">
                   <Countdown
                     endTimestamp={BigInt(
-                      new Date(proposal.voting_end_time).getTime()
+                      new Date(proposal.voting_end_time).getTime(),
                     )}
                     timeFormat="h m s"
                   />

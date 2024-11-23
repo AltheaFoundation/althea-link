@@ -40,7 +40,7 @@ export async function quoteRemoveLiquidity(
   tokenAAddress: string,
   tokenBAddress: string,
   stable: boolean,
-  liquidity: string
+  liquidity: string,
 ): PromiseWithError<{
   expectedToken1: string;
   expectedToken2: string;
@@ -98,7 +98,7 @@ export async function getOptimalValueBFormatted({
   // get big number amount
   const { data: bnAmount, error: bnAmountError } = convertToBigNumber(
     amount,
-    token1.decimals
+    token1.decimals,
   );
   if (bnAmountError) {
     return NEW_ERROR("getOptimalValueB", bnAmountError);
@@ -110,7 +110,7 @@ export async function getOptimalValueBFormatted({
     token1.address,
     token2.address,
     pair.stable,
-    bnAmount.toString()
+    bnAmount.toString(),
   );
   if (quoteError) {
     return NEW_ERROR("getOptimalValueB", quoteError);
@@ -119,7 +119,7 @@ export async function getOptimalValueBFormatted({
   return NO_ERROR(
     formatBalance(quote.amountBOptimal, token2.decimals, {
       precision: token2.decimals,
-    })
+    }),
   );
 }
 
@@ -142,7 +142,7 @@ async function quoteAddLiquidity(
   tokenAAddress: string,
   tokenBAddress: string,
   stable: boolean,
-  amountA: string
+  amountA: string,
 ): PromiseWithError<{
   amountBOptimal: string;
   expectedLiquidity: string;
@@ -161,7 +161,7 @@ async function quoteAddLiquidity(
         tokenBAddress,
         stable,
         amountA,
-        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       )
       .call();
     return NO_ERROR({

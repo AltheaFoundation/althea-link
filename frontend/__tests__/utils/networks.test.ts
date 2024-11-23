@@ -89,7 +89,7 @@ describe("network getters", () => {
     ];
     networks.forEach((n) => {
       expect(getNetworkInfoFromChainId(n.chainId).data).toStrictEqual(
-        n.network
+        n.network,
       );
     });
   });
@@ -151,7 +151,7 @@ describe("network getters", () => {
         chainObject: {
           chainId: NETWORKS.GRAVITY_BRIGDE_EVM.chainId,
           cosmosChainId: NETWORKS.GRAVITY_BRIDGE.chainId,
-        }
+        },
       },
       {
         chainId: "althea_258432-1",
@@ -164,7 +164,9 @@ describe("network getters", () => {
     ];
     networks.forEach((n) => {
       //@ts-ignore
-      expect(getCosmosEIPChainObject(n.chainId).data).toStrictEqual(n.chainObject);
+      expect(getCosmosEIPChainObject(n.chainId).data).toStrictEqual(
+        n.chainObject,
+      );
     });
   });
 });

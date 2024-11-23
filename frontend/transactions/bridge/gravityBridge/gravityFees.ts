@@ -30,7 +30,7 @@ type FeeTier = {
   usdValueFormatted: string;
 };
 export async function getGravityBridgeFeesFromToken(
-  tokenAddress: string
+  tokenAddress: string,
 ): PromiseWithError<{
   slow: FeeTier;
   medium: FeeTier;
@@ -46,7 +46,7 @@ export async function getGravityBridgeFeesFromToken(
     const { data: ethPriceInUSD, error: ethPriceInUSDError } =
       await getEthPriceInUSDC();
     if (ethPriceInUSDError) throw ethPriceInUSDError;
-console.log({tokenAddress})
+    console.log({ tokenAddress });
     // get gravity token data
     const gravityToken = gravityTokens[tokenAddress];
     if (!gravityToken || !(gravityToken.isETH || gravityToken.stable))
@@ -73,7 +73,7 @@ console.log({tokenAddress})
           gravityToken.decimals,
           {
             precision: 2,
-          }
+          },
         ),
       };
     };
@@ -121,7 +121,7 @@ const gravityTokens: {
     decimals: 18,
     isETH: true,
   },
-  "aalthea": {
+  aalthea: {
     symbol: "ALTHEA",
     stable: false,
     decimals: 18,
@@ -138,7 +138,7 @@ async function getEthPriceInUSDC(): PromiseWithError<string> {
         Accept: "application/json",
         "X-API-KEY": process.env.NEXT_PUBLIC_ETH_PRICE_KEY as string,
       },
-    }
+    },
   );
   if (error) return NEW_ERROR("getEthPriceInUSDC", error);
   return NO_ERROR(data.usdPriceFormatted);

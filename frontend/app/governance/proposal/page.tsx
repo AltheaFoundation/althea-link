@@ -30,6 +30,11 @@ import LoadingComponent from "@/components/animated/loader";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
 import Container from "@/components/container/container";
 import Image from "next/image";
+import { useChain } from "@cosmos-kit/react";
+import { cosmos } from "interchain";
+import { useTx } from "@/hooks/cosmos/useTx";
+import { altheaToEth } from "@gravity-bridge/address-converter";
+import { useToast } from "@/components/toast";
 const loadingGif = "/loading.gif";
 
 const VOTE_OPTION_COLORS = {
@@ -51,6 +56,13 @@ const VOTE_OPTION_COLORS = {
   ],
 };
 
+const COSMOS_VOTE_OPTION_MAP = {
+  [VoteOption.YES]: 1, // VOTE_OPTION_YES
+  [VoteOption.ABSTAIN]: 2, // VOTE_OPTION_ABSTAIN
+  [VoteOption.NO]: 3, // VOTE_OPTION_NO
+  [VoteOption.VETO]: 4, // VOTE_OPTION_NO_WITH_VETO
+};
+
 export default function Page() {
   // signer information
   const { txStore, signer, chainId } = useCantoSigner();
@@ -61,11 +73,59 @@ export default function Page() {
 
   const { isMobile } = useScreenSize();
   // transaction
-  function castVote(proposalId: number, voteOption: VoteOption | null) {
-    if (signer) {
-      if (!voteOption) {
-        return NEW_ERROR("Please select a vote option");
+  const { address } = useChain("althea");
+
+  const { tx, isSigning, setIsSigning } = useTx("althea");
+  const toast = useToast();
+
+  async function castVote(proposalId: number, voteOption: VoteOption | null) {
+    if (!voteOption) {
+      return NEW_ERROR("Please select a vote option");
+    }
+
+    // If cosmos address exists, use cosmos signing
+    if (address) {
+      try {
+        setIsSigning(true);
+        const { vote } = cosmos.gov.v1beta1.MessageComposer.withTypeUrl;
+
+        const msg = vote({
+          proposalId: BigInt(proposalId),
+          voter: address,
+          option: COSMOS_VOTE_OPTION_MAP[voteOption],
+        });
+
+        const fee = {
+          amount: [{ denom: "aalthea", amount: "60000000000000000" }],
+          gas: "600000",
+        };
+
+        await tx([msg], {
+          fee,
+          onSuccess: () => {
+            setIsSigning(false);
+            toast.add({
+              toastID: new Date().getTime().toString(),
+              primary: "Vote submitted successfully",
+              state: "success",
+              duration: 5000,
+            });
+          },
+        });
+      } catch (error) {
+        console.error("Voting failed:", error);
+        toast.add({
+          toastID: new Date().getTime().toString(),
+          primary: "Vote failed: " + (error as Error).message,
+          state: "failure",
+          duration: 5000,
+        });
+      } finally {
+        setIsSigning(false);
       }
+    }
+    // Otherwise use ETH signing
+    else if (signer) {
       const newFlow = newVoteFlow({
         chainId: chainId,
         ethAccount: signer.account.address,
@@ -114,7 +174,7 @@ export default function Page() {
     );
   }
 
-  const isActive = formatProposalStatus(proposal.status.toString()) == "ACTIVE";
+  const isActive = proposal.status == 2;
 
   const votesData = calculateVotePercentages(proposal.final_tally_result);
 
@@ -261,12 +321,12 @@ export default function Page() {
                   <div className={styles.VotingButton}>
                     <Button
                       width={200}
-                      disabled={!isActive || selectedVote == null}
+                      disabled={!isActive || selectedVote == null || isSigning}
                       onClick={() =>
                         castVote(proposal.proposal_id, selectedVote)
                       }
                     >
-                      SUBMIT VOTE
+                      {isSigning ? "SIGNING..." : "SUBMIT VOTE"}
                     </Button>
                   </div>
                 </Container>

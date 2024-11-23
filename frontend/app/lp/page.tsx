@@ -114,7 +114,7 @@ export default function Page() {
                     ...pairs.userAmbient.map((pool) => () => {
                       Analytics.actions.events.liquidityPool.manageLPClicked(
                         // @ts-ignore
-                        getAnalyticsAmbientLiquidityPoolInfo(pool)
+                        getAnalyticsAmbientLiquidityPoolInfo(pool),
                       );
                       setPair(pool.address);
                       // interface BaseAmbientPool {
@@ -163,7 +163,7 @@ export default function Page() {
                     ...pairs.userCantoDex.map((pair) => () => {
                       Analytics.actions.events.liquidityPool.manageLPClicked(
                         // @ts-ignore
-                        getAnalyticsCantoLiquidityPoolInfo(pair)
+                        getAnalyticsCantoLiquidityPoolInfo(pair),
                       );
                       // @ts-ignore
                       setPair(pair.address);
@@ -179,13 +179,13 @@ export default function Page() {
                   onManage: (poolAddress) => {
                     Analytics.actions.events.liquidityPool.manageLPClicked(
                       // @ts-ignore
-                      getAnalyticsAmbientLiquidityPoolInfo(pool)
+                      getAnalyticsAmbientLiquidityPoolInfo(pool),
                     );
                     setPair(poolAddress);
                   },
                   rewardTime: rewardTime,
                   isMobile,
-                })
+                }),
               ),
               ...pairs.userCantoDex.map((pair) =>
                 UserCantoDexPairRow({
@@ -195,12 +195,12 @@ export default function Page() {
                   onManage: (pairAddress) => {
                     Analytics.actions.events.liquidityPool.manageLPClicked(
                       // @ts-ignore
-                      getAnalyticsCantoLiquidityPoolInfo(pair)
+                      getAnalyticsCantoLiquidityPoolInfo(pair),
                     );
                     setPair(pairAddress);
                   },
                   isMobile,
-                })
+                }),
               ),
             ]}
           />
@@ -242,7 +242,7 @@ export default function Page() {
                     (pool) =>
                       filteredPairs === "all" ||
                       (filteredPairs === "stable" && pool.stable) ||
-                      (filteredPairs === "volatile" && !pool.stable)
+                      (filteredPairs === "volatile" && !pool.stable),
                   )
                   .map((pool) => () => {
                     Analytics.actions.events.liquidityPool.addLPClicked({
@@ -256,7 +256,7 @@ export default function Page() {
                     (pair) =>
                       filteredPairs === "all" ||
                       (filteredPairs === "stable" && pair.stable) ||
-                      (filteredPairs === "volatile" && !pair.stable)
+                      (filteredPairs === "volatile" && !pair.stable),
                   )
                   .map((pair) => () => {
                     Analytics.actions.events.liquidityPool.addLPClicked({
@@ -274,7 +274,7 @@ export default function Page() {
               (pool) =>
                 filteredPairs === "all" ||
                 (filteredPairs === "stable" && pool.stable) ||
-                (filteredPairs === "volatile" && !pool.stable)
+                (filteredPairs === "volatile" && !pool.stable),
             )
             .map((pool) =>
               GeneralAmbientPairRow({
@@ -288,14 +288,14 @@ export default function Page() {
                   setPair(poolAddress);
                 },
                 isMobile,
-              })
+              }),
             ),
           ...sortedCantoDexPairs
             .filter(
               (pair) =>
                 filteredPairs === "all" ||
                 (filteredPairs === "stable" && pair.stable) ||
-                (filteredPairs === "volatile" && !pair.stable)
+                (filteredPairs === "volatile" && !pair.stable),
             )
             .map((pair) =>
               GeneralCantoDexPairRow({
@@ -308,7 +308,7 @@ export default function Page() {
                   setPair(pairAddress);
                 },
                 isMobile,
-              })
+              }),
             ),
         ]}
       />

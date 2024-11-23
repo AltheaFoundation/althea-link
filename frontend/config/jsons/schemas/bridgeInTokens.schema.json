@@ -1,143 +1,128 @@
 {
-    "title": "Bridge In Token list schema",
-    "type": "object",
-    "properties": {
-        "title": {
-            "description": "title",
-            "type": "string"
-        },
-        "description": {
-            "description": "description",
-            "type": "string"
-        },
-        "chainTokenList": {
-            "description": "chain id with list of bridging tokens",
-            "type": "object",
-            "patternProperties": {
-                "^.*$": {
-                    "description": "bridge in tokens for specified chain",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/bridgeInToken"
-                    }
-                }
-            }
-        }
+  "title": "Bridge In Token list schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "description": "title",
+      "type": "string"
     },
-    "additionalProperties": true,
-    "definitions": {
-        "bridgeMethod": {
-            "description": "Types of bridge methods, (0 = gravity bridge, 1 = ibc, 2 = layer zero)",
-            "enum": [
-                "0",
-                "1",
-                "2"
-            ]
-        },
-        "bridgeInToken": {
-            "description": "could be an erc20 (from evm), or ibc token (from cosmos)",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "description": "id",
-                    "type": "string"
-                },
-                "chainId": {
-                    "description": "chainId",
-                    "type": [
-                        "number",
-                        "string"
-                    ]
-                },
-                "address": {
-                    "description": "address",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "name",
-                    "type": "string"
-                },
-                "symbol": {
-                    "description": "symbol",
-                    "type": "string"
-                },
-                "decimals": {
-                    "description": "decimals",
-                    "type": "number"
-                },
-                "icon": {
-                    "description": "icon",
-                    "type": "string"
-                },
-                "bridgeMethods": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/bridgeMethod"
-                    }
-                },
-                "ibcDenom": {
-                    "description": "ibcDenom",
-                    "type": "string"
-                },
-                "nativeName": {
-                    "description": "nativeName",
-                    "type": "string"
-                },
-                "nativeWrappedToken": {
-                    "description": "if the token is a wapped representation of a native token",
-                    "type": "boolean"
-                },
-                "isOFT": {
-                    "description": "if the token is an OFT",
-                    "type": "boolean"
-                },
-                "isOFTProxy": {
-                    "description": "if the token is an OFT proxy",
-                    "type": "boolean"
-                },
-                "oftUnderlyingAddress": {
-                    "description": "address of the underlying token for an OFT",
-                    "type": "string"
-                },
-                "oftHasAdapterParams": {
-                    "description": "if the OFT has the useAdapterParams function",
-                    "type": "boolean"
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "id",
-                "chainId",
-                "name",
-                "symbol",
-                "decimals",
-                "icon",
-                "bridgeMethods"
-            ],
-            "dependencies": {
-                "isOFT": [
-                    "isOFTProxy",
-                    "oftHasAdapterParams"
-                ]
-            },
-            "if": {
-                "properties": {
-                    "chainId": {
-                        "type": "string"
-                    }
-                }
-            },
-            "then": {
-                "required": [
-                    "nativeName",
-                    "ibcDenom"
-                ]
-            },
-            "else": {
-                "required": [
-                    "address"
-                ]
-            }
+    "description": {
+      "description": "description",
+      "type": "string"
+    },
+    "chainTokenList": {
+      "description": "chain id with list of bridging tokens",
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "description": "bridge in tokens for specified chain",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/bridgeInToken"
+          }
         }
+      }
     }
+  },
+  "additionalProperties": true,
+  "definitions": {
+    "bridgeMethod": {
+      "description": "Types of bridge methods, (0 = gravity bridge, 1 = ibc, 2 = layer zero)",
+      "enum": ["0", "1", "2"]
+    },
+    "bridgeInToken": {
+      "description": "could be an erc20 (from evm), or ibc token (from cosmos)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "id",
+          "type": "string"
+        },
+        "chainId": {
+          "description": "chainId",
+          "type": ["number", "string"]
+        },
+        "address": {
+          "description": "address",
+          "type": "string"
+        },
+        "name": {
+          "description": "name",
+          "type": "string"
+        },
+        "symbol": {
+          "description": "symbol",
+          "type": "string"
+        },
+        "decimals": {
+          "description": "decimals",
+          "type": "number"
+        },
+        "icon": {
+          "description": "icon",
+          "type": "string"
+        },
+        "bridgeMethods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/bridgeMethod"
+          }
+        },
+        "ibcDenom": {
+          "description": "ibcDenom",
+          "type": "string"
+        },
+        "nativeName": {
+          "description": "nativeName",
+          "type": "string"
+        },
+        "nativeWrappedToken": {
+          "description": "if the token is a wapped representation of a native token",
+          "type": "boolean"
+        },
+        "isOFT": {
+          "description": "if the token is an OFT",
+          "type": "boolean"
+        },
+        "isOFTProxy": {
+          "description": "if the token is an OFT proxy",
+          "type": "boolean"
+        },
+        "oftUnderlyingAddress": {
+          "description": "address of the underlying token for an OFT",
+          "type": "string"
+        },
+        "oftHasAdapterParams": {
+          "description": "if the OFT has the useAdapterParams function",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "chainId",
+        "name",
+        "symbol",
+        "decimals",
+        "icon",
+        "bridgeMethods"
+      ],
+      "dependencies": {
+        "isOFT": ["isOFTProxy", "oftHasAdapterParams"]
+      },
+      "if": {
+        "properties": {
+          "chainId": {
+            "type": "string"
+          }
+        }
+      },
+      "then": {
+        "required": ["nativeName", "ibcDenom"]
+      },
+      "else": {
+        "required": ["address"]
+      }
+    }
+  }
 }

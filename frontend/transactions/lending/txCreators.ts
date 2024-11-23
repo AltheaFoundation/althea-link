@@ -10,7 +10,7 @@ export const _claimLendingRewardsTx = (
   chainId: number,
   userEthAdress: string,
   comptrollerAddress: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: CantoFETxType.CLAIM_REWARDS_CLM,
@@ -30,7 +30,7 @@ export const _dripComptrollerTx = (
   chainId: number,
   userEthAddress: string,
   reservoirAddress: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: CantoFETxType.DRIP_COMPTROLLER,
@@ -55,12 +55,12 @@ export const _lendingCTokenTx = (
   cTokenAddress: string,
   isCanto: boolean,
   amount: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const txDetails = methodAndParamsFromLendingTxType(
     lendingTx,
     amount,
-    isCanto
+    isCanto,
   );
   return {
     description,
@@ -85,7 +85,7 @@ export const _withdrawAllCTokenTx = (
   userEthAddress: string,
   cTokenAddress: string,
   amount: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: CantoFETxType.WITHDRAW_ALL,
@@ -105,7 +105,7 @@ export const _collateralizeTx = (
   comptrollerAddress: string,
   cTokenAddress: string,
   collateralize: boolean,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: collateralize
@@ -130,7 +130,7 @@ export const _collateralizeTx = (
 function methodAndParamsFromLendingTxType(
   txType: CTokenLendingTxTypes,
   amount: string,
-  isCanto: boolean
+  isCanto: boolean,
 ): {
   feTxType: CantoFETxType;
   method: string;

@@ -26,9 +26,9 @@ export default function useDebounceEffect(props: DebounceEffect) {
       {
         leading: false,
         trailing: true,
-      }
+      },
     ),
-    [timeout]
+    [timeout],
   );
 
   // internal dep change

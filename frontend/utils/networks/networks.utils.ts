@@ -23,7 +23,7 @@ export const getLayerZeroTransactionlink = (chainId: string | number) => {
 
 // will get correct cosmos canto chain from evm or cosmos chain id
 export function getCantoCosmosNetwork(
-  chainId: number | string
+  chainId: number | string,
 ): CosmosNetwork | null {
   if (
     chainId === NETWORKS.CANTO_MAINNET_EVM.chainId ||
@@ -61,7 +61,7 @@ export function isEVMNetwork(network: BaseNetwork): network is EVMNetwork {
  * @returns {boolean} true if network is a Cosmos chain
  */
 export function isCosmosNetwork(
-  network: BaseNetwork
+  network: BaseNetwork,
 ): network is CosmosNetwork {
   return typeof network.chainId === "string";
 }
@@ -72,7 +72,7 @@ export function isCosmosNetwork(
  * @returns {ReturnWithError<BaseNetwork>} network object or error
  */
 export function getNetworkInfoFromChainId(
-  chainId: number | string
+  chainId: number | string,
 ): ReturnWithError<BaseNetwork> {
   for (const [key, network] of Object.entries(NETWORKS)) {
     if (network.chainId === chainId) {
@@ -81,7 +81,7 @@ export function getNetworkInfoFromChainId(
   }
   return NEW_ERROR(
     "getNetworkInfoFromChainId",
-    "Network not found: " + chainId
+    "Network not found: " + chainId,
   );
 }
 
@@ -92,7 +92,7 @@ export function getNetworkInfoFromChainId(
  * @returns {ReturnWithError<string>} rest endpoint for the chain or error if none found
  */
 export function getCosmosAPIEndpoint(
-  chainId: number | string
+  chainId: number | string,
 ): ReturnWithError<string> {
   if (typeof chainId === "number") {
     // if number is passed in, it must be one of the Canto EVM chains
@@ -123,7 +123,7 @@ export function getCosmosAPIEndpoint(
  * @returns {ReturnWithError<Chain>} cosmos chain object or error
  */
 export function getCosmosEIPChainObject(
-  chainId: number
+  chainId: number,
 ): ReturnWithError<Chain> {
   switch (chainId) {
     case NETWORKS.CANTO_TESTNET_EVM.chainId:

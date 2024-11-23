@@ -89,7 +89,7 @@ const Bridging = ({ props }: { props: BridgeComboReturn }) => {
           {
             symbol: token?.symbol,
             precision: token?.decimals,
-          }
+          },
         )}
         fees={feeObject}
         confirmation={{
@@ -131,7 +131,7 @@ const Bridging = ({ props }: { props: BridgeComboReturn }) => {
                   items={
                     bridge.direction === "in"
                       ? bridge.allOptions.networks.filter((network) =>
-                          isEVMNetwork(network)
+                          isEVMNetwork(network),
                         )!
                       : []
                   }
@@ -143,7 +143,7 @@ const Bridging = ({ props }: { props: BridgeComboReturn }) => {
                         id: "",
                       },
                       items: bridge.allOptions.networks.filter(
-                        (network) => !isEVMNetwork(network)
+                        (network) => !isEVMNetwork(network),
                       ),
                     },
                   ]}
@@ -263,9 +263,9 @@ const Bridging = ({ props }: { props: BridgeComboReturn }) => {
                     name: token.name.length > 24 ? token.symbol : token.name,
                     secondary: displayAmount(
                       token.balance ?? "0",
-                      token.decimals
+                      token.decimals,
                     ),
-                  }))
+                  })),
                 )}
                 onChange={(tokenId) => bridge.setState("token", tokenId)}
               />
@@ -363,7 +363,7 @@ const formattedFeesForConfirmation = (
   gravityFees: {
     selected: string;
     totalChainFee: string;
-  }
+  },
 ):
   | { tokenFees: { key: string; value: string }[]; totalFees?: string }
   | undefined => {
@@ -387,7 +387,7 @@ const formattedFeesForConfirmation = (
                     {
                       symbol: token?.symbol,
                       maxSmallBalance: undefined,
-                    }
+                    },
                   ),
                 },
                 {
@@ -398,7 +398,7 @@ const formattedFeesForConfirmation = (
                     {
                       symbol: token?.symbol,
                       maxSmallBalance: undefined,
-                    }
+                    },
                   ),
                 },
                 ...Object.values(props.gasFees).map((fee) => ({
@@ -410,22 +410,22 @@ const formattedFeesForConfirmation = (
                 displayAmount(
                   addTokenBalances(
                     gravityFees.selected,
-                    gravityFees.totalChainFee
+                    gravityFees.totalChainFee,
                   ),
                   token?.decimals ?? 0,
                   {
                     symbol: token?.symbol,
                     maxSmallBalance: undefined,
-                  }
+                  },
                 ) +
                 " & " +
                 displayAmount(
                   Object.values(props.gasFees).reduce(
                     (acc, fee) => addTokenBalances(acc, fee.amount),
-                    "0"
+                    "0",
                   ),
                   18,
-                  { symbol: "ALTHEA" }
+                  { symbol: "ALTHEA" },
                 ),
             }
           : props.method === BridgingMethod.IBC && props.direction === "out"
@@ -437,10 +437,10 @@ const formattedFeesForConfirmation = (
                 totalFees: displayAmount(
                   Object.values(props.gasFees).reduce(
                     (acc, fee) => addTokenBalances(acc, fee.amount),
-                    "0"
+                    "0",
                   ),
                   18,
-                  { symbol: "ALTHEA" }
+                  { symbol: "ALTHEA" },
                 ),
               }
             : undefined;
@@ -520,10 +520,10 @@ const FeesSection = ({
                 tokenAmount={displayAmount(
                   addTokenBalances(
                     props.bridgeFeeOptions.slow.fee,
-                    fees.totalChainFee
+                    fees.totalChainFee,
                   ),
                   token?.decimals ?? 0,
-                  { maxSmallBalance: undefined }
+                  { maxSmallBalance: undefined },
                 )}
                 tokenValueUSD={props.bridgeFeeOptions.slow.usdValueFormatted}
                 active={fees.selected === props.bridgeFeeOptions.slow.fee}
@@ -540,10 +540,10 @@ const FeesSection = ({
                 tokenAmount={displayAmount(
                   addTokenBalances(
                     props.bridgeFeeOptions.medium.fee,
-                    fees.totalChainFee
+                    fees.totalChainFee,
                   ),
                   token?.decimals ?? 0,
-                  { maxSmallBalance: undefined }
+                  { maxSmallBalance: undefined },
                 )}
                 tokenValueUSD={props.bridgeFeeOptions.medium.usdValueFormatted}
                 active={fees.selected === props.bridgeFeeOptions.medium.fee}
@@ -560,10 +560,10 @@ const FeesSection = ({
                 tokenAmount={displayAmount(
                   addTokenBalances(
                     props.bridgeFeeOptions.fast.fee,
-                    fees.totalChainFee
+                    fees.totalChainFee,
                   ),
                   token?.decimals ?? 0,
-                  { maxSmallBalance: undefined }
+                  { maxSmallBalance: undefined },
                 )}
                 tokenValueUSD={props.bridgeFeeOptions.fast.usdValueFormatted}
                 active={fees.selected === props.bridgeFeeOptions.fast.fee}
@@ -582,10 +582,10 @@ const FeesSection = ({
               {displayAmount(
                 Object.values(props.gasFees).reduce(
                   (acc, fee) => addTokenBalances(acc, fee.amount),
-                  "0"
+                  "0",
                 ),
                 18,
-                { symbol: "ALTHEA" }
+                { symbol: "ALTHEA" },
               )}
             </Text>
           </>
@@ -602,10 +602,10 @@ const FeesSection = ({
           {displayAmount(
             Object.values(props.gasFees).reduce(
               (acc, fee) => addTokenBalances(acc, fee.amount),
-              "0"
+              "0",
             ),
             18,
-            { symbol: "ALTHEA" }
+            { symbol: "ALTHEA" },
           )}
         </Text>
       )}

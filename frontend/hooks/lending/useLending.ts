@@ -19,7 +19,7 @@ import {
  * @returns
  */
 export default function useLending(
-  params: LendingHookInputParams
+  params: LendingHookInputParams,
 ): LendingHookReturn {
   // use query to get all general and user cToken data
   const { data: clmData, isLoading: loadingCTokens } = useQuery(
@@ -28,13 +28,13 @@ export default function useLending(
       // get tokens
       const cTokenAddresses = getCTokenAddressesFromChainId(
         params.chainId,
-        params.lmType
+        params.lmType,
       );
       if (!cTokenAddresses) throw Error("useLending: chainId not supported");
       const clmData = await getAllUserCLMData(
         params.userEthAddress ?? "",
         params.chainId,
-        cTokenAddresses
+        cTokenAddresses,
       );
       if (clmData.error) throw clmData.error;
       return clmData.data;
@@ -47,7 +47,7 @@ export default function useLending(
         cTokens: [],
         position: undefined,
       },
-    }
+    },
   );
   ///
   /// Internal Hooks
@@ -59,7 +59,7 @@ export default function useLending(
   >(null);
   // get token from constantly updating list of cTokens
   const selectedCToken = clmData?.cTokens.find((cToken) =>
-    areEqualAddresses(cToken.address, selectedCTokenAddress ?? "")
+    areEqualAddresses(cToken.address, selectedCTokenAddress ?? ""),
   );
 
   return {

@@ -21,18 +21,17 @@ export interface UserIBCTransactionHistory {
 
 export async function getAllIBCTransactions(
   chainId: number,
-  ethAccount: string
+  ethAccount: string,
 ): PromiseWithError<UserIBCTransactionHistory> {
-  const { data: cantoAccount, error: addressError } = await ethToAltheaAddress(
-    ethAccount
-  );
+  const { data: cantoAccount, error: addressError } =
+    await ethToAltheaAddress(ethAccount);
   if (addressError) {
     return NEW_ERROR("getAllIBCTransactions::" + addressError.message);
   }
   const { data: ibcInTxs, error: ibcInError } = await getIBCTransactions(
     chainId,
     cantoAccount,
-    true
+    true,
   );
   if (ibcInError) {
     return NEW_ERROR("getAllIBCTransactions::" + ibcInError.message);
@@ -40,7 +39,7 @@ export async function getAllIBCTransactions(
   const { data: ibcOutTxs, error: ibcOutError } = await getIBCTransactions(
     chainId,
     cantoAccount,
-    false
+    false,
   );
   if (ibcOutError) {
     return NEW_ERROR("getAllIBCTransactions::" + ibcOutError.message);
@@ -86,7 +85,7 @@ interface IBCTransactionResponse {
 async function getIBCTransactions(
   chainId: number,
   cantoAccount: string,
-  ibcIn: boolean
+  ibcIn: boolean,
 ): PromiseWithError<IBCTransaction[]> {
   const { data: endpoint, error: endpointError } =
     getCosmosAPIEndpoint(chainId);
@@ -103,7 +102,7 @@ async function getIBCTransactions(
       ibcAttribute +
       "%3D'" +
       cantoAccount +
-      "'"
+      "'",
   );
   if (ibcError) {
     return NEW_ERROR("getIBCTransactions::" + ibcError.message);
@@ -143,7 +142,7 @@ interface ParsedFungibleTokenPacket {
 }
 // parse fungible token packed event to get tx data
 function parseFungibleTokenPacket(
-  event: CosmosTxEvent
+  event: CosmosTxEvent,
 ): ReturnWithError<ParsedFungibleTokenPacket> {
   // create empty dictionary so we only go through packet one time
   const parsedPacket: { [key: string]: string } = {};
@@ -160,7 +159,7 @@ function parseFungibleTokenPacket(
 
 // check if object is instance of ParsedFungibleTokenPacket for type guarding
 function instanceOfParsedPacked(
-  object: any
+  object: any,
 ): object is ParsedFungibleTokenPacket {
   return (
     object.sender &&

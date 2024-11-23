@@ -34,7 +34,7 @@ pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althe
 
 pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
 pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
-pub const CACHE_DURATION: u64 = 300;
+pub const CACHE_DURATION: u64 = 6;
 pub const DELEGATIONS_CACHE_DURATION: u64 = 4;
 
 pub const ALTHEA_PREFIX: &str = "althea";

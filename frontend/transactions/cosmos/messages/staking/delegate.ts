@@ -53,7 +53,7 @@ interface MessageMultiDelegateParams {
  * @returns {UnsignedCosmosMessages} eip and cosmos messages along with types object and fee
  */
 export function createMsgsDelegate(
-  params: MessageDelegateParams
+  params: MessageDelegateParams,
 ): UnsignedCosmosMessages {
   const eipMsg = eip712MsgDelegate(params);
   const cosmosMsg = protoMsgDelegate(params);
@@ -72,7 +72,7 @@ export function createMsgsDelegate(
  * @returns {UnsignedCosmosMessages[]} Array of eip and cosmos messages along with types object and fee for each delegation
  */
 export function createMultiMsgsDelegate(
-  paramsArray: MessageMultiDelegateParams[]
+  paramsArray: MessageMultiDelegateParams[],
 ): UnsignedCosmosMessages[] {
   return paramsArray.map((params) => {
     const eipMsg = eip712MultiMsgDelegate(params);
@@ -126,7 +126,7 @@ function protoMsgDelegate(params: MessageDelegateParams): CosmosNativeMessage {
 }
 
 function eip712MultiMsgDelegate(
-  params: MessageMultiDelegateParams
+  params: MessageMultiDelegateParams,
 ): EIP712Message[] {
   return params.messages.map((message) => ({
     type: message.undelegate
@@ -144,7 +144,7 @@ function eip712MultiMsgDelegate(
 }
 
 function protoMultiMsgDelegate(
-  params: MessageMultiDelegateParams
+  params: MessageMultiDelegateParams,
 ): CosmosNativeMessage[] {
   return params.messages.map((message) => {
     const value = new Coin({

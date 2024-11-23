@@ -18,7 +18,7 @@ import {
 import { addTokenBalances } from "@/utils/math";
 
 export default function useAmbientPools(
-  params: AmbientHookInputParams
+  params: AmbientHookInputParams,
 ): AmbientHookReturn {
   ///
   /// INTERNAL STATE
@@ -30,12 +30,12 @@ export default function useAmbientPools(
     async (): Promise<{ pools: AmbientPool[]; totalRewards: string }> => {
       const pools = await getAllAmbientPoolsData(
         params.chainId,
-        params.userEthAddress
+        params.userEthAddress,
       );
       if (pools.error) throw pools.error;
       const totalRewards = pools.data.reduce(
         (acc, pool) => addTokenBalances(acc, pool.userRewards),
-        "0"
+        "0",
       );
       return {
         pools: pools.data,
@@ -46,7 +46,7 @@ export default function useAmbientPools(
       onError: (error) => {
         console.error(error);
       },
-    }
+    },
   );
 
   // some ambient tokens may have underlying apr from the lending market, so we need to get those
@@ -79,9 +79,9 @@ export default function useAmbientPools(
         cTokenAddresses.map((cTokenAddress) =>
           getCantoApiData<CToken>(
             params.chainId,
-            CANTO_DATA_API_ENDPOINTS.singleCToken(cTokenAddress)
-          )
-        )
+            CANTO_DATA_API_ENDPOINTS.singleCToken(cTokenAddress),
+          ),
+        ),
       );
       for (const cToken of cTokenData) {
         if (cToken.error) {
@@ -102,7 +102,7 @@ export default function useAmbientPools(
   const underlyingTokenBalances = useTokenBalances(
     params.chainId,
     getUniqueUnderlyingTokensFromPairs(ambient?.pools ?? []),
-    params.userEthAddress
+    params.userEthAddress,
   );
 
   const poolsWithBalances: AmbientPool[] =

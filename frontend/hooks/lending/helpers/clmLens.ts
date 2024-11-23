@@ -20,7 +20,7 @@ import { multicall } from "wagmi/actions";
 export async function getUserCLMLensData(
   userEthAddress: string,
   chainId: number,
-  cTokenAddresses: string[]
+  cTokenAddresses: string[],
 ): PromiseWithError<{
   cTokens: UserCTokenDetails[];
   limits: { liquidity: string; shortfall: string };

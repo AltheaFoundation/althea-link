@@ -42,7 +42,7 @@ import { CANTO_MAINNET_EVM } from "@/config/networks";
 import { generateCantoPublicKeyWithTx } from "../cosmos/publicKey";
 
 export async function stakingTx(
-  txParams: StakingTransactionParams
+  txParams: StakingTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   // convert user eth address into althea address
   const altheaAddress = ethToAlthea(txParams.ethAccount);
@@ -53,13 +53,12 @@ export async function stakingTx(
   /** check if user has public key */
   const { data: hasPubKey, error: checkPubKeyError } = await checkCantoPubKey(
     altheaAddress,
-    CANTO_MAINNET_EVM.chainId
+    CANTO_MAINNET_EVM.chainId,
   );
-
 
   if (!txParams || !txParams.ethAccount) {
     return NEW_ERROR(
-      "Invalid transaction parameters or Ethereum address is missing."
+      "Invalid transaction parameters or Ethereum address is missing.",
     );
   }
 
@@ -78,9 +77,9 @@ export async function stakingTx(
             TX_DESCRIPTIONS.DELEGATE(
               txParams.validator.description.moniker,
               displayAmount(txParams.amount, 18),
-              false
-            )
-          )
+              false,
+            ),
+          ),
         );
       }
       return NO_ERROR({ transactions: txList });
@@ -97,8 +96,8 @@ export async function stakingTx(
             TX_DESCRIPTIONS.DELEGATE(
               txParams.validator.description.moniker,
               displayAmount(txParams.amount, 18),
-              txParams.txType === StakingTxTypes.UNDELEGATE
-            )
+              txParams.txType === StakingTxTypes.UNDELEGATE,
+            ),
           ),
         ],
       });
@@ -115,8 +114,8 @@ export async function stakingTx(
             TX_DESCRIPTIONS.REDELEGATE(
               txParams.validator.description.moniker,
               txParams.newValidatorName ?? "",
-              displayAmount(txParams.amount, 18)
-            )
+              displayAmount(txParams.amount, 18),
+            ),
           ),
         ],
       });
@@ -128,7 +127,7 @@ export async function stakingTx(
             txParams.chainId,
             altheaAddress,
             txParams.validatorAddresses,
-            TX_DESCRIPTIONS.CLAIM_STAKING_REWARDS()
+            TX_DESCRIPTIONS.CLAIM_STAKING_REWARDS(),
           ),
         ],
       });
@@ -150,8 +149,8 @@ export async function stakingTx(
               txParams.validators
                 .map((v) => displayAmount(v.amount, 18))
                 .join(", "),
-              false
-            )
+              false,
+            ),
           ),
         ],
       });
@@ -171,7 +170,7 @@ const _delegateTx = (
   validatorAddress: string,
   amount: string,
   undelegate: boolean,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   fromAddress: ethAddress,
   feTxType: undelegate ? CantoFETxType.UNDELEGATE : CantoFETxType.DELEGATE,
@@ -196,7 +195,7 @@ const _delegateMultipleTx = (
     validatorAddress: string;
     amount: string;
   }[],
-  description: TransactionDescription
+  description: TransactionDescription,
 ): MultiMessageTransaction => ({
   fromAddress: ethAddress,
   feTxType: CantoFETxType.MULTI_STAKE,
@@ -223,7 +222,7 @@ const _redelegateTx = (
   validatorSrcAddress: string,
   validatorDstAddress: string,
   amount: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   fromAddress: ethAddress,
   description,
@@ -244,7 +243,7 @@ const _claimRewardsTx = (
   chainId: number,
   delegatorCantoAddress: string,
   validatorAddresses: string[],
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   fromAddress: ethAddress,
   feTxType: CantoFETxType.CLAIM_STAKING_REWARDS,
@@ -258,7 +257,7 @@ const _claimRewardsTx = (
 });
 
 export function validateStakingTxParams(
-  txParams: StakingTransactionParams
+  txParams: StakingTransactionParams,
 ): Validation {
   // make sure userEthAddress is set and same as params
   if (!isValidEthAddress(txParams.ethAccount)) {
@@ -283,7 +282,7 @@ export function validateStakingTxParams(
         "1",
         maxDelegateAmount(txParams.nativeBalance),
         "CANTO",
-        18
+        18,
       );
     case StakingTxTypes.MULTI_STAKE:
       // amount just has to be less than canto balance
@@ -292,7 +291,7 @@ export function validateStakingTxParams(
         "1",
         txParams.nativeBalance,
         "CANTO",
-        18
+        18,
       );
     case StakingTxTypes.UNDELEGATE:
       if (BigNumber(txParams.nativeBalance).isLessThan(UNDELEGATE_FEE.amount)) {
@@ -307,7 +306,7 @@ export function validateStakingTxParams(
         "1",
         txParams.validator.userDelegation.balance,
         "CANTO",
-        18
+        18,
       );
     case StakingTxTypes.REDELEGATE: {
       if (BigNumber(txParams.nativeBalance).isLessThan(REDELEGATE_FEE.amount)) {
@@ -329,13 +328,13 @@ export function validateStakingTxParams(
         "1",
         txParams.validator.userDelegation.balance,
         "CANTO",
-        18
+        18,
       );
     }
     case StakingTxTypes.CLAIM_REWARDS: {
       if (
         BigNumber(txParams.nativeBalance).isLessThan(
-          CLAIM_STAKING_REWARD_FEE.amount
+          CLAIM_STAKING_REWARD_FEE.amount,
         )
       ) {
         return {

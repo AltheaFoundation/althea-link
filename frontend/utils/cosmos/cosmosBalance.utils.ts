@@ -19,7 +19,7 @@ import {
  */
 export async function getCantoBalance(
   chainId: string,
-  cantoAddress: string
+  cantoAddress: string,
 ): PromiseWithError<string> {
   return await getCosmosTokenBalance(chainId, cantoAddress, "aalthea");
 }
@@ -34,7 +34,7 @@ export async function getCantoBalance(
 export async function getCosmosTokenBalance(
   chainId: string | number,
   cosmosAddress: string,
-  tokenDenom: string
+  tokenDenom: string,
 ): PromiseWithError<string> {
   const { data: nodeURL, error: urlError } = getCosmosAPIEndpoint(chainId);
   if (urlError) {
@@ -47,7 +47,7 @@ export async function getCosmosTokenBalance(
       "/cosmos/bank/v1beta1/balances/" +
       cosmosAddress +
       "/by_denom?denom=" +
-      tokenDenom
+      tokenDenom,
   );
   if (balanceError) {
     return NEW_ERROR("getCosmosTokenBalance", balanceError);
@@ -63,7 +63,7 @@ export async function getCosmosTokenBalance(
  */
 export async function getCosmosTokenBalanceList(
   chainId: string,
-  cosmosAddress: string
+  cosmosAddress: string,
 ): PromiseWithError<UserTokenBalances> {
   try {
     // check to make sure address matches chain

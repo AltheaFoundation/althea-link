@@ -52,7 +52,7 @@ interface MessageIBCOutParams {
  * @returns {UnsignedCosmosMessages} eip and cosmos messages along with types object and fee
  */
 export function createMsgsIBCTransfer(
-  params: MessageIBCOutParams
+  params: MessageIBCOutParams,
 ): UnsignedCosmosMessages {
   const eipMsg = eip712MsgIBCTransfer(params);
   const cosmosMsg = protoMsgIBCTransfer(params);

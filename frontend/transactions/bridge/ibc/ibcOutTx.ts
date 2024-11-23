@@ -42,7 +42,7 @@ type IBCOutTxParams = {
  * @returns {PromiseWithError<Transaction[]>} list of transactions to make or error
  */
 export async function IBCOutTx(
-  txParams: IBCOutTxParams
+  txParams: IBCOutTxParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** validate params */
@@ -64,7 +64,7 @@ export async function IBCOutTx(
         "invalid cosmos address: " +
           txParams.receiverCosmosAddress +
           " for chain " +
-          receivingChain.id
+          receivingChain.id,
       );
     }
 
@@ -81,7 +81,7 @@ export async function IBCOutTx(
     /** ibc data */
     const { data: ibcData, error: ibcDataError } = await getIBCData(
       receivingChain.restEndpoint,
-      receivingChain.extraEndpoints
+      receivingChain.extraEndpoints,
     );
     if (ibcDataError) throw ibcDataError;
 
@@ -90,7 +90,7 @@ export async function IBCOutTx(
       await getBlockTimestamp(
         receivingChain.restEndpoint,
         receivingChain.extraEndpoints,
-        receivingChain.latestBlockEndpoint
+        receivingChain.latestBlockEndpoint,
       );
     if (timestampError) throw timestampError;
 
@@ -102,7 +102,7 @@ export async function IBCOutTx(
       // make sure token is also an ERC20 token for type saftey
       if (!isERC20Token(txParams.token)) {
         throw new Error(
-          "token must be ERC20 to convert to IBC: " + txParams.token.id
+          "token must be ERC20 to convert to IBC: " + txParams.token.id,
         );
       }
       // check native balance to see if we need to convert
@@ -110,11 +110,11 @@ export async function IBCOutTx(
         await getCosmosTokenBalance(
           txParams.token.chainId,
           cantoAddress,
-          txParams.token.ibcDenom
+          txParams.token.ibcDenom,
         );
       if (nativeBalanceError) throw nativeBalanceError;
       const amountToConvert = new BigNumber(txParams.amount).minus(
-        nativeBalance
+        nativeBalance,
       );
       if (amountToConvert.gt(0)) {
         txList.push(
@@ -126,9 +126,9 @@ export async function IBCOutTx(
             cantoAddress,
             TX_DESCRIPTIONS.CONVERT_ERC20(
               txParams.token.symbol,
-              displayAmount(amountToConvert, txParams.token.decimals)
-            )
-          )
+              displayAmount(amountToConvert, txParams.token.decimals),
+            ),
+          ),
         );
       }
     }
@@ -152,8 +152,8 @@ export async function IBCOutTx(
         displayAmount(txParams.amount, txParams.token.decimals),
         CANTO_MAINNET_COSMOS.name,
         receivingChain.name,
-        getBridgeMethodInfo(BridgingMethod.IBC).name
-      )
+        getBridgeMethodInfo(BridgingMethod.IBC).name,
+      ),
     );
 
     // add verify complete if requested
@@ -181,7 +181,7 @@ export function validateIBCOutTxParams(txParams: IBCOutTxParams): Validation {
   }
   // check cosmos receiver
   const { data: receivingChain, error } = getNetworkInfoFromChainId(
-    txParams.receivingChainId
+    txParams.receivingChainId,
   );
   if (error) {
     return {
@@ -221,20 +221,20 @@ export function validateIBCOutTxParams(txParams: IBCOutTxParams): Validation {
     "1",
     txParams.token.balance ?? "0",
     txParams.token.symbol,
-    txParams.token.decimals
+    txParams.token.decimals,
   );
 }
 
 // tx may not be acknoleged yet, so try for 5 blocks before giving up
 async function waitForIBCComplete(
   originChainId: string,
-  txHash: string
+  txHash: string,
 ): PromiseWithError<boolean> {
   let numTries = 0;
   while (numTries < 5) {
     const { data: done, error } = await verifyIBCComplete(
       originChainId,
-      txHash
+      txHash,
     );
     if (error || !done) {
       numTries++;
@@ -249,7 +249,7 @@ async function waitForIBCComplete(
 // verifies IBC acknolwedgement from tx hash
 async function verifyIBCComplete(
   originChainId: string,
-  txHash: string
+  txHash: string,
 ): PromiseWithError<boolean> {
   try {
     // get network info
@@ -262,7 +262,7 @@ async function verifyIBCComplete(
     // get tx data
     const { data: txData, error } = await getCosmosTxDetailsFromHash(
       originNetwork.chainId,
-      txHash
+      txHash,
     );
     if (error) throw error;
 
@@ -271,19 +271,19 @@ async function verifyIBCComplete(
 
     // check events for "send_packet"
     const sendPacketEvent = allEvents.find(
-      (event) => event.type === "send_packet"
+      (event) => event.type === "send_packet",
     );
     if (!sendPacketEvent) throw new Error("no send_packet event");
 
     // check attributes fo find the packet sequence
     const packetSequence = sendPacketEvent.attributes.find(
-      (att) => att.key === "packet_sequence"
+      (att) => att.key === "packet_sequence",
     )?.value;
     if (!packetSequence) throw new Error("no packet_sequence attribute");
 
     // check attributes for channel id
     const channelId = sendPacketEvent.attributes.find(
-      (att) => att.key === "packet_src_channel"
+      (att) => att.key === "packet_src_channel",
     )?.value;
     if (!channelId) throw new Error("no packet_src_channel attribute");
 
@@ -292,7 +292,7 @@ async function verifyIBCComplete(
       acknowledgement: string;
       proof: any;
     }>(
-      `${originNetwork.restEndpoint}/ibc/core/channel/v1/channels/${channelId}/ports/transfer/packet_acks/${packetSequence}`
+      `${originNetwork.restEndpoint}/ibc/core/channel/v1/channels/${channelId}/ports/transfer/packet_acks/${packetSequence}`,
     );
     if (ackError) throw ackError;
 

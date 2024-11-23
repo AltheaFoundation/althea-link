@@ -15,7 +15,7 @@ export function isValidAltheaAddress(altheaAddress: string): boolean {
  * @returns {boolean} if a valid eth address
  */
 export function isValidEthAddress(
-  ethAddress: string
+  ethAddress: string,
 ): ethAddress is `0x${string}` {
   return checkHex(ethAddress);
 }

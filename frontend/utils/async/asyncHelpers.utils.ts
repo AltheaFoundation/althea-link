@@ -15,7 +15,7 @@ const DEFAULT_HEADER = {
  */
 export async function tryFetch<T>(
   url: string,
-  options?: RequestInit
+  options?: RequestInit,
 ): PromiseWithError<T> {
   try {
     const response = await fetch(url, options ?? DEFAULT_HEADER);
@@ -37,7 +37,7 @@ export async function tryFetch<T>(
  */
 export async function tryFetchMultipleEndpoints<T>(
   urls: string[],
-  options?: RequestInit
+  options?: RequestInit,
 ): PromiseWithError<T> {
   for (const url of urls) {
     const result = await tryFetch<T>(url, options);
@@ -59,7 +59,7 @@ const MAX_TRIES = 5;
 export async function tryFetchWithRetry<T>(
   url: string,
   numTries?: number,
-  options?: RequestInit
+  options?: RequestInit,
 ): PromiseWithError<T> {
   let numberOfTries = 0;
   while (numberOfTries < (numTries ?? MAX_TRIES)) {
@@ -72,7 +72,7 @@ export async function tryFetchWithRetry<T>(
   }
   return NEW_ERROR(
     "tryFetchWithRetry",
-    "no response after " + numberOfTries + " tries"
+    "no response after " + numberOfTries + " tries",
   );
 }
 
@@ -93,14 +93,14 @@ export async function sleep(ms: number): Promise<void> {
  */
 export async function asyncCallWithTimeout<T>(
   asyncPromise: () => Promise<T>,
-  timeLimit: number
+  timeLimit: number,
 ): PromiseWithError<T> {
   try {
     let timeoutHandle: ReturnType<typeof setTimeout>;
     const timeoutPromise = new Promise((_resolve) => {
       timeoutHandle = setTimeout(
         () => _resolve(Error("asyncCallWithTimeout: timeout")),
-        timeLimit
+        timeLimit,
       );
     });
     const result = await Promise.race([asyncPromise(), timeoutPromise]);
@@ -127,7 +127,7 @@ export async function asyncCallWithRetry<T>(
   options?: {
     numTries?: number;
     sleepTime?: number;
-  }
+  },
 ): PromiseWithError<T> {
   let numberOfTries = 0;
   while (numberOfTries < (options?.numTries ?? MAX_TRIES)) {
@@ -141,6 +141,6 @@ export async function asyncCallWithRetry<T>(
   }
   return NEW_ERROR(
     "asyncCallWithRetry",
-    "no response after " + numberOfTries + " tries"
+    "no response after " + numberOfTries + " tries",
   );
 }

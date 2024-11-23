@@ -24,13 +24,13 @@ export interface ClaimDexComboRewardsParams {
 }
 // transaction for claiming rewards in the clm and ambient dex
 export async function claimDexRewardsComboTx(
-  params: ClaimDexComboRewardsParams
+  params: ClaimDexComboRewardsParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     const txList: Transaction[] = [];
     if (params.clmParams && params.clmParams?.estimatedRewards !== "0") {
       const { data: clmRewards, error: clmError } = await clmClaimRewardsTx(
-        params.clmParams
+        params.clmParams,
       );
       if (clmError) throw clmError;
       if (clmRewards && clmRewards.transactions) {
@@ -57,7 +57,7 @@ export async function claimDexRewardsComboTx(
   }
 }
 export function validateClaimDexRewardsComboTxParams(
-  _params: ClaimDexComboRewardsParams
+  _params: ClaimDexComboRewardsParams,
 ): ReturnWithError<Validation> {
   return NO_ERROR({ error: false });
 }

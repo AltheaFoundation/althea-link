@@ -55,7 +55,7 @@ const BRIDGE_METHOD_INFO: BridgeMethodInfo = {
  * @returns BridgeMethodInfo object
  */
 export function getBridgeMethodInfo(
-  method: BridgingMethod | null
+  method: BridgingMethod | null,
 ): BridgeMethodInfo[BridgingMethod] {
   if (method === null) {
     return {

@@ -14,10 +14,10 @@ interface IBCData {
  */
 export async function getIBCData(
   restEndpoint: string,
-  extraEndpoints?: string[]
+  extraEndpoints?: string[],
 ): PromiseWithError<IBCData> {
   const allEndpoints = [restEndpoint, ...(extraEndpoints ?? [])].map(
-    (endpoint) => endpoint + "/ibc/core/channel/v1/channels"
+    (endpoint) => endpoint + "/ibc/core/channel/v1/channels",
   );
   const ibcData = await tryFetchMultipleEndpoints<IBCData>(allEndpoints);
   if (ibcData.error) {
@@ -35,11 +35,11 @@ export async function getIBCData(
 export async function getBlockTimestamp(
   restEndpoint: string,
   extraEndpoints?: string[],
-  latestBlockEndpoint?: string
+  latestBlockEndpoint?: string,
 ): PromiseWithError<string> {
   const urlEnding = latestBlockEndpoint ?? "";
   const allEndpoints = [restEndpoint, ...(extraEndpoints ?? [])].map(
-    (endpoint) => endpoint + urlEnding + "/blocks/latest"
+    (endpoint) => endpoint + urlEnding + "/blocks/latest",
   );
   const { data, error } = await tryFetchMultipleEndpoints<{
     block: { header: { time: string } };

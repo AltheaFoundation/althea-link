@@ -36,12 +36,12 @@ interface MultiStakingModalParams {
   txValidation: (
     amount: string,
     selectedTx: StakingTxTypes,
-    validators: Validator[]
+    validators: Validator[],
   ) => Validation;
   onConfirm: (
     amount: string,
     selectedTx: StakingTxTypes,
-    validators: Validator[]
+    validators: Validator[],
   ) => void;
 }
 interface ValidatorRowProps {
@@ -77,7 +77,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
             short: true,
             commify: true,
             precision: 2,
-          }
+          },
         )}
         %
       </td>
@@ -89,7 +89,7 @@ const ValidatorRow: React.FC<ValidatorRowProps> = ({
             short: true,
             commify: true,
             precision: 2,
-          }
+          },
         )}
         %
       </td>
@@ -121,7 +121,7 @@ const UnbondingRow: React.FC<UnbondigRowProps> = ({
               short: true,
               commify: true,
               precision: 2,
-            }
+            },
           )}
         </td>
       </tr>
@@ -141,10 +141,10 @@ export const MultiStakingModal = (props: MultiStakingModalParams) => {
   >([]);
 
   const [selectedTx, setSelectedTx] = useState<StakingTxTypes>(
-    StakingTxTypes.MULTI_STAKE
+    StakingTxTypes.MULTI_STAKE,
   );
   const [activeTab, setActiveTab] = useState<"delegate" | "undelegate">(
-    "delegate"
+    "delegate",
   );
 
   const feeMap = (txType: StakingTxTypes) => {
@@ -164,7 +164,7 @@ export const MultiStakingModal = (props: MultiStakingModalParams) => {
     setSelectedValidators((prev: Validator[]) => {
       if (prev.includes(validator)) {
         return prev.filter(
-          (v) => v.operator_address !== validator.operator_address
+          (v) => v.operator_address !== validator.operator_address,
         );
       }
       return [...prev, validator];
@@ -180,7 +180,7 @@ export const MultiStakingModal = (props: MultiStakingModalParams) => {
           .toString();
         return acc;
       },
-      {} as { [key: string]: string }
+      {} as { [key: string]: string },
     );
   };
 
@@ -206,7 +206,7 @@ export const MultiStakingModal = (props: MultiStakingModalParams) => {
           {props.validators
             .filter(
               (validator) =>
-                validator.status === "BOND_STATUS_BONDED" && !validator.jailed
+                validator.status === "BOND_STATUS_BONDED" && !validator.jailed,
             )
             .map((validator) => (
               <ValidatorRow

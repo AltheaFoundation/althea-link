@@ -21,7 +21,7 @@ interface MessageSendToEthParams {
   chainFee: string;
 }
 export function createMsgsSendToEth(
-  params: MessageSendToEthParams
+  params: MessageSendToEthParams,
 ): UnsignedCosmosMessages {
   const eipMessage = eipSendToEth(
     params.gravitySender,
@@ -29,7 +29,7 @@ export function createMsgsSendToEth(
     params.amount,
     params.nativeName,
     params.bridgeFee,
-    params.chainFee
+    params.chainFee,
   );
   const cosmosMessage = protoSendToEth(
     params.gravitySender,
@@ -37,7 +37,7 @@ export function createMsgsSendToEth(
     params.amount,
     params.nativeName,
     params.bridgeFee,
-    params.chainFee
+    params.chainFee,
   );
   return {
     eipMsg: eipMessage,

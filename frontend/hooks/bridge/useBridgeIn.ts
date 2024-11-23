@@ -37,7 +37,7 @@ import {
 } from "@/transactions/bridge";
 
 export default function useBridgeIn(
-  props: BridgeHookInputParams
+  props: BridgeHookInputParams,
 ): BridgeHookReturn {
   // initial state with props
   const initialState = (testnet: boolean): BridgeHookState => ({
@@ -58,7 +58,7 @@ export default function useBridgeIn(
 
   // state of the entire hook that will be exposed
   const [state, setState] = useState<BridgeHookState>(
-    initialState(props.testnet ?? false)
+    initialState(props.testnet ?? false),
   );
 
   ///
@@ -97,7 +97,7 @@ export default function useBridgeIn(
         }) as ERC20Token[])
       : [],
     state.connectedEthAddress,
-    state.connectedCosmosAddress
+    state.connectedCosmosAddress,
   );
   // will autoselect the first available network (only network can have default since loaded once)
   useAutoSelect(state.availableNetworks, setNetwork, props.defaults?.networkId);
@@ -112,7 +112,7 @@ export default function useBridgeIn(
 
   function getNetwork(id: string): ReturnWithError<BaseNetwork> {
     const network = state.availableNetworks.find(
-      (network) => network.id === id
+      (network) => network.id === id,
     );
     return network
       ? NO_ERROR(network)
@@ -153,13 +153,14 @@ export default function useBridgeIn(
     if (!tokens || tokens.length === 0) {
       throw new Error(
         "useBridgeIn::setNetwork: No tokens available for network: " +
-          network.id
+          network.id,
       );
     }
     // check token type to make sure they are all bridgeInTokens
     if (!isBridgeInTokenList(tokens)) {
       throw new Error(
-        "useBridgeIn::setNetwork: Invalid token type for network: " + network.id
+        "useBridgeIn::setNetwork: Invalid token type for network: " +
+          network.id,
       );
     }
     setState((prevState) => ({
@@ -186,7 +187,7 @@ export default function useBridgeIn(
     if (!bridgeMethods || bridgeMethods.length === 0) {
       throw new Error(
         "useBridgeIn::setToken: No bridging methods available for token: " +
-          token.id
+          token.id,
       );
     }
     setState((prevState) => ({
@@ -285,13 +286,13 @@ export default function useBridgeIn(
         return setUserInputCosmosAddress(id);
       default:
         throw new Error(
-          "useBridgeIn::generalSetter: invalid param: " + paramName
+          "useBridgeIn::generalSetter: invalid param: " + paramName,
         );
     }
   }
 
   const bridgeTxParams = (
-    params: BridgeHookTxParams
+    params: BridgeHookTxParams,
   ): BridgeTransactionParams => ({
     method: state.selectedMethod,
     from: {

@@ -15,7 +15,7 @@ export function maxBridgeAmountForToken(
   fees: BridgeFeesByMethod | null,
   extraFees?: {
     gBridgeFee: string;
-  }
+  },
 ): string {
   // make sure params are valid
   if (!(token && token.balance)) return "0";

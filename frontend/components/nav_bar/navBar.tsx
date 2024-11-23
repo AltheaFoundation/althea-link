@@ -146,7 +146,7 @@ const NavBar = () => {
             href="/staking"
             className={clsx(
               styles["nav-link"],
-              currentPath == "/staking" && styles.active
+              currentPath == "/staking" && styles.active,
             )}
             onClick={() => Analytics.actions.events.clickedNavLink("Staking")}
           >
@@ -156,7 +156,7 @@ const NavBar = () => {
             href="/governance"
             className={clsx(
               styles["nav-link"],
-              currentPath.includes("governance") && styles.active
+              currentPath.includes("governance") && styles.active,
             )}
             onClick={() =>
               Analytics.actions.events.clickedNavLink("Governance")

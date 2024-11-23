@@ -15,7 +15,7 @@ import { displayAmount } from "@/utils/formatting";
 import { isValidEthAddress } from "@/utils/address";
 
 export function claimAmbientRewardsTx(
-  txParams: AmbientClaimRewardsTxParams
+  txParams: AmbientClaimRewardsTxParams,
 ): ReturnWithError<TxCreatorFunctionReturn> {
   // check tx params
   const { data: validation, error } =
@@ -32,15 +32,15 @@ export function claimAmbientRewardsTx(
         TX_DESCRIPTIONS.CLAIM_REWARDS(
           displayAmount(rewObj.estimatedRewards, 18),
           "CANTO",
-          `Ambient ${rewObj.poolName}`
-        )
-      )
+          `Ambient ${rewObj.poolName}`,
+        ),
+      ),
     ),
   });
 }
 // nothing to validate for claming rewards retry
 export function validateAmbientClaimRewardsRetryTx(
-  txParams: AmbientClaimRewardsTxParams
+  txParams: AmbientClaimRewardsTxParams,
 ): ReturnWithError<Validation> {
   /** check eth account */
   if (!isValidEthAddress(txParams.ethAccount)) {

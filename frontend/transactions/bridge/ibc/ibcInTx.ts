@@ -77,7 +77,7 @@ type IBCInParams = {
  * @returns {PromiseWithError<TxCreatorFunctionReturn>} list of transactions to make or error
  */
 export async function ibcInKeplr(
-  txParams: IBCInParams
+  txParams: IBCInParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     console.log("Starting ibcInKeplr with params:", txParams);
@@ -90,15 +90,20 @@ export async function ibcInKeplr(
     /** get cosmos network data */
     const { data: cosmosNetwork, error: networkError } =
       getNetworkInfoFromChainId(txParams.fromNetworkChainId);
-    console.log("Cosmos network:", cosmosNetwork, "Network error:", networkError);
+    console.log(
+      "Cosmos network:",
+      cosmosNetwork,
+      "Network error:",
+      networkError,
+    );
     if (networkError) throw networkError;
     if (!isCosmosNetwork(cosmosNetwork)) throw new Error("invalid network");
-    console.log('hello guy');
+    console.log("hello guy");
 
     /** get keplr client */
     console.log("Connecting to Keplr with chainId:", cosmosNetwork.chainId);
     const { data: keplrClient, error: clientError } = await connectToKeplr(
-      cosmosNetwork.chainId
+      cosmosNetwork.chainId,
     );
     console.log("Keplr client:", keplrClient, "Client error:", clientError);
     if (clientError) throw clientError;
@@ -110,7 +115,10 @@ export async function ibcInKeplr(
     console.log("Initial txList:", txList);
 
     /** get canto receiver */
-    console.log("Getting Canto receiver for address:", txParams.cantoEthReceiverAddress);
+    console.log(
+      "Getting Canto receiver for address:",
+      txParams.cantoEthReceiverAddress,
+    );
     const { data: cantoReceiver, error: ethToCantoError } =
       await ethToAltheaAddress(txParams.cantoEthReceiverAddress);
     if (ethToCantoError) throw ethToCantoError;
@@ -120,7 +128,7 @@ export async function ibcInKeplr(
     console.log("Checking public key for:", cantoReceiver);
     const { data: hasPubKey, error: checkPubKeyError } = await checkCantoPubKey(
       cantoReceiver,
-      CANTO_MAINNET_COSMOS.chainId
+      CANTO_MAINNET_COSMOS.chainId,
     );
     console.log("Has public key:", hasPubKey, "Error:", checkPubKeyError);
 
@@ -131,7 +139,7 @@ export async function ibcInKeplr(
         await generateCantoPublicKeyWithTx(
           CANTO_MAINNET_EVM.chainId,
           txParams.cantoEthReceiverAddress,
-          cantoReceiver
+          cantoReceiver,
         );
       if (pubKeyError) throw pubKeyError;
       console.log("Public key transactions:", pubKeyTxs);
@@ -151,7 +159,7 @@ export async function ibcInKeplr(
         txParams.senderCosmosAddress,
         cantoReceiver,
         txParams.token,
-        txParams.amount
+        txParams.amount,
       );
       if (evmosError) throw evmosError;
       txList.push(...evmosTxs);
@@ -173,7 +181,7 @@ export async function ibcInKeplr(
     console.log("Getting block timestamp");
     const { data: blockTimestamp, error: timestampError } =
       await getBlockTimestamp(
-        getCosmosAPIEndpoint(CANTO_MAINNET_COSMOS.chainId).data
+        getCosmosAPIEndpoint(CANTO_MAINNET_COSMOS.chainId).data,
       );
     if (timestampError) throw timestampError;
     console.log("Block timestamp:", blockTimestamp);
@@ -188,7 +196,7 @@ export async function ibcInKeplr(
         displayAmount(txParams.amount, txParams.token.decimals),
         cosmosNetwork.name,
         CANTO_MAINNET_COSMOS.name,
-        getBridgeMethodInfo(BridgingMethod.IBC).name
+        getBridgeMethodInfo(BridgingMethod.IBC).name,
       ),
       feTxType: CantoFETxType.IBC_IN_KEPLR,
       type: "KEPLR",
@@ -237,11 +245,13 @@ interface IBCKeplrParams {
  */
 async function signAndBroadcastIBCKeplr(
   keplrClient: SigningStargateClient,
-  params: IBCKeplrParams
-  
+  params: IBCKeplrParams,
 ): PromiseWithError<DeliverTxResponse> {
   try {
-    console.log("Signing and broadcasting IBC transaction with params:", params);
+    console.log(
+      "Signing and broadcasting IBC transaction with params:",
+      params,
+    );
 
     const ibcResponse = await keplrClient.sendIbcTokens(
       params.cosmosAccount,
@@ -252,7 +262,7 @@ async function signAndBroadcastIBCKeplr(
       undefined,
       params.timeoutTimestamp,
       "auto",
-      params.memo
+      params.memo,
     );
     console.log("IBC response:", ibcResponse);
     return NO_ERROR(ibcResponse);
@@ -405,17 +415,17 @@ async function evmosIBCIn(
   evmosAddress: string,
   cantoAddress: string,
   token: IBCToken,
-  amount: string
+  amount: string,
 ): PromiseWithError<Transaction[]> {
   // check evmos chain
   if (evmosNetwork.chainId !== EVMOS.chainId) {
     return NEW_ERROR(
-      "evmosIBCIn: invalid chain id for evmos: " + evmosNetwork.chainId
+      "evmosIBCIn: invalid chain id for evmos: " + evmosNetwork.chainId,
     );
   }
   // get canto chain ibc data and timestamp
   const { data: ibcData, error: ibcError } = await getIBCData(
-    CANTO_MAINNET_COSMOS.restEndpoint
+    CANTO_MAINNET_COSMOS.restEndpoint,
   );
   if (ibcError) {
     return NEW_ERROR("txIBCOut::" + ibcError.message);
@@ -424,7 +434,7 @@ async function evmosIBCIn(
   // get block timeout timestamp
   const { data: blockTimestamp, error: timestampError } =
     await getBlockTimestamp(
-      getCosmosAPIEndpoint(CANTO_MAINNET_COSMOS.chainId).data
+      getCosmosAPIEndpoint(CANTO_MAINNET_COSMOS.chainId).data,
     );
   if (timestampError) {
     return NEW_ERROR("ibcInKeplr::" + timestampError.message);
@@ -453,7 +463,7 @@ async function evmosIBCIn(
   // get context (use canto sender since evmos has same props)
   const { data: senderObj, error: senderObjError } = await getCantoSenderObj(
     evmosAddress,
-    evmosNetwork.chainId
+    evmosNetwork.chainId,
   );
   if (senderObjError) {
     return NEW_ERROR("performCosmosTxEIP::" + senderObjError);
@@ -473,7 +483,7 @@ async function evmosIBCIn(
     senderObj.pubkey,
     senderObj.sequence ?? 0,
     senderObj.accountNumber ?? 0,
-    evmosNetwork.chainId
+    evmosNetwork.chainId,
   );
 
   // signature and broadcast transaction
@@ -488,21 +498,21 @@ async function evmosIBCIn(
           authInfoBytes: keplrPayload.signDirect.authInfo.serializeBinary(),
           chainId: evmosNetwork.chainId,
           accountNumber: new Long(senderObj.accountNumber ?? 0),
-        }
+        },
       );
       if (!signResponse) {
         return NEW_ERROR("evmosIBCIn: no sign response");
       }
       const signatures = [
         new Uint8Array(
-          Buffer.from(signResponse?.signature.signature, "base64")
+          Buffer.from(signResponse?.signature.signature, "base64"),
         ),
       ];
       const { signed } = signResponse;
       const signedTx = createTxRaw(
         signed.bodyBytes,
         signed.authInfoBytes,
-        signatures
+        signatures,
       );
       // post tx to rpc
       const postOptions = {
@@ -517,7 +527,7 @@ async function evmosIBCIn(
       }>(
         getCosmosAPIEndpoint(evmosNetwork.chainId).data +
           "/cosmos/tx/v1beta1/txs",
-        postOptions
+        postOptions,
       );
       if (broadcastError) {
         return NEW_ERROR("evmosIBCIn: " + broadcastError.message);
@@ -536,7 +546,7 @@ async function evmosIBCIn(
         displayAmount(amount, token.decimals),
         evmosNetwork.name,
         CANTO_MAINNET_COSMOS.name,
-        getBridgeMethodInfo(BridgingMethod.IBC).name
+        getBridgeMethodInfo(BridgingMethod.IBC).name,
       ),
       feTxType: CantoFETxType.IBC_IN_KEPLR,
       type: "KEPLR",
@@ -570,12 +580,18 @@ export function validateKeplrIBCParams(txParams: IBCInParams): Validation {
     "1",
     txParams.token.balance ?? "0",
     txParams.token.symbol,
-    txParams.token.decimals
+    txParams.token.decimals,
   );
   console.log("Amount validation result:", validation);
   return validation;
 }
 
-window.addEventListener('unhandledrejection', function(event) {
-  console.error('Unhandled rejection (promise: ', event.promise, ', reason: ', event.reason, ').');
+window.addEventListener("unhandledrejection", function (event) {
+  console.error(
+    "Unhandled rejection (promise: ",
+    event.promise,
+    ", reason: ",
+    event.reason,
+    ").",
+  );
 });

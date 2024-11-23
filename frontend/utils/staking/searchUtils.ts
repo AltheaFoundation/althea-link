@@ -21,7 +21,7 @@ export function levenshteinDistance(str1: string, str2: string) {
       track[j][i] = Math.min(
         track[j][i - 1] + 1, // deletion
         track[j - 1][i] + 1, // insertion
-        track[j - 1][i - 1] + indicator // substitution
+        track[j - 1][i - 1] + indicator, // substitution
       );
     }
   }

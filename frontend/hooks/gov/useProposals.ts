@@ -11,7 +11,7 @@ export default function useProposals(
   params: ProposalHookParams,
   options?: {
     refetchInterval?: number;
-  }
+  },
 ): ProposalHookReturn {
   // just need to fetch all proposals for this hook
   const { data: proposals, isLoading } = useQuery(
@@ -19,7 +19,7 @@ export default function useProposals(
     async () => {
       const { data: proposals, error } = await getCantoApiData<Proposal[]>(
         params.chainId,
-        CANTO_DATA_API_ENDPOINTS.allProposals
+        CANTO_DATA_API_ENDPOINTS.allProposals,
       );
       if (error) throw error;
       return proposals;
@@ -31,7 +31,7 @@ export default function useProposals(
       onError: (error) => {
         console.error("error", error);
       },
-    }
+    },
   );
   return {
     proposals: proposals ?? [],

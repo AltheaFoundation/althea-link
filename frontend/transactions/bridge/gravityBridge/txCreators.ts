@@ -19,7 +19,7 @@ export const _sendToCosmosTx = (
   tokenAddress: string,
   amount: string,
   description: TransactionDescription,
-  bridgeInfo: { direction: "in" | "out"; amountFormatted: string }
+  bridgeInfo: { direction: "in" | "out"; amountFormatted: string },
 ): Transaction => ({
   bridge: {
     type: BridgingMethod.GRAVITY_BRIDGE,
@@ -44,7 +44,7 @@ export const _wrapTx = (
   fromEthAddress: string,
   wethAddress: string,
   amount: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: CantoFETxType.WRAP_ETH,
@@ -67,7 +67,7 @@ export const _sendToEthGravityTx = (
   bridgeFee: string,
   chainFee: string,
   description: TransactionDescription,
-  bridgeInfo: { direction: "in" | "out"; amountFormatted: string }
+  bridgeInfo: { direction: "in" | "out"; amountFormatted: string },
 ): Transaction => ({
   description,
   feTxType: CantoFETxType.SEND_TO_ETH,

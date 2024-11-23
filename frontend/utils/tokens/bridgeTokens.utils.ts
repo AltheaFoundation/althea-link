@@ -20,7 +20,7 @@ import { isERC20Token, isIBCToken } from "./tokenTypes.utils";
  * @see BridgeInToken
  */
 export function isBridgeInToken(
-  object: any
+  object: any,
 ): object is BridgeInToken & BridgeToken {
   return (
     (isERC20Token(object) || isIBCToken(object)) &&
@@ -39,7 +39,7 @@ export function isBridgeInToken(
  * @see BridgeInToken
  */
 export function isBridgeInTokenList(
-  array: Array<object>
+  array: Array<object>,
 ): array is BridgeInToken[] & BridgeToken[] {
   return array.every(isBridgeInToken);
 }
@@ -55,7 +55,7 @@ export function isBridgeInTokenList(
  * @see BridgeOutToken
  */
 export function isBridgeOutToken(
-  object: any
+  object: any,
 ): object is BridgeOutToken & BridgeToken {
   return (
     (isERC20Token(object) || isIBCToken(object)) &&
@@ -79,7 +79,7 @@ export function isBridgeOutToken(
  * @see BridgeOutToken
  */
 export function isBridgeOutTokenList(
-  array: Array<object>
+  array: Array<object>,
 ): array is BridgeOutToken[] & BridgeToken[] {
   return array.every(isBridgeOutToken);
 }

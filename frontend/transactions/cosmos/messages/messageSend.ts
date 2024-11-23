@@ -32,7 +32,7 @@ interface MessageSendParams {
  * @returns {UnsignedCosmosMessages} eip and cosmos messages along with types object and fee
  */
 export function createMsgsSend(
-  params: MessageSendParams
+  params: MessageSendParams,
 ): UnsignedCosmosMessages {
   const eipMsg = eip712MsgSend(params);
   const cosmosMsg = protoMsgSend(params);

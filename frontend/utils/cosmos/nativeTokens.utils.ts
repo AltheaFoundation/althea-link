@@ -22,7 +22,7 @@ interface UserNativeTokensWithIBCPath {
  */
 export async function getUserNativeTokenBalancesWithDenomTraces(
   chainId: string,
-  cosmosAddress: string
+  cosmosAddress: string,
 ): PromiseWithError<UserNativeTokensWithIBCPath[]> {
   const { data: allTokens, error: tokenError } =
     await getCosmosTokenBalanceList(chainId, cosmosAddress);
@@ -36,13 +36,13 @@ export async function getUserNativeTokenBalancesWithDenomTraces(
         const { data: ibcPath, error: ibcPathError } =
           await getIBCPathAndDenomFromNativeDenom(
             chainId,
-            denom.replace("ibc/", "")
+            denom.replace("ibc/", ""),
           );
         userTokenList.push({ token: { denom, amount }, ibcPath });
       } else {
         userTokenList.push({ token: { denom, amount }, ibcPath: null });
       }
-    })
+    }),
   );
   return NO_ERROR(userTokenList);
 }
@@ -62,14 +62,14 @@ interface IBCDenomTrace {
  */
 async function getIBCPathAndDenomFromNativeDenom(
   chainId: string,
-  denom: string
+  denom: string,
 ): PromiseWithError<any> {
   const { data: nodeUrl, error: nodeError } = getCosmosAPIEndpoint(chainId);
   if (nodeError) {
     return NEW_ERROR("getAllNativeTokenBalances", nodeError);
   }
   const { data: result, error: fetchError } = await tryFetch<IBCDenomTrace>(
-    `${nodeUrl}/ibc/apps/transfer/v1/denom_traces/${denom}`
+    `${nodeUrl}/ibc/apps/transfer/v1/denom_traces/${denom}`,
   );
   if (fetchError) {
     return NEW_ERROR("getAllNativeTokenBalances", fetchError);

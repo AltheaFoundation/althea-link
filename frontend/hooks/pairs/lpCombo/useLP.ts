@@ -41,16 +41,16 @@ interface UseLPReturn {
   };
   transactions: {
     newCantoDexLPFlow: (
-      txParams: CantoDexTransactionParams
+      txParams: CantoDexTransactionParams,
     ) => NewTransactionFlow;
     validateCantoDexLPParams: (
-      txParams: CantoDexTransactionParams
+      txParams: CantoDexTransactionParams,
     ) => Validation;
     newAmbientPoolTxFlow: (
-      txParams: AmbientTransactionParams
+      txParams: AmbientTransactionParams,
     ) => NewTransactionFlow;
     validateAmbientPoolTxParams: (
-      txParams: AmbientTransactionParams
+      txParams: AmbientTransactionParams,
     ) => Validation;
     newClaimRewardsFlow: () => NewTransactionFlow;
   };
@@ -67,10 +67,10 @@ export default function useLP(props: UseLPProps): UseLPReturn {
     (pair) =>
       (pair.clmData?.userDetails?.balanceOfCToken !== "0" ||
         pair.clmData?.userDetails?.balanceOfUnderlying !== "0") &&
-      pair.clmData?.userDetails?.balanceOfCToken !== undefined
+      pair.clmData?.userDetails?.balanceOfCToken !== undefined,
   );
   const userAmbientPairs = ambient.ambientPools.filter(
-    (pool) => (pool.userPositions.length > 0 || pool.userRewards !== "0")
+    (pool) => pool.userPositions.length > 0 || pool.userRewards !== "0",
   );
 
   // create list with all pairs
@@ -86,7 +86,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
   // get the pair from the pair list with balances
   function getPair(address: string): ReturnWithError<LPPairType> {
     const pair = allPairs.find((pair) =>
-      areEqualAddresses(pair.address, address)
+      areEqualAddresses(pair.address, address),
     );
     return pair ? NO_ERROR(pair) : NEW_ERROR("Pair not found");
   }
@@ -153,7 +153,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
       ambient: ambient.totalRewards,
       total: addTokenBalances(
         cantoDex.position.totalRewards,
-        ambient.totalRewards
+        ambient.totalRewards,
       ),
     },
     selection: {

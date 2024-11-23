@@ -25,20 +25,20 @@ function getUserAPIEndPoint(chainId: number | string) {
       default:
         return NEW_ERROR(
           "getCosmosUserAPIEndpoint",
-          "Invalid chainId: " + chainId
+          "Invalid chainId: " + chainId,
         );
     }
   } else {
     return NEW_ERROR(
       "getCosmosUserAPIEndpoint",
-      "Network not found: " + chainId
+      "Network not found: " + chainId,
     );
   }
 }
 
 const endpointUserStaking = (
   chainId: number,
-  altheaAddress: string
+  altheaAddress: string,
 ): string => {
   // get cosmos endpoint
   const { data: endpoint, error } = getUserAPIEndPoint(chainId);
@@ -51,7 +51,7 @@ const endpointUserStaking = (
 
 export async function getAllUserStakingData(
   chainId: number,
-  userEthAddress: string | undefined
+  userEthAddress: string | undefined,
 ): PromiseWithError<UserStakingReturn> {
   // wrap entire call into try/catch for error handling
   try {
@@ -69,7 +69,7 @@ export async function getAllUserStakingData(
     const altheaAddress = ethToAlthea(userEthAddress);
 
     const userStakingData = await tryFetch<UserStakingReturn>(
-      endpointUserStaking(chainId, altheaAddress)
+      endpointUserStaking(chainId, altheaAddress),
     );
     if (userStakingData.error) throw userStakingData.error;
 

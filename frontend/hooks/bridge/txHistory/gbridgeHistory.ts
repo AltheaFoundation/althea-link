@@ -17,16 +17,15 @@ export interface UserGBridgeInHistory {
 }
 export async function getUserGBridgeInHistory(
   chainId: number,
-  ethAccount: string
+  ethAccount: string,
 ): PromiseWithError<UserGBridgeInHistory> {
   const { data: allTransactions, error: eventError } =
     await getUserGBridgeInEvents(chainId, ethAccount);
   if (eventError) {
     return NEW_ERROR("getUserGBridgeInHistory::" + eventError.message);
   }
-  const { data: queue, error: queueError } = await getGBridgeQueueForUser(
-    ethAccount
-  );
+  const { data: queue, error: queueError } =
+    await getGBridgeQueueForUser(ethAccount);
   if (queueError) {
     return NEW_ERROR("getUserGBridgeInHistory::" + queueError.message);
   }
@@ -38,7 +37,7 @@ export async function getUserGBridgeInHistory(
 
   allTransactions.forEach((event) => {
     const matchingQueueTx = queue.transactions.find(
-      (qTx) => qTx.block_height === event.blockNumber
+      (qTx) => qTx.block_height === event.blockNumber,
     );
     matchingQueueTx
       ? queuedTxs.push(matchingQueueTx)
@@ -64,7 +63,7 @@ interface SendToCosmosEvent {
 // searches the gravity bridge contract for events that match the eth address sender
 async function getUserGBridgeInEvents(
   chainId: number,
-  ethAddress: string
+  ethAddress: string,
 ): PromiseWithError<SendToCosmosEvent[]> {
   // create contract instance
   const { data: gBridgeContract, error } = newContractInstance<
@@ -112,7 +111,7 @@ interface GBridgeQueueReturn {
 
 // this data comes from the gravity bridge api
 export async function getGBridgeQueueForUser(
-  ethAccount: string
+  ethAccount: string,
 ): PromiseWithError<{
   latestBlock: string;
   transactions: GBridgeQueueReturn[];
@@ -128,7 +127,7 @@ export async function getGBridgeQueueForUser(
   return NO_ERROR({
     latestBlock: latestTransactions.latest_eth_block,
     transactions: latestTransactions.deposit_events.filter((event) =>
-      areEqualAddresses(event.sender, ethAccount)
+      areEqualAddresses(event.sender, ethAccount),
     ),
   });
 }

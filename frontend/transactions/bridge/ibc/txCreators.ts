@@ -20,7 +20,7 @@ export const _ibcOutTx = (
   revisionHeight: number,
   timeoutTimestamp: string,
   memo: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const ibcTx = createMsgsIBCTransfer({
     sourcePort,
@@ -50,7 +50,7 @@ export const _convertERC20Tx = (
   amount: string,
   ethSender: string,
   cantoReceiver: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const convertERC20Tx = createMsgsConvertERC20({
     contract_address: tokenAddress,
@@ -74,7 +74,7 @@ export const _convertCoinTx = (
   ethReceiver: string,
   tokenDenom: string,
   amount: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const convertCoinTx = createMsgsConvertCoin({
     cantoSender,

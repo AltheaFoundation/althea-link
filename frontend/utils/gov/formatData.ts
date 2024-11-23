@@ -13,19 +13,19 @@ const proposalTypes = {
 
 export function formatProposalStatus(status: string): string | undefined {
   switch (status) {
-    case "PROPOSAL_STATUS_ACTIVE":
+    case "2":
       return "ACTIVE";
-    case "PROPOSAL_STATUS_PASSED":
+    case "3":
       return "PASSED";
-    case "PROPOSAL_STATUS_REJECTED":
+    case "4":
       return "REJECTED";
-    case "PROPOSAL_STATUS_FAILED":
+    case "5":
       return "FAILED";
-    case "PROPOSAL_STATUS_DEPOSIT_PERIOD":
+    case "1":
       return "DEPOSIT";
-    case "PROPOSAL_STATUS_VOTING_PERIOD":
+    case "2":
       return "ACTIVE";
-    case "PROPOSAL_STATUS_UNSPECIFIED":
+    case "0":
       return undefined;
     default:
       return undefined;
@@ -62,7 +62,7 @@ export interface VoteData {
 }
 
 export function calculateVotePercentages(
-  finalTallyResult: FinalTallyResult
+  finalTallyResult: FinalTallyResult,
 ): VoteData {
   // Destructure the vote counts from the object
   const { yes, abstain, no, no_with_veto } = finalTallyResult;
@@ -151,7 +151,7 @@ export function calculateVotePercentages(
 export function formatTime(
   input: string,
   includeSeconds?: boolean,
-  includeDay?: boolean
+  includeDay?: boolean,
 ): string {
   const months = [
     "Jan",

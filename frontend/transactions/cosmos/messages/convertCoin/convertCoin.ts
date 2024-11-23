@@ -36,7 +36,7 @@ interface MsgConvertCoinParams {
  * @returns {UnsignedCosmosMessages} eip and cosmos messages along with types object and fee
  */
 export function createMsgsConvertCoin(
-  params: MsgConvertCoinParams
+  params: MsgConvertCoinParams,
 ): UnsignedCosmosMessages {
   if (!instanceOfMsgConcertCoinParams(params)) {
     throw new Error("Expected type MsgConvertCoinParams");
@@ -66,7 +66,7 @@ function eip712MsgConvertCoin(params: MsgConvertCoinParams): EIP712Message {
 }
 
 function protoMsgConvertCoin(
-  params: MsgConvertCoinParams
+  params: MsgConvertCoinParams,
 ): CosmosNativeMessage {
   const message = new MsgConvertCoin({
     receiver: params.ethReceiver,
@@ -87,7 +87,7 @@ function protoMsgConvertCoin(
 ///
 
 function instanceOfMsgConcertCoinParams(
-  params: object
+  params: object,
 ): params is MsgConvertCoinParams {
   return (
     "ethReceiver" in params &&

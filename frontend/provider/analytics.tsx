@@ -194,7 +194,7 @@ class AnalyticsWrapper {
           posthog.capture("Add LP Clicked", params);
         },
         manageLPClicked: (
-          params: AnalyticsCantoLPData | AnalyticsAmbientLPData
+          params: AnalyticsCantoLPData | AnalyticsAmbientLPData,
         ) => {
           posthog.capture("Manage LP Clicked", params);
         },
@@ -280,7 +280,7 @@ class AnalyticsWrapper {
         transaction: (params: AnalyticsTransactionFlowParams) => {
           posthog.capture(
             params.txSuccess ? "Transaction Success" : "Transaction Error",
-            params
+            params,
           );
         },
       },

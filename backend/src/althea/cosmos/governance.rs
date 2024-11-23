@@ -24,6 +24,12 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::sleep;
 
+use crate::althea::ALTHEA_GRPC_URL;
+use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::{
+    query_client::QueryClient as GovQueryClient, QueryTallyResultRequest,
+};
+use tonic::transport::Endpoint;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProposalInfo {
     pub proposal_id: u64,
@@ -193,21 +199,35 @@ pub async fn fetch_proposals(
     };
 
     let proposals = contact.get_governance_proposals(request).await?;
-    let all_proposals: Vec<ProposalInfo> = proposals
+    let mut proposals: Vec<ProposalInfo> = proposals
         .proposals
         .into_iter()
         .map(ProposalInfo::from)
         .collect();
 
-    if !all_proposals.is_empty() {
-        cache_proposals(db, &all_proposals);
+    // Fetch current tally for active proposals
+    for proposal in &mut proposals {
+        if proposal.is_active() {
+            if let Ok(tally) = fetch_tally_result(proposal.proposal_id).await {
+                proposal.final_tally_result = Some(TallyResult {
+                    yes: tally.yes,
+                    abstain: tally.abstain,
+                    no: tally.no,
+                    no_with_veto: tally.no_with_veto,
+                });
+            }
+        }
+    }
+
+    if !proposals.is_empty() {
+        cache_proposals(db, &proposals);
     }
 
     info!(
         "Successfully fetched and stored {} proposals",
-        all_proposals.len()
+        proposals.len()
     );
-    Ok(all_proposals)
+    Ok(proposals)
 }
 
 fn get_cached_proposals(db: &rocksdb::DB) -> Option<Vec<ProposalInfo>> {
@@ -672,4 +692,22 @@ impl From<cosmos_sdk_proto_althea::cosmos::bank::v1beta1::Metadata> for Serializ
             symbol: m.symbol,
         }
     }
+}
+
+// New function to fetch tally results
+async fn fetch_tally_result(proposal_id: u64) -> Result<TallyResult, Box<dyn std::error::Error>> {
+    let channel = Endpoint::from_static(ALTHEA_GRPC_URL).connect().await?;
+    let mut client = GovQueryClient::new(channel);
+
+    let request = tonic::Request::new(QueryTallyResultRequest { proposal_id });
+
+    let response = client.tally_result(request).await?;
+    let tally = response.into_inner().tally.unwrap_or_default();
+
+    Ok(TallyResult {
+        yes: tally.yes,
+        abstain: tally.abstain,
+        no: tally.no,
+        no_with_veto: tally.no_with_veto,
+    })
 }

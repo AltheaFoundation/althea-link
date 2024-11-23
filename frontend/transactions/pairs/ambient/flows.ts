@@ -2,7 +2,7 @@ import { NewTransactionFlow, TransactionFlowType } from "@/transactions/flows";
 import { AmbientClaimRewardsTxParams, AmbientTransactionParams } from ".";
 
 export const newAmbientLPTxFlow = (
-  txParams: AmbientTransactionParams
+  txParams: AmbientTransactionParams,
 ): NewTransactionFlow => ({
   title: `${txParams.txType} ${txParams.pool.symbol}`,
   icon: txParams.pool.logoURI,
@@ -11,7 +11,7 @@ export const newAmbientLPTxFlow = (
 });
 
 export const newAmbientClaimRewardsTxFlow = (
-  params: AmbientClaimRewardsTxParams
+  params: AmbientClaimRewardsTxParams,
 ): NewTransactionFlow => ({
   title: "Claim Ambient Rewards",
   icon: "/icons/canto.svg",

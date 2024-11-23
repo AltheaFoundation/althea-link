@@ -9,7 +9,7 @@ function useAutoConnect() {
 
   const onDisconnect = () => {
     const safeConnector = connectors.find(
-      (c) => c.id === AUTOCONNECTED_CONNECTOR_IDS[0] && c.ready
+      (c) => c.id === AUTOCONNECTED_CONNECTOR_IDS[0] && c.ready,
     );
     if (safeConnector) {
       connect({ connector: safeConnector });
@@ -20,7 +20,7 @@ function useAutoConnect() {
 
   useEffect(() => {
     const safeConnector = connectors.find(
-      (c) => c.id === AUTOCONNECTED_CONNECTOR_IDS[0] && c.ready
+      (c) => c.id === AUTOCONNECTED_CONNECTOR_IDS[0] && c.ready,
     );
     if (!safeConnector || connector === safeConnector) return;
     connect({ connector: safeConnector });

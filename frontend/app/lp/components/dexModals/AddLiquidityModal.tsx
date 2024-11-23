@@ -99,7 +99,7 @@ export const AddLiquidityModal = ({
     balance?: string;
   }) => {
     const updatedBalance = BigNumber(token.balance ?? "0").minus(
-      "1000000000000000000"
+      "1000000000000000000",
     );
     const wcantoAddress = getCantoCoreAddress(Number(token.chainId), "wcanto");
     return areEqualAddresses(token.address, wcantoAddress ?? "")

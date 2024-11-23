@@ -2,7 +2,7 @@ import { NewTransactionFlow, TransactionFlowType } from "../flows";
 import { StakingTransactionParams } from "./types";
 
 export const newStakingFlow = (
-  txParams: StakingTransactionParams
+  txParams: StakingTransactionParams,
 ): NewTransactionFlow => ({
   title: txParams.txType,
   icon: "/althea.svg",

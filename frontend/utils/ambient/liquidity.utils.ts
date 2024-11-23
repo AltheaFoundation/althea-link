@@ -28,7 +28,7 @@ export function getConcQuoteTokensFromBaseTokens(
   amount: string,
   currentPrice: string,
   minPrice: string,
-  maxPrice: string
+  maxPrice: string,
 ): string {
   // check if zero or current price is below min price
   if (
@@ -43,13 +43,13 @@ export function getConcQuoteTokensFromBaseTokens(
     Number(currentPrice),
     BigNumber.from(amount),
     Number(minPrice),
-    Number(maxPrice)
+    Number(maxPrice),
   );
   const quoteTokens = quoteTokenForConcLiq(
     Number(currentPrice),
     liquidity,
     Number(minPrice),
-    Number(maxPrice)
+    Number(maxPrice),
   );
   // overestimate amount by 1%
   const quoteEstimate = percentOfAmount(quoteTokens.toString(), 101);
@@ -72,7 +72,7 @@ export function getConcBaseTokensFromQuoteTokens(
   amount: string,
   currentPrice: string,
   minPrice: string,
-  maxPrice: string
+  maxPrice: string,
 ): string {
   // check if zero or over max price
   if (
@@ -87,13 +87,13 @@ export function getConcBaseTokensFromQuoteTokens(
     Number(currentPrice),
     BigNumber.from(amount),
     Number(minPrice),
-    Number(maxPrice)
+    Number(maxPrice),
   );
   const baseTokens = baseTokenForConcLiq(
     Number(currentPrice),
     liquidity,
     Number(minPrice),
-    Number(maxPrice)
+    Number(maxPrice),
   );
   // overestimate amount by 1%
   const baseEstimate = percentOfAmount(baseTokens.toString(), 101);
@@ -115,7 +115,7 @@ export function baseTokenFromConcLiquidity(
   liquidity: string,
   currentPriceWei: string,
   lowerTick: number,
-  upperTick: number
+  upperTick: number,
 ): string {
   // convert ticks to price
   const lowerPrice = getPriceFromTick(lowerTick);
@@ -125,7 +125,7 @@ export function baseTokenFromConcLiquidity(
     Number(currentPriceWei),
     BigNumber.from(liquidity),
     Number(lowerPrice),
-    Number(upperPrice)
+    Number(upperPrice),
   );
   return baseTokens.toString();
 }
@@ -142,7 +142,7 @@ export function quoteTokenFromConcLiquidity(
   liquidity: string,
   currentPriceWei: string,
   lowerTick: number,
-  upperTick: number
+  upperTick: number,
 ): string {
   // convert ticks to price
   const lowerPrice = getPriceFromTick(lowerTick);
@@ -152,7 +152,7 @@ export function quoteTokenFromConcLiquidity(
     Number(currentPriceWei),
     BigNumber.from(liquidity),
     Number(lowerPrice),
-    Number(upperPrice)
+    Number(upperPrice),
   );
   return quoteTokens.toString();
 }
@@ -173,20 +173,20 @@ export function concLiquidityNoteValue(
   lowerTick: number,
   upperTick: number,
   priceBase: string,
-  priceQuote: string
+  priceQuote: string,
 ): string {
   // get tokens from liquidity
   const baseTokens = baseTokenFromConcLiquidity(
     liquidity,
     currentPriceWei,
     lowerTick,
-    upperTick
+    upperTick,
   );
   const quoteTokens = quoteTokenFromConcLiquidity(
     liquidity,
     currentPriceWei,
     lowerTick,
-    upperTick
+    upperTick,
   );
   // get note from tokens
   const baseNote = convertTokenAmountToNote(baseTokens, priceBase);
@@ -197,7 +197,7 @@ export function concLiquidityNoteValue(
   // add note amounts
   const noteAmount = addTokenBalances(
     baseNote.data.toString(),
-    quoteNote.data.toString()
+    quoteNote.data.toString(),
   );
   return noteAmount;
 }
@@ -226,7 +226,7 @@ export function getDisplayTokenAmountFromRange(
   isBase: boolean,
   minPriceWei: string,
   maxPriceWei: string,
-  pool: AmbientPool
+  pool: AmbientPool,
 ): string {
   // first check value before performing operations
   if (
@@ -241,7 +241,7 @@ export function getDisplayTokenAmountFromRange(
   const weiAmount =
     convertToBigNumber(
       nonWeiAmount,
-      isBase ? pool.base.decimals : pool.quote.decimals
+      isBase ? pool.base.decimals : pool.quote.decimals,
     ).data?.toString() ?? "0";
 
   // get estimates
@@ -251,7 +251,7 @@ export function getDisplayTokenAmountFromRange(
       weiAmount,
       pool.stats.lastPriceSwap,
       minPriceWei,
-      maxPriceWei
+      maxPriceWei,
     );
     return formatBalance(quoteEstimateWei, pool.quote.decimals, {
       precision: pool.quote.decimals,
@@ -262,7 +262,7 @@ export function getDisplayTokenAmountFromRange(
       weiAmount,
       pool.stats.lastPriceSwap,
       minPriceWei,
-      maxPriceWei
+      maxPriceWei,
     );
     return formatBalance(baseEstimateWei, pool.base.decimals, {
       precision: pool.base.decimals,
@@ -282,20 +282,20 @@ export function concentratedLiquidityTokenAmounts(
   liquidity: string,
   currentPriceWei: string,
   lowerTick: number,
-  upperTick: number
+  upperTick: number,
 ): { base: string; quote: string } {
   return {
     base: baseTokenFromConcLiquidity(
       liquidity,
       currentPriceWei,
       lowerTick,
-      upperTick
+      upperTick,
     ),
     quote: quoteTokenFromConcLiquidity(
       liquidity,
       currentPriceWei,
       lowerTick,
-      upperTick
+      upperTick,
     ),
   };
 }

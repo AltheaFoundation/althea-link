@@ -180,7 +180,7 @@ const PositionList = ({
                   pool.base.decimals - pool.quote.decimals,
                   {
                     precision: 5,
-                  }
+                  },
                 )}{" "}
                 -{" "}
                 {displayAmount(
@@ -188,7 +188,7 @@ const PositionList = ({
                   pool.base.decimals - pool.quote.decimals,
                   {
                     precision: 5,
-                  }
+                  },
                 )}
                 )
               </Text>
@@ -200,9 +200,9 @@ const PositionList = ({
                     item.bidTick,
                     item.askTick,
                     new BigNumber(10).pow(36 - pool.base.decimals).toString(),
-                    new BigNumber(10).pow(36 - pool.quote.decimals).toString()
+                    new BigNumber(10).pow(36 - pool.quote.decimals).toString(),
                   ),
-                  18
+                  18,
                 )}{" "}
                 <Icon icon={{ url: "/tokens/note.svg", size: 16 }} themed />
               </Text>

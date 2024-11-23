@@ -27,7 +27,7 @@ export default function useTokenBalances(
   tokens: ERC20Token[],
   userEthAddress: string | null = null,
   userCosmosAddress: string | null = null,
-  combinedCantoNative = false
+  combinedCantoNative = false,
 ): UserTokenBalances {
   const { data } = useQuery(
     [
@@ -45,7 +45,7 @@ export default function useTokenBalances(
           chainId,
           tokens,
           userEthAddress,
-          userCosmosAddress
+          userCosmosAddress,
         );
         if (balancesError) throw balancesError;
 
@@ -65,7 +65,7 @@ export default function useTokenBalances(
             const { data: nativeBalances, error: nativeError } =
               await getCosmosTokenBalanceList(
                 chainObject.cosmosChainId,
-                altheaAddress
+                altheaAddress,
               );
             if (nativeError) throw nativeError;
 
@@ -75,7 +75,7 @@ export default function useTokenBalances(
               if (ibcToken.ibcDenom && nativeBalances[ibcToken.ibcDenom]) {
                 balances[token.id] = addTokenBalances(
                   balances[token.id],
-                  nativeBalances[ibcToken.ibcDenom]
+                  nativeBalances[ibcToken.ibcDenom],
                 );
               }
             }
@@ -94,7 +94,7 @@ export default function useTokenBalances(
         console.error(error);
       },
       placeholderData: {},
-    }
+    },
   );
   return data ?? {};
 }
@@ -103,7 +103,7 @@ async function getTokenBalances(
   chainId: string | number | undefined,
   tokens: ERC20Token[],
   userEthAddress: string | null,
-  userCosmosAddress: string | null
+  userCosmosAddress: string | null,
 ): PromiseWithError<UserTokenBalances> {
   // only set balances if there is a user and the chain is an evm chain
   if (typeof chainId === "number" && userEthAddress) {

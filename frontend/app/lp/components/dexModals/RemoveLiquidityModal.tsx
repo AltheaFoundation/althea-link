@@ -53,7 +53,7 @@ export const RemoveLiquidityModal = ({
   // total LP will be staked + unstaked balance
   const totalLP = addTokenBalances(
     pair.clmData?.userDetails?.supplyBalanceInUnderlying ?? "0",
-    pair.clmData?.userDetails?.balanceOfUnderlying ?? "0"
+    pair.clmData?.userDetails?.balanceOfUnderlying ?? "0",
   );
 
   // expected tokens
@@ -82,7 +82,7 @@ export const RemoveLiquidityModal = ({
         pair.token1.address,
         pair.token2.address,
         pair.stable,
-        (convertToBigNumber(amountLP, pair.decimals).data ?? "0").toString()
+        (convertToBigNumber(amountLP, pair.decimals).data ?? "0").toString(),
       );
       if (error) {
         setExpectedTokens({
@@ -210,7 +210,7 @@ export const RemoveLiquidityModal = ({
               pair.token1.decimals,
               {
                 symbol: tokenSymbol(pair.token1),
-              }
+              },
             )}
           />
           <ModalItem
@@ -220,7 +220,7 @@ export const RemoveLiquidityModal = ({
               pair.token2.decimals,
               {
                 symbol: tokenSymbol(pair.token2),
-              }
+              },
             )}
           />
         </Container>

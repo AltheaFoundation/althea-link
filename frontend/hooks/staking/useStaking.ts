@@ -25,7 +25,7 @@ interface APRResponse {
 
 export default function useStaking(
   params: StakingHookInputParams,
-  options?: { refetchInterval?: number }
+  options?: { refetchInterval?: number },
 ): StakingHookReturn {
   ///
   /// INTERNAL HOOKS
@@ -38,11 +38,11 @@ export default function useStaking(
       const [allValidators, stakingApr, userStaking] = await Promise.all([
         getCantoApiData<Validator[]>(
           params.chainId,
-          CANTO_DATA_API_ENDPOINTS.allValidators
+          CANTO_DATA_API_ENDPOINTS.allValidators,
         ),
         getCantoApiData<APRResponse>(
           params.chainId,
-          CANTO_DATA_API_ENDPOINTS.stakingApr
+          CANTO_DATA_API_ENDPOINTS.stakingApr,
         ),
         getAllUserStakingData(params.chainId, params.userEthAddress),
       ]);
@@ -77,14 +77,14 @@ export default function useStaking(
         userStaking.data.delegations.forEach((delegation) => {
           const validator = allValidators.data.find(
             (val) =>
-              val.operator_address === delegation.delegation.validator_address
+              val.operator_address === delegation.delegation.validator_address,
           );
           const rewards =
             userStaking.data.rewards.rewards
               .find(
                 (rew) =>
                   rew.validator_address ===
-                  delegation.delegation.validator_address
+                  delegation.delegation.validator_address,
               )
               ?.reward?.find((bal) => bal.denom === "acanto")?.amount ?? "0";
           if (validator) {
@@ -104,7 +104,7 @@ export default function useStaking(
             (acc, unbondingEntry) => {
               const validator = allValidators.data.find(
                 (val) =>
-                  val.operator_address === unbondingEntry.validator_address
+                  val.operator_address === unbondingEntry.validator_address,
               );
 
               // If validator is not found, skip this entry
@@ -124,7 +124,7 @@ export default function useStaking(
 
               return [...acc, unbondingDelegation];
             },
-            [] as UnbondingDelegation[]
+            [] as UnbondingDelegation[],
           )
         : [];
       return {
@@ -141,7 +141,7 @@ export default function useStaking(
       onError: (error) => {
         console.error(error);
       },
-    }
+    },
   );
 
   // user native token balance
@@ -158,17 +158,17 @@ export default function useStaking(
   >(null);
 
   const getValidator = (
-    address: string | null
+    address: string | null,
   ): ValidatorWithDelegations | null => {
     if (!address) return null;
     // search for user validator first
     const userValidator = staking?.userStaking?.validators.find(
-      (validator) => validator.operator_address === address
+      (validator) => validator.operator_address === address,
     );
     if (userValidator) return userValidator;
     // search for all validators
     const validator = staking?.validators.find(
-      (validator) => validator.operator_address === address
+      (validator) => validator.operator_address === address,
     );
     if (validator)
       return { ...validator, userDelegation: { balance: "0", rewards: "0" } };

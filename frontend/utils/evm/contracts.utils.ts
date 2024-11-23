@@ -46,7 +46,7 @@ export function newContractInstance<T extends ContractAbi>(
   abi: ContractAbi,
   options?: {
     signer?: GetWalletClientResult;
-  }
+  },
 ): ReturnWithError<Contract<T>> {
   const rpc = getRpcUrlFromChainId(chainId);
   if (rpc.error) return NEW_ERROR("newContractInstance", rpc.error);
@@ -54,7 +54,7 @@ export function newContractInstance<T extends ContractAbi>(
     return NO_ERROR(
       new Contract(abi, address, {
         provider: options.signer,
-      })
+      }),
     );
   }
   const provider = getProviderWithoutSigner(rpc.data);
@@ -67,7 +67,7 @@ export function newContractInstance<T extends ContractAbi>(
  * @returns {PromiseWithError<number>} current block timestamp or error
  */
 export async function getEVMTimestamp(
-  chainId: number
+  chainId: number,
 ): PromiseWithError<number> {
   const { data: rpcUrl, error: rpcError } = getRpcUrlFromChainId(chainId);
   if (rpcError) return NEW_ERROR("getEVMTimestamp", rpcError);

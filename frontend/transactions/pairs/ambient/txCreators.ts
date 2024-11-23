@@ -25,7 +25,7 @@ export const _addAmbientConcLiquidityTx = (
   upperTick: number,
   minPriceQ64: string,
   maxPriceQ64: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const calldata = eth.abi.encodeParameters(
     [
@@ -53,7 +53,7 @@ export const _addAmbientConcLiquidityTx = (
       maxPriceQ64,
       0,
       ZERO_ADDRESS,
-    ]
+    ],
   );
   return {
     description,
@@ -81,7 +81,7 @@ export const _removeAmbientConcLiquidityTx = (
   upperTick: number,
   minPriceQ64: string,
   maxPriceQ64: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const calldata = eth.abi.encodeParameters(
     [
@@ -109,7 +109,7 @@ export const _removeAmbientConcLiquidityTx = (
       maxPriceQ64,
       0,
       ZERO_ADDRESS,
-    ]
+    ],
   );
   return {
     description,
@@ -129,7 +129,7 @@ export const _ambientClaimRewardsTx = (
   chainId: number,
   fromEthAddress: string,
   rewardsLedgerAddress: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   description,
   feTxType: CantoFETxType.CLAIM_REWARDS_AMBIENT,

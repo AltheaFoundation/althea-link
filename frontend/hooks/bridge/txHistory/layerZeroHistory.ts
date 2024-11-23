@@ -29,13 +29,13 @@ export interface UserLayerZeroHistory {
 export async function getUserLayerZeroHistory(
   chainId: number,
   oftContractAddress: string,
-  ethAccount: string
+  ethAccount: string,
 ): PromiseWithError<UserLayerZeroHistory> {
   // create OFT contract instance
   const { data: oftContract, error } = newContractInstance<typeof OFT_ABI>(
     chainId,
     oftContractAddress,
-    OFT_ABI
+    OFT_ABI,
   );
   if (error) {
     return NEW_ERROR("getUserLayerZeroHistory::" + errMsg(error));
@@ -53,7 +53,7 @@ export async function getUserLayerZeroHistory(
         filter: { _to: ethAccount },
         fromBlock: 0,
         toBlock: "latest",
-      }
+      },
     );
 
     // format events to readable format

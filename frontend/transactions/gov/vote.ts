@@ -23,7 +23,7 @@ import { TX_PARAM_ERRORS } from "@/config/consts/errors";
 import { ethToAlthea } from "@gravity-bridge/address-converter";
 
 export async function proposalVoteTx(
-  params: ProposalVoteTxParams
+  params: ProposalVoteTxParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   // convert eth address to canto address
   const altheaAddress = ethToAlthea(params.ethAccount);
@@ -41,7 +41,7 @@ export async function proposalVoteTx(
         altheaAddress,
         params.proposalId,
         numVoteOption,
-        TX_DESCRIPTIONS.VOTE(params.proposalId, params.voteOption)
+        TX_DESCRIPTIONS.VOTE(params.proposalId, params.voteOption),
       ),
     ],
   });
@@ -57,7 +57,7 @@ const _voteTx = (
   cosmosSender: string,
   proposalId: number,
   option: number,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => ({
   fromAddress: ethAddress,
   feTxType: CantoFETxType.VOTE,
@@ -72,7 +72,7 @@ const _voteTx = (
 });
 
 export const validateGovTxParams = (
-  txParams: ProposalVoteTxParams
+  txParams: ProposalVoteTxParams,
 ): Validation => {
   if (!isValidEthAddress(txParams.ethAccount)) {
     return {

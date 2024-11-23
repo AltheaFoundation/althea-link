@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js";
 
 export async function getCirculatingNote(
   chainId: number,
-  noteAddress: string
+  noteAddress: string,
 ): PromiseWithError<string> {
   try {
     // get note contract
@@ -23,7 +23,7 @@ export async function getCirculatingNote(
       .balanceOf(accountantAddress)
       .call();
     const circulatingNote = new BigNumber(MAX_UINT256).minus(
-      accountantBalance as number
+      accountantBalance as number,
     );
     return NO_ERROR(circulatingNote.toString());
   } catch (err) {
@@ -33,13 +33,13 @@ export async function getCirculatingNote(
 
 export async function getCirculatingCNote(
   chainId: number,
-  cNoteAddress: string
+  cNoteAddress: string,
 ): PromiseWithError<string> {
   // get cNote contract
   const { data: cNoteContract, error } = newContractInstance<typeof ERC20_ABI>(
     chainId,
     cNoteAddress,
-    ERC20_ABI
+    ERC20_ABI,
   );
   if (error) return NEW_ERROR("getCirculatingCNote", error);
   // get total supply
@@ -54,7 +54,7 @@ export async function getCirculatingCNote(
     .call();
 
   const circulatingCNote = new BigNumber(totalSupply as number).minus(
-    accountantBalance as number
+    accountantBalance as number,
   );
   return NO_ERROR(circulatingCNote.toString());
 }

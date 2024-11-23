@@ -32,7 +32,7 @@ interface MsgConvertERC20Params {
  * @returns {UnsignedCosmosMessages} eip and cosmos messages along with types object and fee
  */
 export function createMsgsConvertERC20(
-  params: MsgConvertERC20Params
+  params: MsgConvertERC20Params,
 ): UnsignedCosmosMessages {
   const eipMsg = eip712MsgConvertERC20(params);
   const cosmosMsg = protoMsgConvertERC20(params);
@@ -57,7 +57,7 @@ function eip712MsgConvertERC20(params: MsgConvertERC20Params): EIP712Message {
 }
 
 function protoMsgConvertERC20(
-  params: MsgConvertERC20Params
+  params: MsgConvertERC20Params,
 ): CosmosNativeMessage {
   const message = new MsgConvertERC20({
     contractAddress: params.contract_address,

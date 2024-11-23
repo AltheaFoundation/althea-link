@@ -7,7 +7,7 @@ import {
 import { NewTransactionFlow, TransactionFlowType } from "../flows";
 
 export const newCTokenLendingFlow = (
-  txParams: CTokenLendingTransactionParams
+  txParams: CTokenLendingTransactionParams,
 ): NewTransactionFlow => {
   const tokenMetadata =
     txParams.txType === CTokenLendingTxTypes.SUPPLY
@@ -39,7 +39,7 @@ export const newCTokenLendingFlow = (
 };
 
 export const newClaimCLMRewardsFlow = (
-  txParams: CLMClaimRewardsTxParams
+  txParams: CLMClaimRewardsTxParams,
 ): NewTransactionFlow => {
   // wcanto for rewards
   const wCantoAddress = getCantoCoreAddress(txParams.chainId, "wcanto");

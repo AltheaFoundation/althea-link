@@ -12,7 +12,7 @@ import { signCosmosEIPTx, waitForCosmosTx } from "./cosmosEIP/signCosmosEIP";
  * @returns {PromiseWithError<string>} txHash of transaction or error
  */
 export async function signTransaction(
-  tx: Transaction
+  tx: Transaction,
 ): PromiseWithError<string> {
   switch (tx.type) {
     case "EVM":
@@ -40,7 +40,7 @@ export async function signTransaction(
 export async function waitForTransaction(
   txType: "EVM" | "COSMOS" | "KEPLR",
   chainId: number | string,
-  hash: string
+  hash: string,
 ): PromiseWithError<{
   status: string;
   error: any;

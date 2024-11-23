@@ -10,7 +10,7 @@ import { ethToAlthea } from "@gravity-bridge/address-converter";
  * @return {string} The converted address
  */
 export async function ethToAltheaAddress(
-  ethAddress: string
+  ethAddress: string,
 ): PromiseWithError<string> {
   try {
     // chainId not important since address conversion is the same

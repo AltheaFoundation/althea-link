@@ -33,7 +33,7 @@ enum CLMModalTypes {
 function sortCTokens(
   a: CTokenWithUserData,
   b: CTokenWithUserData,
-  sortBy: "supplyBalanceInUnderlying" | "borrowBalance"
+  sortBy: "supplyBalanceInUnderlying" | "borrowBalance",
 ) {
   // sort by prop first
   if (a.userDetails?.[sortBy] !== "0" || b.userDetails?.[sortBy] !== "0") {
@@ -41,7 +41,7 @@ function sortCTokens(
       a.userDetails?.[sortBy] ?? "0",
       b.userDetails?.[sortBy] ?? "0",
       a.decimals,
-      b.decimals
+      b.decimals,
     )
       ? -1
       : 1;
@@ -52,11 +52,11 @@ function sortCTokens(
 export default function LendingPage() {
   // track current modal type
   const [currentModal, setCurrentModal] = useState<CLMModalTypes>(
-    CLMModalTypes.NONE
+    CLMModalTypes.NONE,
   );
 
   const [currentToggle, setCurrentToggle] = useState<"Supply" | "Borrow">(
-    "Supply"
+    "Supply",
   );
 
   // get all data from lending combo
@@ -85,10 +85,10 @@ export default function LendingPage() {
   }
 
   const supplyTokens = [cNote, ...stableCoins, ...rwas].sort((a, b) =>
-    sortCTokens(a, b, "supplyBalanceInUnderlying")
+    sortCTokens(a, b, "supplyBalanceInUnderlying"),
   );
   const borrowedTokens = [...stableCoins, cNote].sort((a, b) =>
-    sortCTokens(a, b, "borrowBalance")
+    sortCTokens(a, b, "borrowBalance"),
   );
 
   return (
@@ -134,7 +134,7 @@ export default function LendingPage() {
                 18,
                 {
                   precision: 2,
-                }
+                },
               ),
               symbol: true,
             },
@@ -173,9 +173,9 @@ export default function LendingPage() {
               value: displayAmount(
                 addTokenBalances(
                   lendingStats.circulatingNote,
-                  lendingStats.circulatingCNote
+                  lendingStats.circulatingCNote,
                 ),
-                18
+                18,
               ),
             },
             {
@@ -185,9 +185,9 @@ export default function LendingPage() {
                   lendingStats.circulatingCNote,
                   addTokenBalances(
                     lendingStats.circulatingNote,
-                    lendingStats.circulatingCNote
-                  )
-                )
+                    lendingStats.circulatingCNote,
+                  ),
+                ),
               ),
             },
             {
@@ -198,7 +198,7 @@ export default function LendingPage() {
           onClick={() => {
             window.open(
               "https://app.slingshot.finance/swap/Canto/NOTE",
-              "_blank"
+              "_blank",
             );
           }}
         />
@@ -288,7 +288,7 @@ export default function LendingPage() {
                           cStableCoin.underlying.decimals,
                           {
                             precision: 2,
-                          }
+                          },
                         )}
                       </Text>
                     </Container>
@@ -304,7 +304,7 @@ export default function LendingPage() {
                         cStableCoin.underlying.decimals,
                         {
                           precision: 2,
-                        }
+                        },
                       ),
                 ]),
               ]}
@@ -376,7 +376,7 @@ export default function LendingPage() {
                           borrowedToken.underlying.decimals,
                           {
                             precision: 2,
-                          }
+                          },
                         )}
                       </Text>
                     </Container>
@@ -391,7 +391,7 @@ export default function LendingPage() {
                         borrowedToken.underlying.decimals,
                         {
                           precision: 2,
-                        }
+                        },
                       ),
                 ]),
               ]}

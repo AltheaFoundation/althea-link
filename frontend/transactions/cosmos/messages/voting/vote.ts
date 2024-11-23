@@ -22,7 +22,7 @@ interface MessageVoteParams {
 }
 
 export function createMsgsVote(
-  params: MessageVoteParams
+  params: MessageVoteParams,
 ): UnsignedCosmosMessages {
   const eipMsg = eip712MsgVote(params);
   const cosmosMsg = protoMsgVote(params);

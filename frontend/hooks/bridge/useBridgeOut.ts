@@ -32,7 +32,7 @@ import {
 } from "@/transactions/bridge";
 
 export default function useBridgeOut(
-  props: BridgeHookInputParams
+  props: BridgeHookInputParams,
 ): BridgeHookReturn {
   // initial state with props
   const initialState = (testnet: boolean): BridgeHookState => ({
@@ -55,7 +55,7 @@ export default function useBridgeOut(
 
   // state of the entire hook that will be exposed
   const [state, setState] = useState<BridgeHookState>(
-    initialState(props.testnet ?? false)
+    initialState(props.testnet ?? false),
   );
 
   ///
@@ -93,7 +93,7 @@ export default function useBridgeOut(
       : [],
     state.connectedEthAddress,
     null,
-    true
+    true,
   );
 
   // will autoselect the first available token if there are any
@@ -109,7 +109,7 @@ export default function useBridgeOut(
 
   function getNetwork(id: string): ReturnWithError<BaseNetwork> {
     const network = state.availableNetworks.find(
-      (network) => network.id === id
+      (network) => network.id === id,
     );
     return network
       ? NO_ERROR(network)
@@ -147,7 +147,7 @@ export default function useBridgeOut(
     });
     if (supportedNetworkIds.length === 0) {
       throw new Error(
-        "useBridgeOut::setToken: no supported networks for token: " + id
+        "useBridgeOut::setToken: no supported networks for token: " + id,
       );
     }
     // get the networks from the ids
@@ -156,7 +156,7 @@ export default function useBridgeOut(
     ).filter((network) => supportedNetworkIds.includes(network.id));
     if (supportedNetworks.length === 0) {
       throw new Error(
-        "useBridgeOut::setToken: found no supported networks from ids"
+        "useBridgeOut::setToken: found no supported networks from ids",
       );
     }
     // set the token state, and reset the network and method states
@@ -181,7 +181,7 @@ export default function useBridgeOut(
     }
     if (!state.selectedToken) {
       throw new Error(
-        "useBridgeOut::setNetwork: must select token before network"
+        "useBridgeOut::setNetwork: must select token before network",
       );
     }
     // get the supported methods from the token and network combination
@@ -193,7 +193,7 @@ export default function useBridgeOut(
     ).find((method: any) => method.chainId === network.id)?.methods;
     if (!supportedMethods) {
       throw new Error(
-        "useBridgeOut::setNetwork: no supported methods for network: " + id
+        "useBridgeOut::setNetwork: no supported methods for network: " + id,
       );
     }
     setState((prevState) => ({
@@ -291,13 +291,13 @@ export default function useBridgeOut(
         return setUserInputCosmosAddress(id);
       default:
         throw new Error(
-          "useBridgeIn::generalSetter: invalid param: " + paramName
+          "useBridgeIn::generalSetter: invalid param: " + paramName,
         );
     }
   }
 
   const bridgeTxParams = (
-    params: BridgeHookTxParams
+    params: BridgeHookTxParams,
   ): BridgeTransactionParams => ({
     method: state.selectedMethod,
     from: {

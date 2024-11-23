@@ -44,7 +44,7 @@ export const NewAmbientPositionModal = ({
   const { base: baseToken, quote: quoteToken } = pool;
   const positionManager = useNewAmbientPositionManager(pool);
   const positionValidation = verifyParams(
-    positionManager.txParams.addLiquidity()
+    positionManager.txParams.addLiquidity(),
   );
 
   // modal options
@@ -56,7 +56,7 @@ export const NewAmbientPositionModal = ({
   }
   // liquidity graph
   const [graphPoints, setGraphPoints] = useState<{ x: number; y: number }[]>(
-    []
+    [],
   );
   useEffect(() => {
     async function getGraph() {
@@ -64,7 +64,7 @@ export const NewAmbientPositionModal = ({
         pool.base.chainId,
         pool.base.address,
         pool.quote.address,
-        pool.poolIdx
+        pool.poolIdx,
       );
       if (error) console.error(error);
       setGraphPoints(convertLiquidityCurveToGraph(pool, curve));
@@ -134,7 +134,7 @@ export const NewAmbientPositionModal = ({
                         ambientLp: pool.symbol,
                         baseToken: pool.base.symbol,
                         quoteToken: pool.quote.symbol,
-                      }
+                      },
                     );
                   }
                   setDefaultParams("DEFAULT");
@@ -167,7 +167,7 @@ export const NewAmbientPositionModal = ({
             ambientAmountError={
               Number(pool.stats.lastPriceSwap) <=
                 Number(
-                  getWeiRangePrice(positionManager.options.minRangePrice)
+                  getWeiRangePrice(positionManager.options.minRangePrice),
                 ) && Number(positionManager.options.amountBase) !== 0
             }
           />
@@ -187,7 +187,7 @@ export const NewAmbientPositionModal = ({
             ambientAmountError={
               Number(pool.stats.lastPriceSwap) >=
                 Number(
-                  getWeiRangePrice(positionManager.options.maxRangePrice)
+                  getWeiRangePrice(positionManager.options.maxRangePrice),
                 ) && Number(positionManager.options.amountQuote) !== 0
             }
           />
@@ -201,7 +201,7 @@ export const NewAmbientPositionModal = ({
                   pool.base.decimals - pool.quote.decimals,
                   {
                     precision: 3,
-                  }
+                  },
                 ) +
                 " " +
                 pool.base.symbol +
@@ -265,7 +265,7 @@ export const NewAmbientPositionModal = ({
                     onChange={(e) =>
                       positionManager.setters.setExecutionPrice(
                         e.target.value,
-                        true
+                        true,
                       )
                     }
                   />
@@ -292,7 +292,7 @@ export const NewAmbientPositionModal = ({
                     onChange={(e) =>
                       positionManager.setters.setExecutionPrice(
                         e.target.value,
-                        false
+                        false,
                       )
                     }
                   />
@@ -344,8 +344,8 @@ export const NewAmbientPositionModal = ({
                     formatBalance(
                       pool.stats.lastPriceSwap,
                       pool.base.decimals - pool.quote.decimals,
-                      { precision: 10 }
-                    )
+                      { precision: 10 },
+                    ),
                   ),
                   minXValue: Number(positionManager.options.minRangePrice),
                   maxXValue: Number(positionManager.options.maxRangePrice),
@@ -376,10 +376,10 @@ export const NewAmbientPositionModal = ({
                     formatBalance(
                       pool.stats.lastPriceSwap,
                       pool.base.decimals - pool.quote.decimals,
-                      { precision: 10 }
-                    )
+                      { precision: 10 },
+                    ),
                   ),
-                  Number(positionManager.options.minRangePrice ?? "0")
+                  Number(positionManager.options.minRangePrice ?? "0"),
                 )}
               />
               <Spacer width="32px" />
@@ -392,10 +392,10 @@ export const NewAmbientPositionModal = ({
                     formatBalance(
                       pool.stats.lastPriceSwap,
                       pool.base.decimals - pool.quote.decimals,
-                      { precision: 10 }
-                    )
+                      { precision: 10 },
+                    ),
                   ),
-                  Number(positionManager.options.maxRangePrice ?? "0")
+                  Number(positionManager.options.maxRangePrice ?? "0"),
                 )}
               />
             </Container>

@@ -27,7 +27,7 @@ import { createApprovalTxs } from "@/transactions/erc20";
 import { isValidEthAddress } from "@/utils/address";
 
 export async function ambientLiquidityTx(
-  txParams: AmbientTransactionParams
+  txParams: AmbientTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     const validation = validateAmbientLiquidityTxParams(txParams);
@@ -65,7 +65,7 @@ export async function ambientLiquidityTx(
               txParams.upperTick,
               minPriceQ64,
               maxPriceQ64,
-              TX_DESCRIPTIONS.REMOVE_AMBIENT_CONC_LIQ()
+              TX_DESCRIPTIONS.REMOVE_AMBIENT_CONC_LIQ(),
             ),
           ],
         });
@@ -83,7 +83,7 @@ type FormattedAmbientAddConcLiqParams = AmbientTransactionParams & {
   maxExecPriceQ64: string;
 };
 async function addConLiquidity(
-  txParams: FormattedAmbientAddConcLiqParams
+  txParams: FormattedAmbientAddConcLiqParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** ensure correct tx type */
@@ -102,7 +102,7 @@ async function addConLiquidity(
         txParams.amount,
         txParams.pool.stats.lastPriceSwap,
         getPriceFromTick(txParams.lowerTick),
-        getPriceFromTick(txParams.upperTick)
+        getPriceFromTick(txParams.upperTick),
       );
     } else {
       quoteAmount = txParams.amount;
@@ -110,19 +110,19 @@ async function addConLiquidity(
         txParams.amount,
         txParams.pool.stats.lastPriceSwap,
         getPriceFromTick(txParams.lowerTick),
-        getPriceFromTick(txParams.upperTick)
+        getPriceFromTick(txParams.upperTick),
       );
     }
 
     /** allowance check (approve 10% more for price changes) */
     const { data: baseApproval, error: baseApprovalError } = percentOfAmount(
       baseAmount,
-      110
+      110,
     );
     if (baseApprovalError) throw baseApprovalError;
     const { data: quoteApproval, error: quoteApprovalError } = percentOfAmount(
       quoteAmount,
-      110
+      110,
     );
     if (quoteApprovalError) throw quoteApprovalError;
 
@@ -141,7 +141,7 @@ async function addConLiquidity(
           },
         ],
         [baseApproval, quoteApproval],
-        { address: txParams.crocDexAddress, name: "Ambient" }
+        { address: txParams.crocDexAddress, name: "Ambient" },
       );
     if (allowanceTxsError) throw allowanceTxsError;
 
@@ -163,8 +163,8 @@ async function addConLiquidity(
         txParams.upperTick,
         txParams.minExecPriceQ64,
         txParams.maxExecPriceQ64,
-        TX_DESCRIPTIONS.ADD_AMBIENT_CONC_LIQ()
-      )
+        TX_DESCRIPTIONS.ADD_AMBIENT_CONC_LIQ(),
+      ),
     );
 
     /** return tx list */
@@ -180,7 +180,7 @@ const invalidParams = (reason: string): Validation => ({
   reason,
 });
 export function validateAmbientLiquidityTxParams(
-  txParams: AmbientTransactionParams
+  txParams: AmbientTransactionParams,
 ): Validation {
   /** check eth account */
   if (!isValidEthAddress(txParams.ethAccount)) {
@@ -197,8 +197,8 @@ export function validateAmbientLiquidityTxParams(
           "0",
           txParams.isAmountBase
             ? txParams.pool.base.symbol
-            : txParams.pool.quote.symbol
-        )
+            : txParams.pool.quote.symbol,
+        ),
       );
     }
     /** check base amount */
@@ -208,19 +208,22 @@ export function validateAmbientLiquidityTxParams(
           txParams.amount,
           currentPrice,
           getPriceFromTick(txParams.lowerTick),
-          getPriceFromTick(txParams.upperTick)
+          getPriceFromTick(txParams.upperTick),
         );
 
-    if(Number(currentPrice) <= Number(getPriceFromTick(txParams.lowerTick)) && Number(baseAmount) !== 0){
-      return {error: true, reason: TX_PARAM_ERRORS.AMBIENT_AMOUNT_ERROR()}
-    }    
+    if (
+      Number(currentPrice) <= Number(getPriceFromTick(txParams.lowerTick)) &&
+      Number(baseAmount) !== 0
+    ) {
+      return { error: true, reason: TX_PARAM_ERRORS.AMBIENT_AMOUNT_ERROR() };
+    }
 
     const baseCheck = validateWeiUserInputTokenAmount(
       baseAmount,
       "0",
       txParams.pool.base.balance ?? "0",
       txParams.pool.base.symbol,
-      txParams.pool.base.decimals
+      txParams.pool.base.decimals,
     );
     if (baseCheck.error) return baseCheck;
 
@@ -230,36 +233,39 @@ export function validateAmbientLiquidityTxParams(
           txParams.amount,
           currentPrice,
           getPriceFromTick(txParams.lowerTick),
-          getPriceFromTick(txParams.upperTick)
+          getPriceFromTick(txParams.upperTick),
         )
       : txParams.amount;
 
-      if(Number(currentPrice) >= Number(getPriceFromTick(txParams.upperTick)) && Number(quoteAmount) !== 0){
-        return {error: true, reason: TX_PARAM_ERRORS.AMBIENT_AMOUNT_ERROR()}
-      }  
-      
+    if (
+      Number(currentPrice) >= Number(getPriceFromTick(txParams.upperTick)) &&
+      Number(quoteAmount) !== 0
+    ) {
+      return { error: true, reason: TX_PARAM_ERRORS.AMBIENT_AMOUNT_ERROR() };
+    }
+
     const quoteCheck = validateWeiUserInputTokenAmount(
       quoteAmount,
       "0",
       txParams.pool.quote.balance ?? "0",
       txParams.pool.quote.symbol,
-      txParams.pool.quote.decimals
+      txParams.pool.quote.decimals,
     );
     if (quoteCheck.error) return quoteCheck;
   } else if (txParams.txType === AmbientTxType.REMOVE_CONC_LIQUIDITY) {
     /** check position information to remove from */
     const position = txParams.pool.userPositions.find(
-      (position) => position.positionId === txParams.positionId
+      (position) => position.positionId === txParams.positionId,
     );
     if (!position) {
       return invalidParams(
-        TX_PARAM_ERRORS.POSITION_NOT_FOUND(txParams.positionId)
+        TX_PARAM_ERRORS.POSITION_NOT_FOUND(txParams.positionId),
       );
     }
     /** check liquidity */
     if (Number(position.concLiq) < Number(txParams.liquidity)) {
       return invalidParams(
-        TX_PARAM_ERRORS.AMOUNT_TOO_HIGH(position.concLiq, "liquidity")
+        TX_PARAM_ERRORS.AMOUNT_TOO_HIGH(position.concLiq, "liquidity"),
       );
     }
   }
@@ -268,7 +274,7 @@ export function validateAmbientLiquidityTxParams(
   const executionPriceCheck = validateExecutionPrices(
     txParams.minExecPriceWei,
     txParams.maxExecPriceWei,
-    currentPrice
+    currentPrice,
   );
   if (executionPriceCheck.error) return executionPriceCheck;
 
@@ -284,7 +290,7 @@ export function validateAmbientLiquidityTxParams(
 function validateExecutionPrices(
   minPriceWei: string,
   maxPriceWei: string,
-  currentPriceWei: string
+  currentPriceWei: string,
 ): Validation {
   if (Number(minPriceWei) < 0) {
     return invalidParams(TX_PARAM_ERRORS.EXECUTION_PRICE_TOO_LOW(true, "0"));
@@ -294,17 +300,17 @@ function validateExecutionPrices(
   }
   if (Number(minPriceWei) > Number(currentPriceWei)) {
     return invalidParams(
-      TX_PARAM_ERRORS.EXECUTION_PRICE_TOO_HIGH(true, "the current price")
+      TX_PARAM_ERRORS.EXECUTION_PRICE_TOO_HIGH(true, "the current price"),
     );
   }
   if (Number(maxPriceWei) < Number(currentPriceWei)) {
     return invalidParams(
-      TX_PARAM_ERRORS.EXECUTION_PRICE_TOO_LOW(false, "the current price")
+      TX_PARAM_ERRORS.EXECUTION_PRICE_TOO_LOW(false, "the current price"),
     );
   }
   if (Number(minPriceWei) >= Number(maxPriceWei)) {
     return invalidParams(
-      TX_PARAM_ERRORS.EXECUTION_PRICE_TOO_HIGH(true, "the max price")
+      TX_PARAM_ERRORS.EXECUTION_PRICE_TOO_HIGH(true, "the max price"),
     );
   }
   return { error: false };

@@ -13,7 +13,7 @@ export function isAmbientPool(pair: LPPairType): pair is AmbientPool {
   );
 }
 export function isCantoDexPair(
-  pair: LPPairType
+  pair: LPPairType,
 ): pair is CantoDexPairWithUserCTokenData {
   return typeof pair === "object" && "token1" in pair && "token2" in pair;
 }

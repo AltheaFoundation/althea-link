@@ -47,7 +47,7 @@ type GravityBridgeInParams = {
  * @returns {PromiseWithError<TxCreatorFunctionReturn>} list of transactions to make or error
  */
 export async function gravityBridgeInTx(
-  txParams: GravityBridgeInParams
+  txParams: GravityBridgeInParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** validate params */
@@ -65,7 +65,7 @@ export async function gravityBridgeInTx(
     /** check if user has public key */
     const { data: hasPubKey, error: checkPubKeyError } = await checkCantoPubKey(
       cantoReceiver,
-      CANTO_MAINNET_EVM.chainId
+      CANTO_MAINNET_EVM.chainId,
     );
     if (checkPubKeyError || !hasPubKey) {
       // error getting account or no public key available, so make a public key
@@ -73,7 +73,7 @@ export async function gravityBridgeInTx(
         await generateCantoPublicKeyWithTx(
           CANTO_MAINNET_EVM.chainId,
           txParams.ethSender,
-          cantoReceiver
+          cantoReceiver,
         );
       if (pubKeyTxsError) throw pubKeyTxsError;
       txList.push(...pubKeyTxs);
@@ -86,7 +86,7 @@ export async function gravityBridgeInTx(
         await getTokenBalance(
           txParams.token.chainId,
           txParams.token.address,
-          txParams.ethSender
+          txParams.ethSender,
         );
       if (wethBalanceError) throw wethBalanceError;
       // check if user needs to wrap ETH
@@ -103,9 +103,9 @@ export async function gravityBridgeInTx(
             txParams.token.address,
             amountToWrap,
             TX_DESCRIPTIONS.WRAP_ETH(
-              displayAmount(amountToWrap, txParams.token.decimals)
-            )
-          )
+              displayAmount(amountToWrap, txParams.token.decimals),
+            ),
+          ),
         );
       }
     }
@@ -117,7 +117,7 @@ export async function gravityBridgeInTx(
         txParams.ethSender,
         [{ address: txParams.token.address, symbol: txParams.token.symbol }],
         [txParams.amount],
-        { address: GRAVITY_BRIDGE_ETH_ADDRESS, name: "Gravity Bridge" }
+        { address: GRAVITY_BRIDGE_ETH_ADDRESS, name: "Gravity Bridge" },
       );
     if (allowanceError) throw allowanceError;
     txList.push(...allowanceTxs);
@@ -135,17 +135,17 @@ export async function gravityBridgeInTx(
           displayAmount(txParams.amount, txParams.token.decimals),
           ETH_MAINNET.name,
           CANTO_MAINNET_EVM.name,
-          getBridgeMethodInfo(BridgingMethod.GRAVITY_BRIDGE).name
+          getBridgeMethodInfo(BridgingMethod.GRAVITY_BRIDGE).name,
         ),
         {
           direction: "in",
           amountFormatted: displayAmount(
             txParams.amount,
             txParams.token.decimals,
-            { symbol: txParams.token.symbol }
+            { symbol: txParams.token.symbol },
           ),
-        }
-      )
+        },
+      ),
     );
 
     /** return tx list */
@@ -156,7 +156,7 @@ export async function gravityBridgeInTx(
 }
 
 export function validateGravityBridgeInTxParams(
-  txParams: GravityBridgeInParams
+  txParams: GravityBridgeInParams,
 ): Validation {
   // check ethSender is valid
   if (!isValidEthAddress(txParams.ethSender)) {
@@ -183,7 +183,7 @@ export function validateGravityBridgeInTxParams(
     "1",
     txParams.token.balance ?? "0",
     txParams.token.symbol,
-    txParams.token.decimals
+    txParams.token.decimals,
   );
 }
 
@@ -191,7 +191,7 @@ export function validateGravityBridgeInTxParams(
  * Will check to see if gbridge has completed the transaction
  */
 export async function checkGbridgeInTxStatus(
-  txHash: string
+  txHash: string,
 ): PromiseWithError<BridgeStatus> {
   try {
     // get tx and block number

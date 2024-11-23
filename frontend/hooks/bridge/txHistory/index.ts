@@ -17,13 +17,13 @@ interface AllUserBridgeTransactionHistory {
 }
 
 async function getAllUserBridgeTransactionHistory(
-  ethAccount: string
+  ethAccount: string,
 ): PromiseWithError<AllUserBridgeTransactionHistory> {
   const [layerZero, gravityBridge, ibc] = await Promise.all([
     getUserLayerZeroHistory(
       CANTO_MAINNET_EVM.chainId,
       "0x56C03B8C4FA80Ba37F5A7b60CAAAEF749bB5b220",
-      ethAccount
+      ethAccount,
     ),
     getUserGBridgeInHistory(ETH_MAINNET.chainId, ethAccount),
     getAllIBCTransactions(CANTO_MAINNET_EVM.chainId, ethAccount),

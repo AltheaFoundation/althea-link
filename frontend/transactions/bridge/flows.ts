@@ -12,12 +12,12 @@ import {
 } from "@/hooks/bridge/interfaces/tokens";
 
 export const newCantoBridgeFlow = (
-  txParams: BridgeTransactionParams
+  txParams: BridgeTransactionParams,
 ): NewTransactionFlow => ({
   title: `Bridge ${displayAmount(
     txParams.token.amount,
     txParams.token.data.decimals,
-    { symbol: txParams.token.data.symbol }
+    { symbol: txParams.token.data.symbol },
   )}`,
   icon: txParams.token.data.icon,
   txType: TransactionFlowType.BRIDGE,
@@ -34,12 +34,12 @@ const bridgeTokenMetadata = (txParams: BridgeTransactionParams) => {
       if (isCantoChainId(txParams.to.chainId as number)) {
         // add the underlying token on canto, not the OFT Proxy token
         const bridgeOutTokens = getBridgeOutTokenList(
-          txParams.to.chainId as number
+          txParams.to.chainId as number,
         );
         if (!bridgeOutTokens) return undefined;
         // match by symbol
         const matchedToken = bridgeOutTokens.find(
-          (t) => t.symbol === tokenToAdd.symbol
+          (t) => t.symbol === tokenToAdd.symbol,
         );
         const underlyingAddress = (matchedToken as OFTToken)
           .oftUnderlyingAddress;
@@ -56,13 +56,13 @@ const bridgeTokenMetadata = (txParams: BridgeTransactionParams) => {
         // match eth token to canto token
         // get token list from bridge out token list
         const bridgeOutTokens = getBridgeOutTokenList(
-          txParams.to.chainId as number
+          txParams.to.chainId as number,
         );
         if (!bridgeOutTokens) return undefined;
 
         // find matching token by symbol
         const cantoToken = bridgeOutTokens.find(
-          (t) => t.symbol === tokenToAdd.symbol
+          (t) => t.symbol === tokenToAdd.symbol,
         );
         if (!cantoToken) return undefined;
         tokenToAdd = cantoToken;
@@ -74,7 +74,7 @@ const bridgeTokenMetadata = (txParams: BridgeTransactionParams) => {
 
         // find matching token by symbol
         const matchedToken = bridgeInTokens.find(
-          (t) => t.symbol === tokenToAdd.symbol
+          (t) => t.symbol === tokenToAdd.symbol,
         );
         if (!matchedToken) return undefined;
         tokenToAdd = matchedToken;
@@ -89,20 +89,20 @@ const bridgeTokenMetadata = (txParams: BridgeTransactionParams) => {
 
       // get token list from bridge out token list
       const bridgeOutTokens = getBridgeOutTokenList(
-        txParams.to.chainId as number
+        txParams.to.chainId as number,
       );
       if (!bridgeOutTokens) return undefined;
 
       // find matching token by ibcDenom
       const cantoToken = (bridgeOutTokens as IBCToken[]).find(
-        (t) => t.ibcDenom === (tokenToAdd as IBCToken).ibcDenom
+        (t) => t.ibcDenom === (tokenToAdd as IBCToken).ibcDenom,
       );
       if (!cantoToken) return undefined;
 
       // return token metadata
       return checkAndReturnTokenMetadata(
         txParams.to.chainId,
-        cantoToken as BridgeToken
+        cantoToken as BridgeToken,
       );
     }
     default:
@@ -112,7 +112,7 @@ const bridgeTokenMetadata = (txParams: BridgeTransactionParams) => {
 
 function checkAndReturnTokenMetadata(
   chainId: number | string,
-  token: BridgeToken
+  token: BridgeToken,
 ):
   | {
       chainId: number;

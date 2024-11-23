@@ -39,7 +39,7 @@ type GravityBridgeOutParams = {
   bridgeFee: string;
 };
 export async function gravityBridgeOutTx(
-  txParams: GravityBridgeOutParams
+  txParams: GravityBridgeOutParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** validate params */
@@ -69,14 +69,14 @@ export async function gravityBridgeOutTx(
       throw new Error("no gravity eth tokens");
 
     const gravEthToken = (gravTokenList as any[]).find((token) =>
-      areEqualAddresses(token.ibcDenom, txParams.token.ibcDenom)
+      areEqualAddresses(token.ibcDenom, txParams.token.ibcDenom),
     );
     /** check balance for token on gravity-bridge */
     const { data: gravTokenBalance, error: gravBalanceError } =
       await getCosmosTokenBalance(
         GRAVITY_BRIDGE.chainId,
         gravityAddress,
-        gravEthToken.nativeName
+        gravEthToken.nativeName,
       );
     if (gravBalanceError) throw gravBalanceError;
 
@@ -114,17 +114,17 @@ export async function gravityBridgeOutTx(
           displayAmount(txParams.amount, txParams.token.decimals),
           GRAVITY_BRIDGE.name,
           ETH_MAINNET.name,
-          getBridgeMethodInfo(BridgingMethod.GRAVITY_BRIDGE).name
+          getBridgeMethodInfo(BridgingMethod.GRAVITY_BRIDGE).name,
         ),
         {
           direction: "out",
           amountFormatted: displayAmount(
             txParams.amount,
             txParams.token.decimals,
-            { symbol: txParams.token.symbol }
+            { symbol: txParams.token.symbol },
           ),
-        }
-      )
+        },
+      ),
     );
 
     /** return tx list */
@@ -135,7 +135,7 @@ export async function gravityBridgeOutTx(
 }
 
 export function validateGravityBridgeOutTxParams(
-  txParams: GravityBridgeOutParams
+  txParams: GravityBridgeOutParams,
 ): Validation {
   // check if eth address is valid
   if (!isValidEthAddress(txParams.ethSender)) {
@@ -167,7 +167,7 @@ export function validateGravityBridgeOutTxParams(
     "1",
     txParams.token.balance ?? "0",
     txParams.token.symbol,
-    txParams.token.decimals
+    txParams.token.decimals,
   );
 }
 
@@ -175,13 +175,13 @@ export function validateGravityBridgeOutTxParams(
  * Will check to see if gbridge has completed the transaction
  */
 export async function checkGbridgeOutTxStatus(
-  txHash: string
+  txHash: string,
 ): PromiseWithError<BridgeStatus> {
   try {
     // get tx data from gravity bridge
     const { data: txData, error } = await getCosmosTxDetailsFromHash(
       GRAVITY_BRIDGE.chainId,
-      txHash
+      txHash,
     );
     if (error) throw error;
 
@@ -193,7 +193,7 @@ export async function checkGbridgeOutTxStatus(
 
     // get txId event
     const txIdEvent = allEvents.find(
-      (event) => event.type === "gravity.v1.EventOutgoingTxId"
+      (event) => event.type === "gravity.v1.EventOutgoingTxId",
     );
     if (!txIdEvent) throw new Error("txId event not found");
 
@@ -206,7 +206,7 @@ export async function checkGbridgeOutTxStatus(
     // get current pending sendToEthEvents
     const { data: pendingSendToEth, error: pendingSendToEthError } =
       await tryFetch<PendingSendToEthResponse>(
-        `${GRAVITY_BRIDGE.restEndpoint}/gravity/v1beta/query_pending_send_to_eth`
+        `${GRAVITY_BRIDGE.restEndpoint}/gravity/v1beta/query_pending_send_to_eth`,
       );
     if (pendingSendToEthError) throw pendingSendToEthError;
 

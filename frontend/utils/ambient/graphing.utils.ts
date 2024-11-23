@@ -5,7 +5,7 @@ import { getPriceFromTick } from "./ambientMath.utils";
 
 export function convertLiquidityCurveToGraph(
   pool: AmbientPool,
-  curve: LiquidityCurveReturn
+  curve: LiquidityCurveReturn,
 ): { x: number; y: number }[] {
   const points: { x: number; y: number }[] = [];
   curve.data.liquidityBumps.forEach((bump, idx) => {
@@ -15,8 +15,8 @@ export function convertLiquidityCurveToGraph(
         displayAmount(
           getPriceFromTick(bump.bumpTick),
           pool.base.decimals - pool.quote.decimals,
-          { precision: 5, maxSmallBalance: undefined }
-        )
+          { precision: 5, maxSmallBalance: undefined },
+        ),
       ),
       y: prevLiq + bump.liquidityDelta,
     });

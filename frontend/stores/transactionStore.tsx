@@ -42,21 +42,21 @@ export interface TransactionStore {
   clearTransactions: (ethAccount: string, flowId?: string) => void;
   performFlow: (
     ethAccount: string,
-    flowId?: string
+    flowId?: string,
   ) => PromiseWithError<boolean>;
   // this should only be called internally
   performTx: (
     ethAccount: string,
     flowId: string,
     txIndex: number,
-    tx: TransactionWithStatus
+    tx: TransactionWithStatus,
   ) => PromiseWithError<boolean>;
   // this should only be called internally
   setTxStatus: (
     ethAccount: string,
     flowId: string,
     txIndex: number,
-    details: Partial<TransactionWithStatus>
+    details: Partial<TransactionWithStatus>,
   ) => void;
   updateTxFlow: (
     ethAccount: string,
@@ -66,14 +66,14 @@ export interface TransactionStore {
         TransactionFlow,
         "id" | "createdAt" | "title" | "icon" | "txType" | "params"
       >
-    >
+    >,
   ) => void;
   // special function for setting bridge status on a transaction
   setTxBridgeStatus: (
     ethAccount: string,
     flowId: string,
     txIndex: number,
-    status: Partial<BridgeProgress>
+    status: Partial<BridgeProgress>,
   ) => void;
 }
 
@@ -104,15 +104,15 @@ const useTransactionStore = create<TransactionStore>()(
           };
           // add the flow to the user map and set loading to null
           const currentUserTransactionFlows = get().getUserTransactionFlows(
-            params.ethAccount
+            params.ethAccount,
           );
           // make new list but make sure we don't go over the limit (take last 100)
           const newUserList = [...currentUserTransactionFlows, newFlow].slice(
-            USER_FLOW_LIMIT * -1
+            USER_FLOW_LIMIT * -1,
           );
           set({
             transactionFlows: new Map(
-              get().transactionFlows.set(params.ethAccount, newUserList)
+              get().transactionFlows.set(params.ethAccount, newUserList),
             ),
           });
 
@@ -132,7 +132,7 @@ const useTransactionStore = create<TransactionStore>()(
             }
             // delete the flow
             const updatedUserFlows = userTxFlows?.filter(
-              (flow) => flow.id !== flowId
+              (flow) => flow.id !== flowId,
             );
             set({
               transactionFlows: txFlows.set(ethAccount, updatedUserFlows),
@@ -162,7 +162,7 @@ const useTransactionStore = create<TransactionStore>()(
             // we don't need to validate the params since they are validated when creating the transaction list anyways
             const { data: newFlow, error: newTransactionListError } =
               await TRANSACTION_FLOW_MAP[flowToPerform.txType].tx(
-                flowToPerform.params
+                flowToPerform.params,
               );
 
             // check error (will need to set correct states before throwing error)
@@ -182,7 +182,7 @@ const useTransactionStore = create<TransactionStore>()(
                     txsGenerateError: newTransactionListError.message
                       .split(":")
                       .pop(),
-                  }
+                  },
                 );
               }
 
@@ -192,7 +192,7 @@ const useTransactionStore = create<TransactionStore>()(
 
             // keep all successful transactions in the flow
             const successfulTransactions = flowToPerform.transactions.filter(
-              (tx) => tx.status === "SUCCESS"
+              (tx) => tx.status === "SUCCESS",
             );
 
             // create updated list
@@ -219,7 +219,7 @@ const useTransactionStore = create<TransactionStore>()(
               flowToPerform.analyticsTransactionFlowInfo.txList =
                 updatedTransactionList.map((tx) => tx.tx.feTxType);
               Analytics.actions.events.transactionFlows.started(
-                flowToPerform.analyticsTransactionFlowInfo
+                flowToPerform.analyticsTransactionFlowInfo,
               );
             }
 
@@ -232,10 +232,10 @@ const useTransactionStore = create<TransactionStore>()(
                 ethAccount,
                 flowToPerform.id,
                 i,
-                updatedTransactionList[i]
+                updatedTransactionList[i],
               );
               const network = getNetworkInfoFromChainId(
-                updatedTransactionList[i].tx.chainId
+                updatedTransactionList[i].tx.chainId,
               ).data;
               const updatedTx = get()
                 .getUserTransactionFlows(ethAccount)
@@ -245,7 +245,7 @@ const useTransactionStore = create<TransactionStore>()(
                 updatedTx?.startTimestamp ?? new Date().getTime();
               const endTimestamp = updatedTx?.timestamp ?? new Date().getTime();
               const txTimeInSeconds = Math.floor(
-                (endTimestamp - startTimestamp) / 1000
+                (endTimestamp - startTimestamp) / 1000,
               );
               // check if error (set states before throwing error)
               if (txError || !txResult) {
@@ -291,7 +291,7 @@ const useTransactionStore = create<TransactionStore>()(
               // get new transactions from this flow
               const { data: extraFlow, error: extraFlowError } =
                 await TRANSACTION_FLOW_MAP[newFlow.extraFlow.txFlowType].tx(
-                  newFlow.extraFlow.params
+                  newFlow.extraFlow.params,
                 );
               // check if error
               if (extraFlowError) throw extraFlowError;
@@ -324,7 +324,7 @@ const useTransactionStore = create<TransactionStore>()(
                     ethAccount,
                     flowToPerform.id,
                     j,
-                    newFlowTxList[j]
+                    newFlowTxList[j],
                   );
                 if (txError || !txResult) throw txError;
               }
@@ -337,13 +337,13 @@ const useTransactionStore = create<TransactionStore>()(
             // save tx to analytics
             if (flowToPerform.analyticsTransactionFlowInfo) {
               Analytics.actions.events.transactionFlows.success(
-                flowToPerform.analyticsTransactionFlowInfo
+                flowToPerform.analyticsTransactionFlowInfo,
               );
             }
             return NO_ERROR(true);
           } catch (err) {
             return NEW_ERROR(
-              "useTransactionStore::performFlow: " + errMsg(err)
+              "useTransactionStore::performFlow: " + errMsg(err),
             );
           }
         },
@@ -362,7 +362,7 @@ const useTransactionStore = create<TransactionStore>()(
             });
             // request signature and receive txHash once signed
             const { data: txData, error: txError } = await signTransaction(
-              tx.tx
+              tx.tx,
             );
             txHash = txData;
             // if error with signature, set status and throw error
@@ -375,7 +375,7 @@ const useTransactionStore = create<TransactionStore>()(
             let txChain;
             if (tx.tx.type === "COSMOS") {
               const { data: eipChain } = getCosmosEIPChainObject(
-                tx.tx.chainId as number
+                tx.tx.chainId as number,
               );
               if (eipChain) {
                 txChain = getNetworkInfoFromChainId(eipChain.cosmosChainId);
@@ -424,7 +424,7 @@ const useTransactionStore = create<TransactionStore>()(
               status: "ERROR",
             });
             return NEW_ERROR(
-              "useTransactionStore::performTransactions: " + errMsg(err)
+              "useTransactionStore::performTransactions: " + errMsg(err),
             );
           }
           return NO_ERROR(true);
@@ -433,7 +433,7 @@ const useTransactionStore = create<TransactionStore>()(
           // find the flow we need to update the tx in
           const currentUserTxFlows = get().getUserTransactionFlows(ethAccount);
           const flowToUpdate = currentUserTxFlows.find(
-            (flow) => flow.id === flowId
+            (flow) => flow.id === flowId,
           );
           if (!flowToUpdate) {
             return;
@@ -445,7 +445,7 @@ const useTransactionStore = create<TransactionStore>()(
           };
           // create new tx List
           const updatedTxList = flowToUpdate.transactions.map((tx, idx) =>
-            idx === txIndex ? updatedTx : tx
+            idx === txIndex ? updatedTx : tx,
           );
           // create new flow with updated tx list
           const updatedFlowList = currentUserTxFlows.map((flow) =>
@@ -454,12 +454,12 @@ const useTransactionStore = create<TransactionStore>()(
                   ...flow,
                   transactions: updatedTxList,
                 }
-              : flow
+              : flow,
           );
           // set state
           set({
             transactionFlows: new Map(
-              get().transactionFlows.set(ethAccount, updatedFlowList)
+              get().transactionFlows.set(ethAccount, updatedFlowList),
             ),
           });
         },
@@ -467,7 +467,7 @@ const useTransactionStore = create<TransactionStore>()(
           // update single flow
           const currentUserTxFlows = get().getUserTransactionFlows(ethAccount);
           const flowToUpdate = currentUserTxFlows.find(
-            (flow) => flow.id === flowId
+            (flow) => flow.id === flowId,
           );
           if (!flowToUpdate) {
             return;
@@ -476,12 +476,12 @@ const useTransactionStore = create<TransactionStore>()(
 
           // put update flow back into list
           const updatedUserFlows = currentUserTxFlows.map((flow) =>
-            flow.id === flowId ? updatedFlow : flow
+            flow.id === flowId ? updatedFlow : flow,
           );
           // set new flows
           set({
             transactionFlows: new Map(
-              get().transactionFlows.set(ethAccount, updatedUserFlows)
+              get().transactionFlows.set(ethAccount, updatedUserFlows),
             ),
           });
         },
@@ -489,7 +489,7 @@ const useTransactionStore = create<TransactionStore>()(
           // find the flow we need to update the tx in
           const currentUserTxFlows = get().getUserTransactionFlows(ethAccount);
           const flowToUpdate = currentUserTxFlows.find(
-            (flow) => flow.id === flowId
+            (flow) => flow.id === flowId,
           );
           if (!flowToUpdate) {
             return;
@@ -513,7 +513,7 @@ const useTransactionStore = create<TransactionStore>()(
           };
           // create new tx List
           const updatedTxList = flowToUpdate.transactions.map((tx, idx) =>
-            idx === txIndex ? updatedTx : tx
+            idx === txIndex ? updatedTx : tx,
           );
           // create new flow with updated tx list
           const updatedFlowList = currentUserTxFlows.map((flow) =>
@@ -522,12 +522,12 @@ const useTransactionStore = create<TransactionStore>()(
                   ...flow,
                   transactions: updatedTxList,
                 }
-              : flow
+              : flow,
           );
           // set state
           set({
             transactionFlows: new Map(
-              get().transactionFlows.set(ethAccount, updatedFlowList)
+              get().transactionFlows.set(ethAccount, updatedFlowList),
             ),
           });
         },
@@ -552,7 +552,7 @@ const useTransactionStore = create<TransactionStore>()(
               state: {
                 ...value.state,
                 transactionFlows: Array.from(
-                  value.state.transactionFlows.entries()
+                  value.state.transactionFlows.entries(),
                 ),
               },
             });
@@ -575,9 +575,9 @@ const useTransactionStore = create<TransactionStore>()(
             });
           });
         },
-      }
-    )
-  )
+      },
+    ),
+  ),
 );
 
 // this is a hack to get around the fact that BigInts are not supported by JSON.stringify

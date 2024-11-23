@@ -50,7 +50,7 @@ export function useNewAmbientPositionManager(pool: AmbientPool) {
   // conversions for prices
   function getWeiRangePrices(
     minPriceFormatted: string,
-    maxPriceFormatted: string
+    maxPriceFormatted: string,
   ): { minPriceWei: string; maxPriceWei: string } {
     const scale = BigNumber(10).pow(pool.base.decimals - pool.quote.decimals);
     const minPriceWei = scale.multipliedBy(minPriceFormatted).toString();
@@ -74,7 +74,7 @@ export function useNewAmbientPositionManager(pool: AmbientPool) {
   // function to set execution price (will not update any other values)
   function setUserExecutionPrice(price: string, isMin: boolean) {
     setState(
-      isMin ? { minExecutionPrice: price } : { maxExecutionPrice: price }
+      isMin ? { minExecutionPrice: price } : { maxExecutionPrice: price },
     );
   }
 
@@ -83,14 +83,14 @@ export function useNewAmbientPositionManager(pool: AmbientPool) {
     // use internal state to fetch prices
     const currentPrices = getWeiRangePrices(
       userInputs.minRangePrice,
-      userInputs.maxRangePrice
+      userInputs.maxRangePrice,
     );
     const newAmount = getDisplayTokenAmountFromRange(
       amount,
       isBase,
       currentPrices.minPriceWei,
       currentPrices.maxPriceWei,
-      pool
+      pool,
     );
     setState({
       amountBase: isBase ? amount : newAmount,
@@ -112,7 +112,7 @@ export function useNewAmbientPositionManager(pool: AmbientPool) {
       lastUpdateBase,
       newWeiPrices.minPriceWei,
       newWeiPrices.maxPriceWei,
-      pool
+      pool,
     );
     // set all new values
     setState({
@@ -128,17 +128,17 @@ export function useNewAmbientPositionManager(pool: AmbientPool) {
     // convert everything into wei
     const rangePrices = getWeiRangePrices(
       userInputs.minRangePrice,
-      userInputs.maxRangePrice
+      userInputs.maxRangePrice,
     );
     const executionPrices = getWeiRangePrices(
       userInputs.minExecutionPrice,
-      userInputs.maxExecutionPrice
+      userInputs.maxExecutionPrice,
     );
     const baseAmount = userInputs.lastUpdated === "base";
     const amountWei =
       convertToBigNumber(
         baseAmount ? userInputs.amountBase : userInputs.amountQuote,
-        baseAmount ? pool.base.decimals : pool.quote.decimals
+        baseAmount ? pool.base.decimals : pool.quote.decimals,
       ).data?.toString() ?? "0";
 
     // get ticks from range prices

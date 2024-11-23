@@ -25,10 +25,10 @@ export interface LendingHookReturn {
   transaction: {
     validateParams: (txParams: CTokenLendingTransactionParams) => Validation;
     newLendingFlow: (
-      txParams: CTokenLendingTransactionParams
+      txParams: CTokenLendingTransactionParams,
     ) => NewTransactionFlow;
     newClaimRewardsFlow: (
-      txParams: CLMClaimRewardsTxParams
+      txParams: CLMClaimRewardsTxParams,
     ) => NewTransactionFlow;
   };
 }

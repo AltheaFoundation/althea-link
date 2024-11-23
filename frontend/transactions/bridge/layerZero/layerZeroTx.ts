@@ -44,16 +44,16 @@ type LayerZeroTxParams = {
  * @returns {PromiseWithError<Transaction[]>} list of transactions to make or error
  */
 export async function bridgeLayerZeroTx(
-  txParams: LayerZeroTxParams
+  txParams: LayerZeroTxParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** get networks */
     const { data: fromNetwork, error: fromError } = getNetworkInfoFromChainId(
-      txParams.fromNetworkChainId
+      txParams.fromNetworkChainId,
     );
     if (fromError) throw fromError;
     const { data: toNetwork, error: toError } = getNetworkInfoFromChainId(
-      txParams.toNetworkChainId
+      txParams.toNetworkChainId,
     );
     if (toError) throw toError;
     /** validate params */
@@ -70,7 +70,7 @@ export async function bridgeLayerZeroTx(
     /** create address bytes */
     const toAddressBytes = new Web3().eth.abi.encodeParameter(
       "address",
-      txParams.ethSender
+      txParams.ethSender,
     );
 
     /** create adapter params */
@@ -79,7 +79,7 @@ export async function bridgeLayerZeroTx(
       const { data: needsAdapterParams, error: adapterParamsError } =
         await checkUseAdapterParams(
           txParams.token.chainId,
-          txParams.token.address
+          txParams.token.address,
         );
       if (adapterParamsError) throw adapterParamsError;
       useAdapterParams = needsAdapterParams;
@@ -87,7 +87,7 @@ export async function bridgeLayerZeroTx(
     const adapterParams = useAdapterParams
       ? createLzAdapterParams(
           txParams.ethSender,
-          isCantoChainId(txParams.toNetworkChainId)
+          isCantoChainId(txParams.toNetworkChainId),
         )
       : "0x";
 
@@ -98,7 +98,7 @@ export async function bridgeLayerZeroTx(
       txParams.token.address,
       txParams.ethSender,
       txParams.amount,
-      adapterParams
+      adapterParams,
     );
     if (gasError) throw gasError;
 
@@ -120,7 +120,7 @@ export async function bridgeLayerZeroTx(
               },
             ],
             [txParams.amount],
-            { address: txParams.token.address, name: "OFT Proxy" }
+            { address: txParams.token.address, name: "OFT Proxy" },
           );
         if (allowanceTxsError) throw allowanceTxsError;
         txList.push(...allowaneTxs);
@@ -130,7 +130,7 @@ export async function bridgeLayerZeroTx(
           await getTokenBalance(
             txParams.token.chainId,
             txParams.token.address,
-            txParams.ethSender
+            txParams.ethSender,
           );
         if (oftBalanceError) throw oftBalanceError;
         // if OFT balance is less than amount, then user needs to deposit
@@ -157,17 +157,17 @@ export async function bridgeLayerZeroTx(
           displayAmount(txParams.amount, txParams.token.decimals),
           fromNetwork.name,
           toNetwork.name,
-          getBridgeMethodInfo(BridgingMethod.LAYER_ZERO).name
+          getBridgeMethodInfo(BridgingMethod.LAYER_ZERO).name,
         ),
         {
           direction: isCantoChainId(txParams.toNetworkChainId) ? "in" : "out",
           amountFormatted: displayAmount(
             txParams.amount,
             txParams.token.decimals,
-            { symbol: txParams.token.symbol }
+            { symbol: txParams.token.symbol },
           ),
-        }
-      )
+        },
+      ),
     );
 
     /** return tx list */
@@ -178,7 +178,7 @@ export async function bridgeLayerZeroTx(
 }
 
 export function validateLayerZeroTxParams(
-  txParams: LayerZeroTxParams
+  txParams: LayerZeroTxParams,
 ): Validation {
   // check ethSender
   if (!isValidEthAddress(txParams.ethSender)) {
@@ -200,7 +200,7 @@ export function validateLayerZeroTxParams(
     "1",
     txParams.token.balance ?? "0",
     txParams.token.symbol,
-    txParams.token.decimals
+    txParams.token.decimals,
   );
 }
 
@@ -209,7 +209,7 @@ export function validateLayerZeroTxParams(
  */
 export async function checkLZBridgeStatus(
   fromChainId: number,
-  txHash: string
+  txHash: string,
 ): PromiseWithError<BridgeStatus> {
   try {
     // get network

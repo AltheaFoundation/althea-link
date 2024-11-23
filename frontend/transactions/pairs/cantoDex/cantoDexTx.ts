@@ -34,7 +34,7 @@ import { getTokenBalance } from "@/utils/tokens";
 import BigNumber from "bignumber.js";
 
 export async function cantoDexLPTx(
-  txParams: CantoDexTransactionParams
+  txParams: CantoDexTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     // validate params
@@ -58,7 +58,7 @@ export async function cantoDexLPTx(
 }
 
 export function validateCantoDexLPTxParams(
-  txParams: CantoDexTransactionParams
+  txParams: CantoDexTransactionParams,
 ): Validation {
   // validate eth account
   if (!isValidEthAddress(txParams.ethAccount)) {
@@ -96,14 +96,14 @@ export function validateCantoDexLPTxParams(
           "1",
           tokenBalance(token1),
           token1.symbol,
-          token1.decimals
+          token1.decimals,
         ),
         validateWeiUserInputTokenAmount(
           txParams.amounts.amount2,
           "1",
           tokenBalance(token2),
           token2.symbol,
-          token2.decimals
+          token2.decimals,
         ),
       ];
       if (token1Check.error) return token1Check;
@@ -123,10 +123,10 @@ export function validateCantoDexLPTxParams(
         "1",
         addTokenBalances(
           userDetails.supplyBalanceInUnderlying,
-          userDetails.balanceOfUnderlying
+          userDetails.balanceOfUnderlying,
         ),
         pair.symbol,
-        pair.decimals
+        pair.decimals,
       );
     }
     case CantoDexTxTypes.STAKE:
@@ -135,7 +135,7 @@ export function validateCantoDexLPTxParams(
         "1",
         userDetails.balanceOfUnderlying,
         pair.symbol,
-        pair.decimals
+        pair.decimals,
       );
     case CantoDexTxTypes.UNSTAKE:
       return validateWeiUserInputTokenAmount(
@@ -143,7 +143,7 @@ export function validateCantoDexLPTxParams(
         "1",
         userDetails.supplyBalanceInUnderlying,
         pair.symbol,
-        pair.decimals
+        pair.decimals,
       );
     default:
       return {
@@ -157,7 +157,7 @@ export function validateCantoDexLPTxParams(
  * TRANSACTION FLOWS TO USE FROM MAIN LP FUNCTION
  */
 async function addLiquidity(
-  txParams: CantoDexTransactionParams
+  txParams: CantoDexTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** validate params */
@@ -186,7 +186,7 @@ async function addLiquidity(
           },
         ],
         [txParams.amounts.amount1, txParams.amounts.amount2],
-        { address: routerAddress, name: "Router" }
+        { address: routerAddress, name: "Router" },
       );
     if (allowanceError) throw allowanceError;
 
@@ -212,7 +212,7 @@ async function addLiquidity(
 
     /** get deadline */
     const { data: timestamp, error: timestampError } = await getEVMTimestamp(
-      txParams.chainId
+      txParams.chainId,
     );
     if (timestampError) throw timestampError;
     const timeoutDeadline =
@@ -238,11 +238,14 @@ async function addLiquidity(
           txParams.pair,
           displayAmount(
             txParams.amounts.amount1,
-            txParams.pair.token1.decimals
+            txParams.pair.token1.decimals,
           ),
-          displayAmount(txParams.amounts.amount2, txParams.pair.token2.decimals)
-        )
-      )
+          displayAmount(
+            txParams.amounts.amount2,
+            txParams.pair.token2.decimals,
+          ),
+        ),
+      ),
     );
 
     /** check if also staking */
@@ -269,7 +272,7 @@ async function addLiquidity(
 }
 
 async function removeLiquidity(
-  txParams: CantoDexTransactionParams
+  txParams: CantoDexTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** check params */
@@ -291,7 +294,7 @@ async function removeLiquidity(
     // check if the amount is greater than LP balance and unstake enough for tx
     const unstakeAmount = subtractTokenBalances(
       txParams.amountLP,
-      txParams.pair.clmData.userDetails.balanceOfUnderlying
+      txParams.pair.clmData.userDetails.balanceOfUnderlying,
     );
 
     if (greaterThan(unstakeAmount, "0")) {
@@ -299,7 +302,7 @@ async function removeLiquidity(
       if (
         greaterThan(
           unstakeAmount,
-          txParams.pair.clmData.userDetails.supplyBalanceInUnderlying
+          txParams.pair.clmData.userDetails.supplyBalanceInUnderlying,
         )
       )
         throw new Error("user does not have enough LP to unstake");
@@ -329,7 +332,7 @@ async function removeLiquidity(
           },
         ],
         [txParams.amountLP],
-        { address: routerAddress, name: "Router" }
+        { address: routerAddress, name: "Router" },
       );
     if (allowanceError) throw allowanceError;
     // push allowance txs to the list (might be none)
@@ -350,7 +353,7 @@ async function removeLiquidity(
       txParams.pair.token1.address,
       txParams.pair.token2.address,
       txParams.pair.stable,
-      txParams.amountLP
+      txParams.amountLP,
     );
     if (quoteError) throw quoteError;
     const [amount1Min, amount2Min] = [
@@ -362,7 +365,7 @@ async function removeLiquidity(
 
     /** get deadline */
     const { data: timestamp, error: timestampError } = await getEVMTimestamp(
-      txParams.chainId
+      txParams.chainId,
     );
     if (timestampError) throw timestampError;
     const timeoutDeadline =
@@ -385,9 +388,9 @@ async function removeLiquidity(
         timeoutDeadline.toString(),
         TX_DESCRIPTIONS.REMOVE_LIQUIDITY(
           txParams.pair,
-          displayAmount(txParams.amountLP, txParams.pair.decimals)
-        )
-      )
+          displayAmount(txParams.amountLP, txParams.pair.decimals),
+        ),
+      ),
     );
     return NO_ERROR({ transactions: txList });
   } catch (err) {
@@ -397,7 +400,7 @@ async function removeLiquidity(
 
 // export this since used for extra tx flows
 export async function stakeCantoDexLPTx(
-  txParams: CantoDexTransactionParams
+  txParams: CantoDexTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     /** check params */
@@ -423,7 +426,7 @@ export async function stakeCantoDexLPTx(
           await getTokenBalance(
             txParams.chainId,
             txParams.pair.address,
-            txParams.ethAccount
+            txParams.ethAccount,
           );
         if (currBalanceError) throw currBalanceError;
         stakeAmount = currBalance.minus(prevLPTokens).toString();
@@ -479,7 +482,7 @@ const tokenBalance = (token: {
   balance?: string;
 }) => {
   const updatedBalance = BigNumber(token.balance ?? "0").minus(
-    "1000000000000000000"
+    "1000000000000000000",
   );
   const wcantoAddress = getCantoCoreAddress(Number(token.chainId), "wcanto");
   return areEqualAddresses(token.address, wcantoAddress ?? "")

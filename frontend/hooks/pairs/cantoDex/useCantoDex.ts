@@ -14,7 +14,7 @@ import {
 } from "@/transactions/pairs/cantoDex";
 
 export default function useCantoDex(
-  params: CantoDexHookInputParams
+  params: CantoDexHookInputParams,
 ): CantoDexHookReturn {
   ///
   /// Internal Hooks
@@ -26,7 +26,7 @@ export default function useCantoDex(
     async (): Promise<CantoDexPair[]> => {
       const { data, error } = await getCantoApiData<CantoDexPair[]>(
         params.chainId,
-        CANTO_DATA_API_ENDPOINTS.allPairs
+        CANTO_DATA_API_ENDPOINTS.allPairs,
       );
       if (error) throw error;
       // sort data to make it more predictable
@@ -36,13 +36,13 @@ export default function useCantoDex(
       onError: (error) => {
         console.log(error);
       },
-    }
+    },
   );
   // get balances of all the underlying tokens
   const underlyingTokenBalances = useTokenBalances(
     params.chainId,
     getUniqueUnderlyingTokensFromPairs(params.chainId, pairs ?? []),
-    params.userEthAddress
+    params.userEthAddress,
   );
   // since LP tokens are part of the clm, we need to query the cLP tokens in useLending
   // need the cLP tokens, user position, and transaction functions
@@ -57,7 +57,7 @@ export default function useCantoDex(
   // attach clm data with pairs
   const pairsWithUserCTokens = pairs?.map((pair) => {
     const cLPToken = cLPTokens?.find(
-      (cToken) => cToken.address === pair.cLpAddress
+      (cToken) => cToken.address === pair.cLpAddress,
     );
     // just return the pair if no clm data
     if (!cLPToken) return pair;

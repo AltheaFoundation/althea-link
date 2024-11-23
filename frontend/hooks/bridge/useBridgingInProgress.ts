@@ -16,7 +16,7 @@ export default function useBridgingInProgess() {
   const inProgressTxs = useMemo(() => {
     // get all flows
     const flows = txStore?.getUserTransactionFlows(
-      signer?.account.address ?? ""
+      signer?.account.address ?? "",
     );
     if (!flows) return { pending: [], completed: [] };
 
@@ -44,10 +44,10 @@ export default function useBridgingInProgess() {
 
     return {
       pending: pendingTxs.sort(
-        (a, b) => Number(b.timestamp ?? 0) - Number(a.timestamp ?? 0)
+        (a, b) => Number(b.timestamp ?? 0) - Number(a.timestamp ?? 0),
       ),
       completed: completedTxs.sort(
-        (a, b) => Number(b.timestamp ?? 0) - Number(a.timestamp ?? 0)
+        (a, b) => Number(b.timestamp ?? 0) - Number(a.timestamp ?? 0),
       ),
     };
   }, [signer?.account.address, txStore]);
@@ -58,7 +58,7 @@ export default function useBridgingInProgess() {
         signer?.account.address ?? "",
         tx.flowId,
         tx.txIndex,
-        { showInProgress: false }
+        { showInProgress: false },
       );
     });
   }
@@ -67,7 +67,7 @@ export default function useBridgingInProgess() {
     flowId: string,
     txIndex: number,
     lastStatus: TransactionStatus,
-    timeLeft?: number
+    timeLeft?: number,
   ) {
     txStore?.setTxBridgeStatus(signer?.account.address ?? "", flowId, txIndex, {
       lastStatus,

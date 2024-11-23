@@ -15,7 +15,7 @@ import { CTokenLendingTxTypes } from "@/transactions/lending/types";
 export function cTokenBorrowLimit(
   cToken: CTokenWithUserData,
   currentLiquidity: string,
-  percent: number = 100
+  percent: number = 100,
 ): ReturnWithError<string> {
   // just convert liquidity to token amount
   const { data: maxTokenBorrow, error: maxTokenBorrowError } =
@@ -37,7 +37,7 @@ export function cTokenBorrowLimit(
 export function cTokenWithdrawLimit(
   cToken: CTokenWithUserData,
   currentLiquidity: string,
-  percent: number = 100
+  percent: number = 100,
 ): ReturnWithError<string> {
   try {
     // make sure we have user data
@@ -69,7 +69,7 @@ export function cTokenWithdrawLimit(
     // minumum between supplyBalance and totalLimit
     const { data: userLimit, error: minError } = minOf(
       totalLimit.toString(),
-      cToken.userDetails.supplyBalanceInUnderlying
+      cToken.userDetails.supplyBalanceInUnderlying,
     );
     if (minError) throw minError;
     // CF is scaled to 10 ^ 18
@@ -91,7 +91,7 @@ export function maxAmountForLendingTx(
   txType: CTokenLendingTxTypes,
   cToken: CTokenWithUserData,
   position: UserLMPosition,
-  percent: number = 100
+  percent: number = 100,
 ): string {
   if (!cToken.userDetails) return "0";
   switch (txType) {
@@ -103,7 +103,7 @@ export function maxAmountForLendingTx(
       const maxAmount = cTokenWithdrawLimit(
         cToken,
         position.liquidity,
-        percent
+        percent,
       );
       if (maxAmount.error) return "0";
       return maxAmount.data;
@@ -114,7 +114,7 @@ export function maxAmountForLendingTx(
     case CTokenLendingTxTypes.REPAY:
       const minRepay = minOf(
         cToken.userDetails.borrowBalance,
-        cToken.userDetails.balanceOfUnderlying
+        cToken.userDetails.balanceOfUnderlying,
       );
       if (minRepay.error) return "0";
       return minRepay.data;

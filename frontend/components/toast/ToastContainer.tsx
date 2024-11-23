@@ -37,7 +37,7 @@ export const ToastContainer = ({ children }: { children: React.ReactNode }) => {
 
   const dismiss = (id: string) => {
     setToasts((currentToasts) =>
-      currentToasts.filter((toast) => toast.toastID !== id)
+      currentToasts.filter((toast) => toast.toastID !== id),
     );
   };
 
@@ -55,7 +55,7 @@ export const ToastContainer = ({ children }: { children: React.ReactNode }) => {
             />
           ))}
         </div>,
-        document.querySelector("#toast-root")!
+        document.querySelector("#toast-root")!,
       )}
     </ToastContext.Provider>
   );

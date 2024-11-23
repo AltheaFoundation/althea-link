@@ -105,7 +105,7 @@ export type NewTransactionFlowPlaceholder = {
 
 // create const to use for placeholder flows to show in modal
 export const TX_PLACEHOLDER = (
-  placeholder: NewTransactionFlowPlaceholder
+  placeholder: NewTransactionFlowPlaceholder,
 ): TransactionWithStatus => ({
   tx: {
     feTxType: CantoFETxType.NONE,

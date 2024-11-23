@@ -1,8 +1,12 @@
-import { DeliverTxResponse, isDeliverTxSuccess, StdFee } from '@cosmjs/stargate';
-import { useChain } from '@cosmos-kit/react';
-import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
-import { useState } from 'react';
-import { SigningStargateClient } from '@cosmjs/stargate';
+import {
+  DeliverTxResponse,
+  isDeliverTxSuccess,
+  StdFee,
+} from "@cosmjs/stargate";
+import { useChain } from "@cosmos-kit/react";
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import { useState } from "react";
+import { SigningStargateClient } from "@cosmjs/stargate";
 
 interface Msg {
   typeUrl: string;
@@ -17,17 +21,17 @@ export interface TxOptions {
   simulate?: boolean;
 }
 
-
-
 export const useTx = (chainName: string) => {
-  const { address, getSigningStargateClient, estimateFee } = useChain(chainName);
+  const { address, getSigningStargateClient, estimateFee } =
+    useChain(chainName);
 
   const [isSigning, setIsSigning] = useState(false);
 
   const tx = async (msgs: Msg[], options: TxOptions) => {
     if (!address) {
-     
-      return options.returnError ? { error: 'Wallet not connected' } : undefined;
+      return options.returnError
+        ? { error: "Wallet not connected" }
+        : undefined;
     }
     setIsSigning(true);
     let client: SigningStargateClient;
@@ -38,28 +42,29 @@ export const useTx = (chainName: string) => {
         address,
         msgs,
         options.fee || (await estimateFee(msgs)),
-        options.memo || ''
+        options.memo || "",
       );
 
-     
       setIsSigning(true);
       const res: DeliverTxResponse = await client.broadcastTx(
-        Uint8Array.from(TxRaw.encode(signed).finish())
+        Uint8Array.from(TxRaw.encode(signed).finish()),
       );
       if (isDeliverTxSuccess(res)) {
         if (options.onSuccess) options.onSuccess();
         setIsSigning(false);
-       
+
         return options.returnError ? { error: null } : undefined;
       } else {
         setIsSigning(false);
-       
-        return options.returnError ? { error: res?.rawLog || 'Unknown error' } : undefined;
+
+        return options.returnError
+          ? { error: res?.rawLog || "Unknown error" }
+          : undefined;
       }
     } catch (e: any) {
-      console.error('Failed to broadcast or simulate: ', e);
+      console.error("Failed to broadcast or simulate: ", e);
       setIsSigning(false);
-     
+
       return options.returnError ? { error: e.message } : undefined;
     } finally {
       setIsSigning(false);

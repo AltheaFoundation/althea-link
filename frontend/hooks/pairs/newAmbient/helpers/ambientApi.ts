@@ -23,14 +23,14 @@ const AMBIENT_API_URL = (chainId: number) => {
  */
 async function getAmbientApiData<T>(
   chainId: number,
-  endpointSuffix: string
+  endpointSuffix: string,
 ): PromiseWithError<T> {
   if (!isCantoChainId(chainId) || chainId === 7701) {
     return NEW_ERROR("getAmbientApiData: chainId not supported");
   }
   // get response from api
   const { data, error } = await tryFetch<T>(
-    AMBIENT_API_URL(chainId) + endpointSuffix
+    AMBIENT_API_URL(chainId) + endpointSuffix,
   );
 
   if (error) {
@@ -67,13 +67,13 @@ export function queryAmbientPoolStats(
   chainId: number,
   base: string,
   quote: string,
-  poolIdx: number
+  poolIdx: number,
 ): PromiseWithError<AmbientPoolStatsReturn> {
   return getAmbientApiData<AmbientPoolStatsReturn>(
     chainId,
     `/gcgo/pool_stats?chainId=${chainIdToHex(
-      chainId
-    )}&base=${base}&quote=${quote}&poolIdx=${poolIdx}`
+      chainId,
+    )}&base=${base}&quote=${quote}&poolIdx=${poolIdx}`,
   );
 }
 
@@ -99,13 +99,13 @@ export function queryAmbientPoolLiquidityCurve(
   chainid: number,
   base: string,
   quote: string,
-  poolIdx: number
+  poolIdx: number,
 ): PromiseWithError<LiquidityCurveReturn> {
   return getAmbientApiData<LiquidityCurveReturn>(
     chainid,
     `/gcgo/pool_liq_curve?chainId=${chainIdToHex(
-      chainid
-    )}&base=${base}&quote=${quote}&poolIdx=${poolIdx}`
+      chainid,
+    )}&base=${base}&quote=${quote}&poolIdx=${poolIdx}`,
   );
 }
 
@@ -146,13 +146,13 @@ export function querySinglePosition(
   quote: string,
   poolIdx: number,
   lowerTick: number,
-  upperTick: number
+  upperTick: number,
 ): PromiseWithError<SinglePositionReturn> {
   return getAmbientApiData<SinglePositionReturn>(
     chainId,
     `/gcgo/position_stats?chainId=${chainIdToHex(
-      chainId
-    )}&user=${userEthAddress}&base=${base}&quote=${quote}&poolIdx=${poolIdx}&bidTick=${lowerTick}&askTick=${upperTick}`
+      chainId,
+    )}&user=${userEthAddress}&base=${base}&quote=${quote}&poolIdx=${poolIdx}&bidTick=${lowerTick}&askTick=${upperTick}`,
   );
 }
 
@@ -191,32 +191,32 @@ export function queryPoolPositions(
   userEthAddress: string,
   base: string,
   quote: string,
-  poolIdx: number
+  poolIdx: number,
 ): PromiseWithError<PoolPositionsReturn> {
   return getAmbientApiData<PoolPositionsReturn>(
     chainId,
     `/gcgo/user_pool_positions?chainId=${chainIdToHex(
-      chainId
-    )}&user=${userEthAddress}&base=${base}&quote=${quote}&poolIdx=${poolIdx}`
+      chainId,
+    )}&user=${userEthAddress}&base=${base}&quote=${quote}&poolIdx=${poolIdx}`,
   );
 }
 
 export function queryAllUserPositions(
   chainId: number,
-  userEthAddress: string
+  userEthAddress: string,
 ): PromiseWithError<PoolPositionsReturn> {
   return getAmbientApiData<PoolPositionsReturn>(
     chainId,
     `/gcgo/user_positions?chainId=${chainIdToHex(
-      chainId
-    )}&user=${userEthAddress}`
+      chainId,
+    )}&user=${userEthAddress}`,
   );
 }
 
 export async function queryUserAmbientRewards(
   chainId: number,
   userEthAddress: string,
-  ledgerAddress: string
+  ledgerAddress: string,
 ): PromiseWithError<string> {
   try {
     // get ambient rewards ledger contract

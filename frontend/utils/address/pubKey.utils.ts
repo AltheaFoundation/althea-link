@@ -9,7 +9,7 @@ import { getAltheaAccountMetaData } from "../cosmos";
  */
 export async function checkCantoPubKey(
   altheaAddress: string,
-  chainId: string | number
+  chainId: string | number,
 ): PromiseWithError<boolean> {
   try {
     // get canto account

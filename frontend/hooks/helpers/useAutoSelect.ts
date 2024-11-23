@@ -10,13 +10,13 @@ import { useEffect } from "react";
 export default function useAutoSelect(
   items: Array<{ id: string } | string>,
   setter: (itemId: string) => void,
-  override?: string
+  override?: string,
 ) {
   useEffect(() => {
     if (items && items.length > 0) {
       return override &&
         items.some((item) =>
-          typeof item === "string" ? item === override : item.id === override
+          typeof item === "string" ? item === override : item.id === override,
         )
         ? setter(override)
         : setter(typeof items[0] === "string" ? items[0] : items[0].id);

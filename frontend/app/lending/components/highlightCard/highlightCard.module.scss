@@ -35,19 +35,18 @@
   transform: translate(16%, 16%);
 }
 
-
 @media screen and (max-width: 768px) {
-    .header  {
-       flex-wrap: wrap;
-       gap: 1rem;
-    }
+  .header {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
 
-    .amounts {
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
+  .amounts {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
 
-    .logo {
-        transform: translate(20%, -60%);
-    }
+  .logo {
+    transform: translate(20%, -60%);
+  }
 }

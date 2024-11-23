@@ -16,7 +16,7 @@ export function validateWeiUserInputTokenAmount(
   minAmountWei: string,
   maxAmountWei: string,
   tokenSymbol: string,
-  tokenDecimals: number
+  tokenDecimals: number,
 ): Validation {
   /** Try to convert input to big number no decimals */
   const { data: bnAmount, error: bnError } = convertToBigNumber(amountWei);
@@ -37,7 +37,7 @@ export function validateWeiUserInputTokenAmount(
         formatBalance(maxAmountWei, tokenDecimals, {
           commify: true,
         }),
-        tokenSymbol
+        tokenSymbol,
       ),
     };
   }
@@ -50,7 +50,7 @@ export function validateWeiUserInputTokenAmount(
         formatBalance(minAmountWei, tokenDecimals, {
           commify: true,
         }),
-        tokenSymbol
+        tokenSymbol,
       ),
     };
   }
@@ -72,12 +72,12 @@ export function validateNonWeiUserInputTokenAmount(
   minAmount: string,
   maxAmount: string,
   tokenSymbol: string,
-  tokenDecimals: number
+  tokenDecimals: number,
 ): Validation {
   /** Try to convert input to big number */
   const { data: bnInputAmount, error: bnError } = convertToBigNumber(
     userInputAmount,
-    tokenDecimals
+    tokenDecimals,
   );
   if (bnError) {
     // user input is not a number
@@ -89,6 +89,6 @@ export function validateNonWeiUserInputTokenAmount(
     minAmount,
     maxAmount,
     tokenSymbol,
-    tokenDecimals
+    tokenDecimals,
   );
 }

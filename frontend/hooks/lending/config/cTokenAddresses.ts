@@ -47,7 +47,7 @@ export type LendingMarketType = "lending" | "lp";
  */
 export function getCTokenAddressesFromChainId(
   chainId: number,
-  lmType: LendingMarketType
+  lmType: LendingMarketType,
 ): string[] | null {
   switch (lmType) {
     case "lending":
@@ -68,11 +68,11 @@ export function getCTokenAddressesFromChainId(
 type CTokenAddressesByType = keyof typeof C_TOKEN_ADDRESSES_BY_TYPE.mainnet;
 export function getCTokensFromType(
   chainId: number,
-  type: "cNote"
+  type: "cNote",
 ): string | null;
 export function getCTokensFromType(
   chainId: number,
-  type: "rwas" | "lps" | "stableCoins"
+  type: "rwas" | "lps" | "stableCoins",
 ): string[] | null;
 
 /**
@@ -83,7 +83,7 @@ export function getCTokensFromType(
  */
 export function getCTokensFromType(
   chainId: number,
-  type: CTokenAddressesByType
+  type: CTokenAddressesByType,
 ): readonly string[] | string | null {
   switch (chainId) {
     case CANTO_MAINNET_EVM.chainId:

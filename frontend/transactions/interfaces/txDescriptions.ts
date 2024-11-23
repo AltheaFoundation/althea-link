@@ -20,7 +20,7 @@ export const TX_DESCRIPTIONS = {
     amount: string,
     fromNetwork: string,
     toNetwork: string,
-    method: string
+    method: string,
   ) => ({
     title: `Send ${tokenSymbol} to ${toNetwork} from ${fromNetwork}`,
     description: `Send ${amount} ${tokenSymbol} to ${toNetwork} from ${fromNetwork} through ${method}`,
@@ -40,7 +40,7 @@ export const TX_DESCRIPTIONS = {
   CTOKEN_LENDING: (
     txType: CTokenLendingTxTypes,
     tokenSymbol: string,
-    amount: string
+    amount: string,
   ) => ({
     title: `${txType} ${tokenSymbol}`,
     description: `${txType} ${amount} ${tokenSymbol} ${
@@ -67,7 +67,7 @@ export const TX_DESCRIPTIONS = {
   MULTI_STAKE: (
     validatorAmount: string,
     amount: string,
-    undelegate: boolean
+    undelegate: boolean,
   ) => ({
     title: `${
       undelegate ? "Undelegate from" : "Delegating to"
@@ -79,7 +79,7 @@ export const TX_DESCRIPTIONS = {
   REDELEGATE: (
     validatorName: string,
     newValidatorName: string,
-    amount: string
+    amount: string,
   ) => ({
     title: `Redelegate from ${validatorName} to ${newValidatorName}`,
     description: `Redelegate ${amount} ALTHEA from ${validatorName} to ${newValidatorName}`,
@@ -100,7 +100,7 @@ export const TX_DESCRIPTIONS = {
   OFT_DEPOSIT_OR_WITHDRAW: (
     tokenSymbol: string,
     amount: string,
-    deposit: boolean
+    deposit: boolean,
   ) => ({
     title: `${deposit ? "Wrap" : "Unwrap"} ${tokenSymbol}`,
     description: `${deposit ? "Wrap" : "Unwrap"} ${amount} ${tokenSymbol} ${

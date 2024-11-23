@@ -58,7 +58,7 @@ type ContractName = keyof typeof CANTO_CORE_ADDRESSES;
 type ChainType = "mainnet" | "testnet";
 export function getCantoCoreAddress(
   chainId: number,
-  contractName: ContractName
+  contractName: ContractName,
 ): `0x${string}` | null {
   // make sure on canto chain id
   let chainType: ChainType;

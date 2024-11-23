@@ -30,7 +30,7 @@ import { getAllUserCLMData } from "@/hooks/lending/helpers/userClmData";
 import { isCantoChainId } from "@/utils/networks";
 
 export async function cTokenLendingTx(
-  txParams: CTokenLendingTransactionParams
+  txParams: CTokenLendingTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   /** use try catch, throw all errors along the way */
   try {
@@ -49,7 +49,7 @@ export async function cTokenLendingTx(
       /**  get comptroller address */
       const comptrollerAddress = getCantoCoreAddress(
         txParams.chainId,
-        "comptroller"
+        "comptroller",
       );
       if (!comptrollerAddress) throw new Error("chainId not supported");
 
@@ -65,8 +65,8 @@ export async function cTokenLendingTx(
             isCollateralize,
             TX_DESCRIPTIONS.CTOKEN_COLLATERALIZE(
               txParams.cToken.underlying.symbol,
-              isCollateralize
-            )
+              isCollateralize,
+            ),
           ),
         ],
       });
@@ -102,7 +102,7 @@ export async function cTokenLendingTx(
             },
           ],
           [approvalAmount],
-          { address: txParams.cToken.address, name: "Lending Market" }
+          { address: txParams.cToken.address, name: "Lending Market" },
         );
       if (allowanceError) throw allowanceError;
       // push allowance txs to the list (might be none)
@@ -115,7 +115,7 @@ export async function cTokenLendingTx(
     const txDescription = TX_DESCRIPTIONS.CTOKEN_LENDING(
       txParams.txType,
       txParams.cToken.underlying.symbol,
-      displayAmount(txParams.amount, txParams.cToken.underlying.decimals)
+      displayAmount(txParams.amount, txParams.cToken.underlying.decimals),
     );
 
     // check if max is needed (only for repay and withdraw)
@@ -133,8 +133,8 @@ export async function cTokenLendingTx(
             txParams.ethAccount,
             txParams.cToken.address,
             txParams.cToken.userDetails.balanceOfCToken,
-            txDescription
-          )
+            txDescription,
+          ),
         );
         // return tx list
         return NO_ERROR({ transactions: txList });
@@ -144,7 +144,7 @@ export async function cTokenLendingTx(
         txParams.txType === CTokenLendingTxTypes.REPAY &&
         greaterThan(
           txParams.cToken.userDetails.balanceOfUnderlying,
-          txParams.cToken.userDetails.borrowBalance
+          txParams.cToken.userDetails.borrowBalance,
         )
       ) {
         // change the amount to max uint
@@ -160,8 +160,8 @@ export async function cTokenLendingTx(
         txParams.cToken.address,
         isCanto,
         txParams.amount,
-        txDescription
-      )
+        txDescription,
+      ),
     );
 
     /** check if token should be enabled as collateral */
@@ -173,7 +173,7 @@ export async function cTokenLendingTx(
       // get comptroller address
       const comptrollerAddress = getCantoCoreAddress(
         txParams.chainId,
-        "comptroller"
+        "comptroller",
       );
       if (!comptrollerAddress) throw new Error("chainId not supported");
       txList.push(
@@ -185,9 +185,9 @@ export async function cTokenLendingTx(
           true,
           TX_DESCRIPTIONS.CTOKEN_COLLATERALIZE(
             txParams.cToken.underlying.symbol,
-            true
-          )
-        )
+            true,
+          ),
+        ),
       );
     }
 
@@ -200,7 +200,7 @@ export async function cTokenLendingTx(
 
 // validates parameters for tx
 export function validateCTokenLendingTxParams(
-  txParams: CTokenLendingTransactionParams
+  txParams: CTokenLendingTransactionParams,
 ): Validation {
   // tx must be on a canto chain
   if (!isCantoChainId(txParams.chainId)) {
@@ -229,7 +229,7 @@ export function validateCTokenLendingTxParams(
     txParams.txType,
     txParams.cToken,
     txParams.userPosition,
-    100
+    100,
   );
   // validate amount
   return validateWeiUserInputTokenAmount(
@@ -239,19 +239,19 @@ export function validateCTokenLendingTxParams(
       ? percentOfAmount(maxAmount, 98.8).data
       : maxAmount,
     txParams.cToken.underlying.symbol,
-    txParams.cToken.underlying.decimals
+    txParams.cToken.underlying.decimals,
   );
 }
 
 // validates parameters for retry tx
 export async function validateCTokenLendingRetryTxParams(
-  txParams: CTokenLendingTransactionParams
+  txParams: CTokenLendingTransactionParams,
 ): PromiseWithError<Validation> {
   // position may not be the same as the one in the store, so we need to validate it
   const { data: currentPosition, error } = await getAllUserCLMData(
     txParams.ethAccount,
     txParams.chainId,
-    []
+    [],
   );
   if (error || !currentPosition.position) {
     return NEW_ERROR("validateCTokenLendingRetryTxParams", error);
@@ -261,6 +261,6 @@ export async function validateCTokenLendingRetryTxParams(
     validateCTokenLendingTxParams({
       ...txParams,
       userPosition: currentPosition.position,
-    })
+    }),
   );
 }

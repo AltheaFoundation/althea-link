@@ -12,7 +12,7 @@ import { convertTokenAmountToNote } from "@/utils/math";
  */
 export function getLMTotalsFromCTokens(
   userCTokens: CTokenWithUserData[],
-  compAccrued: string = "0"
+  compAccrued: string = "0",
 ): ReturnWithError<{
   totalSupply: string;
   totalBorrow: string;
@@ -34,11 +34,11 @@ export function getLMTotalsFromCTokens(
       // get the values in $note
       let { data: supplyInNote, error: supplyError } = convertTokenAmountToNote(
         cToken.userDetails.supplyBalanceInUnderlying,
-        cToken.price
+        cToken.price,
       );
       let { data: borrowInNote, error: borrowError } = convertTokenAmountToNote(
         cToken.userDetails.borrowBalance,
-        cToken.price
+        cToken.price,
       );
       // check for errors (if error, set amount to 0 and continue)
       if (supplyError) {
@@ -56,10 +56,10 @@ export function getLMTotalsFromCTokens(
       // }
       // get the apr in $note
       const supplyAprInNote = new BigNumber(
-        Number(cToken.supplyApr)
+        Number(cToken.supplyApr),
       ).multipliedBy(supplyInNote);
       const borrowAprInNote = new BigNumber(cToken.borrowApr).multipliedBy(
-        borrowInNote
+        borrowInNote,
       );
       // add to totals
       return {
@@ -76,7 +76,7 @@ export function getLMTotalsFromCTokens(
       totalBorrow: new BigNumber(0),
       totalRewards: new BigNumber(compAccrued),
       cummulativeApr: new BigNumber(0),
-    }
+    },
   );
   // to get average apr, we want sum(supplyApr * supplyBalance - borrowApr * borrowBalance) / (supplyBalance - borrowBalance)
   // cummulative apr = supplyApr * supply - borrowApr * borrow (All in $NOTE)
@@ -84,7 +84,7 @@ export function getLMTotalsFromCTokens(
   // check if division by zero will happen
   if (totals.totalSupply.isGreaterThan(0)) {
     avgApr = totals.cummulativeApr.div(
-      totals.totalSupply.minus(totals.totalBorrow)
+      totals.totalSupply.minus(totals.totalBorrow),
     );
   }
   return errorInLoop

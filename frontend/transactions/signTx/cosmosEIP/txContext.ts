@@ -12,7 +12,7 @@ type Context = {
 };
 export async function generateCosmosEIP712TxContext(
   chainId: number,
-  ethAddress: string
+  ethAddress: string,
 ): PromiseWithError<Context> {
   if (isCantoChainId(chainId)) {
     return generateCantoEIP712TxContext(chainId, ethAddress);
@@ -24,7 +24,7 @@ export async function generateCosmosEIP712TxContext(
 
 async function generateCantoEIP712TxContext(
   chainId: number,
-  ethAddress: string
+  ethAddress: string,
 ): PromiseWithError<Context> {
   try {
     /** convert eth address to address on cosmos chain */
@@ -38,7 +38,7 @@ async function generateCantoEIP712TxContext(
     /** sender object */
     const { data: senderObj, error: senderObjError } = await getCantoSenderObj(
       altheaAddress,
-      chainId
+      chainId,
     );
 
     if (senderObjError) throw senderObjError;
@@ -54,7 +54,7 @@ async function generateCantoEIP712TxContext(
 }
 
 async function generateGravityEIP712TxContext(
-  ethAddress: string
+  ethAddress: string,
 ): PromiseWithError<Context> {
   try {
     /** convert eth address to gravity address */

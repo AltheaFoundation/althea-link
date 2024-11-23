@@ -77,7 +77,7 @@ describe("liquidity limits tests", () => {
       const { data: maxBorrow, error: maxBorrowError } = cTokenBorrowLimit(
         p.cToken,
         p.currentLiquidity,
-        p.percent
+        p.percent,
       );
       if (p.error) {
         expect(maxBorrowError).not.toBeNull();
@@ -244,11 +244,7 @@ describe("liquidity limits tests", () => {
     ];
     params.forEach((p) => {
       const { data: maxWithdraw, error: maxWithdrawError } =
-        cTokenWithdrawLimit(
-          p.cToken,
-          p.currentLiquidity,
-          p.percent
-        );
+        cTokenWithdrawLimit(p.cToken, p.currentLiquidity, p.percent);
       if (p.error) {
         expect(maxWithdrawError).not.toBeNull();
         expect(maxWithdraw).toBeNull();
@@ -289,7 +285,11 @@ describe("liquidity limits tests", () => {
     ];
     params.forEach((p) => {
       expect(
-        maxAmountForLendingTx(CTokenLendingTxTypes.SUPPLY, p.cToken, p.position)
+        maxAmountForLendingTx(
+          CTokenLendingTxTypes.SUPPLY,
+          p.cToken,
+          p.position,
+        ),
       ).toBe(p.expected);
     });
   });
@@ -335,7 +335,7 @@ describe("liquidity limits tests", () => {
     ];
     params.forEach((p) => {
       expect(
-        maxAmountForLendingTx(CTokenLendingTxTypes.REPAY, p.cToken, p.position)
+        maxAmountForLendingTx(CTokenLendingTxTypes.REPAY, p.cToken, p.position),
       ).toBe(p.expected);
     });
   });
@@ -391,7 +391,11 @@ describe("liquidity limits tests", () => {
     ];
     params.forEach((p) => {
       expect(
-        maxAmountForLendingTx(CTokenLendingTxTypes.BORROW, p.cToken, p.position)
+        maxAmountForLendingTx(
+          CTokenLendingTxTypes.BORROW,
+          p.cToken,
+          p.position,
+        ),
       ).toBe(p.expected);
     });
   });
@@ -471,8 +475,8 @@ describe("liquidity limits tests", () => {
         maxAmountForLendingTx(
           CTokenLendingTxTypes.WITHDRAW,
           p.cToken,
-          p.position
-        )
+          p.position,
+        ),
       ).toBe(p.expected);
     });
   });

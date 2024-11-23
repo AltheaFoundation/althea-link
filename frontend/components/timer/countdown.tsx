@@ -44,7 +44,7 @@ const Countdown = ({
         hours.toString(),
         minutes.toString(),
         seconds.toString(),
-        timeFormat
+        timeFormat,
       )}
     </>
   );
@@ -55,7 +55,7 @@ function formatTime(
   hours: string,
   minutes: string,
   seconds: string,
-  timeFormat?: TimeFormat
+  timeFormat?: TimeFormat,
 ) {
   switch (timeFormat) {
     case "h m s":

@@ -21,7 +21,7 @@ import { WalletClient } from "wagmi";
  * @returns {PromiseWithError<string>} txHash of transaction or error
  */
 export async function signEVMTransaction(
-  tx: Transaction
+  tx: Transaction,
 ): PromiseWithError<`0x${string}`> {
   try {
     if (tx.type !== "EVM")
@@ -32,14 +32,14 @@ export async function signEVMTransaction(
 
     // get signer
     const { data: signer, error: signerError } = await getEvmSignerOnChainId(
-      tx.chainId
+      tx.chainId,
     );
     if (signerError) throw signerError;
 
     // check that signer is the account that is supposed to sign the transaction
     if (signer.account.address !== tx.fromAddress)
       throw Error(
-        TX_SIGN_ERRORS.INCORRECT_SIGNER(tx.fromAddress, signer.account.address)
+        TX_SIGN_ERRORS.INCORRECT_SIGNER(tx.fromAddress, signer.account.address),
       );
 
     // get contract instance
@@ -51,7 +51,7 @@ export async function signEVMTransaction(
 
     // estimate gas so that metamask can show gas fee
     const gasEstimate = await contractInstance.methods[tx.method](
-      ...(tx.params as [])
+      ...(tx.params as []),
     ).estimateGas({
       from: tx.fromAddress,
       value: tx.value,
@@ -59,12 +59,12 @@ export async function signEVMTransaction(
     // make sure gas is at least base limit (21,000), then over estimate by 50%
     const { data: gasLimit, error: gasError } = percentOfAmount(
       gasEstimate < 21000 ? "21000" : gasEstimate.toString(),
-      150
+      150,
     );
     if (gasError) throw gasError;
 
     const transaction = await contractInstance.methods[tx.method](
-      ...(tx.params as [])
+      ...(tx.params as []),
     ).send({
       from: tx.fromAddress,
       value: tx.value,
@@ -88,7 +88,7 @@ export async function signEVMTransaction(
  * @returns {PromiseWithError<WalletClient>} signer or error
  */
 export async function getEvmSignerOnChainId(
-  chainId: number
+  chainId: number,
 ): PromiseWithError<WalletClient> {
   try {
     // get current network

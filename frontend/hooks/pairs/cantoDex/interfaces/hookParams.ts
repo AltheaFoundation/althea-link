@@ -16,7 +16,7 @@ export interface CantoDexHookReturn {
   transaction: {
     validateParams: (txParams: CantoDexTransactionParams) => Validation;
     newCantoDexLPFlow: (
-      params: CantoDexTransactionParams
+      params: CantoDexTransactionParams,
     ) => NewTransactionFlow;
     newClaimRewardsFlow: () => NewTransactionFlow;
   };

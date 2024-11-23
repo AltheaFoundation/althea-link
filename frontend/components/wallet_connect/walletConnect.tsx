@@ -2,22 +2,19 @@
 import styles from "./walletconnect.module.scss";
 import { useCallback, useEffect, useState } from "react";
 import Analytics from "@/provider/analytics";
-import { ConnectButton, WalletButton } from "@rainbow-me/rainbowkit";
-import { useBalance } from "wagmi";
+import { WalletButton } from "@rainbow-me/rainbowkit";
+import { useBalance, useAccount, useDisconnect } from "wagmi";
 import { usePathname } from "next/navigation";
 import useCantoSigner from "@/hooks/helpers/useCantoSigner";
 import { useChain } from "@cosmos-kit/react";
 import { truncateAddress } from "@/config/networks/helpers";
 import Button from "../button/button";
 import Modal from "../modal/modal";
-import { useAccount } from "wagmi";
 import { altheaToEth } from "@gravity-bridge/address-converter";
-import { useDisconnect } from "wagmi";
 import Image from "next/image";
 import Text from "../text";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
 import Icon from "../icon/icon";
-import { useAccountModal } from "@rainbow-me/rainbowkit";
 
 export const WalletConnect = ({
   isOpen,
@@ -181,9 +178,8 @@ export const WalletConnect = ({
             themed
           />
           <div className={styles.cosmos_balance}>
-            {balance?.data?.formatted.split(".")[0] +
-              "." +
-              (balance?.data?.formatted.split(".")[1] || "").slice(0, 4)}{" "}
+            {balance?.data?.formatted &&
+              Number(balance.data.formatted).toFixed(1)}{" "}
             {isMobile ? "" : "ALTHEA"}
           </div>
           <Icon
@@ -231,6 +227,7 @@ export const WalletConnect = ({
                         {browser.map(
                           ({ walletInfo: { name, prettyName, logo } }) => (
                             <div
+                              key={name}
                               className={styles.wallet_item}
                               onClick={() => onWalletClicked(name)}
                             >
@@ -290,28 +287,25 @@ export const WalletConnect = ({
                 <div className={`${styles.wallet_list_container}`}>
                   <div className={`${styles.wallet_list}`}>
                     <WalletConnectButtons />
-                    {!isMobile && (
-                      <>
-                        <Text size={"x-sm"} weight="500" color="#cfcfcf">
-                          COSMOS
-                        </Text>
-                        {browser.map(
-                          ({ walletInfo: { name, prettyName, logo } }) => (
-                            <div
-                              className={styles.wallet_item}
-                              onClick={() => onWalletClicked(name)}
-                            >
-                              <Image
-                                width={32}
-                                height={32}
-                                src={logo?.toString() ?? ""}
-                                alt={prettyName}
-                              />
-                              <Text size={"lg"}> {prettyName}</Text>
-                            </div>
-                          )
-                        )}
-                      </>
+                    <Text size={"x-sm"} weight="500" color="#cfcfcf">
+                      COSMOS
+                    </Text>
+                    {mobile.map(
+                      ({ walletInfo: { name, prettyName, logo } }) => (
+                        <div
+                          key={name}
+                          className={styles.wallet_item}
+                          onClick={() => onWalletClicked(name)}
+                        >
+                          <Image
+                            width={32}
+                            height={32}
+                            src={logo?.toString() ?? ""}
+                            alt={prettyName}
+                          />
+                          <Text size={"lg"}> {prettyName}</Text>
+                        </div>
+                      )
                     )}
                   </div>
                 </div>
@@ -362,7 +356,7 @@ export const WalletConnect = ({
                   size="sm"
                   font="macan-font"
                 >
-                  {balance.data?.formatted} ALTHEA
+                  {Number(balance.data.formatted).toFixed(1)} ALTHEA
                 </Text>
               )}
             </div>
@@ -583,6 +577,7 @@ export const HiddenWalletConnect = ({
                         {browser.map(
                           ({ walletInfo: { name, prettyName, logo } }) => (
                             <div
+                              key={name}
                               className={styles.wallet_item}
                               onClick={() => onWalletClicked(name)}
                             >
@@ -642,28 +637,25 @@ export const HiddenWalletConnect = ({
                 <div className={`${styles.wallet_list_container}`}>
                   <div className={`${styles.wallet_list}`}>
                     <WalletConnectButtons />
-                    {!isMobile && (
-                      <>
-                        <Text size={"x-sm"} weight="500" color="#cfcfcf">
-                          COSMOS
-                        </Text>
-                        {browser.map(
-                          ({ walletInfo: { name, prettyName, logo } }) => (
-                            <div
-                              className={styles.wallet_item}
-                              onClick={() => onWalletClicked(name)}
-                            >
-                              <Image
-                                width={32}
-                                height={32}
-                                src={logo?.toString() ?? ""}
-                                alt={prettyName}
-                              />
-                              <Text size={"lg"}> {prettyName}</Text>
-                            </div>
-                          )
-                        )}
-                      </>
+                    <Text size={"x-sm"} weight="500" color="#cfcfcf">
+                      COSMOS
+                    </Text>
+                    {mobile.map(
+                      ({ walletInfo: { name, prettyName, logo } }) => (
+                        <div
+                          key={name}
+                          className={styles.wallet_item}
+                          onClick={() => onWalletClicked(name)}
+                        >
+                          <Image
+                            width={32}
+                            height={32}
+                            src={logo?.toString() ?? ""}
+                            alt={prettyName}
+                          />
+                          <Text size={"lg"}> {prettyName}</Text>
+                        </div>
+                      )
                     )}
                   </div>
                 </div>
@@ -712,7 +704,7 @@ export const HiddenWalletConnect = ({
                   size="sm"
                   font="macan-font"
                 >
-                  {balance.data?.formatted} ALTHEA
+                  {Number(balance.data.formatted).toFixed(1)} ALTHEA
                 </Text>
               )}
             </div>

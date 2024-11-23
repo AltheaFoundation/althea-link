@@ -22,7 +22,7 @@ export async function estimateOFTSendGasFee(
   oftAddress: string,
   account: string,
   amount: string,
-  adapterParams: string // encoded bytes string
+  adapterParams: string, // encoded bytes string
 ): PromiseWithError<BigNumber> {
   try {
     // get contract instance
@@ -33,7 +33,7 @@ export async function estimateOFTSendGasFee(
 
     const toAddressBytes = new Web3().eth.abi.encodeParameter(
       "address",
-      account
+      account,
     );
     const gas = await oftContract.methods
       .estimateSendFee(
@@ -41,7 +41,7 @@ export async function estimateOFTSendGasFee(
         toAddressBytes,
         amount,
         false,
-        adapterParams
+        adapterParams,
       )
       .call();
     return NO_ERROR(new BigNumber(gas[0] as string));
@@ -52,14 +52,14 @@ export async function estimateOFTSendGasFee(
 
 export async function checkUseAdapterParams(
   chainId: number,
-  oftAddress: string
+  oftAddress: string,
 ): PromiseWithError<boolean> {
   try {
     // get contract instance
     const { data: oftContract, error } = newContractInstance<typeof OFT_ABI>(
       chainId,
       oftAddress,
-      OFT_ABI
+      OFT_ABI,
     );
     if (error) throw error;
 
@@ -74,7 +74,7 @@ export async function checkUseAdapterParams(
 
 export function createLzAdapterParams(
   ethAddress: string,
-  toCanto: boolean
+  toCanto: boolean,
 ): string {
   if (toCanto) {
     // airdrop native canto to user
@@ -94,7 +94,7 @@ export function createLzAdapterParams(
       {
         value: ethAddress, // address for dst chain
         type: "address",
-      }
+      },
     );
   }
   // return default adapter params
@@ -106,6 +106,6 @@ export function createLzAdapterParams(
     {
       value: 200000, // gas amount
       type: "uint",
-    }
+    },
   );
 }

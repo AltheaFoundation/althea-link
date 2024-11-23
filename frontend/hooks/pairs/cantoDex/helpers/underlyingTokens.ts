@@ -11,7 +11,7 @@ import { CantoDexPair } from "../interfaces/pairs";
  */
 export function getUniqueUnderlyingTokensFromPairs(
   chainId: number,
-  pairs: CantoDexPair[]
+  pairs: CantoDexPair[],
 ): ERC20Token[] {
   // get wcanto address to define a native token
   const wcantoAddress = getCantoCoreAddress(chainId, "wcanto");

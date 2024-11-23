@@ -15,7 +15,7 @@ import { asyncCallWithRetry, sleep } from "@/utils/async";
 export async function generateCantoPublicKeyWithTx(
   chainId: number,
   ethAddress: string,
-  cantoAddress: string
+  cantoAddress: string,
 ): PromiseWithError<Transaction[]> {
   try {
     // get canto cosmos network
@@ -49,18 +49,18 @@ export async function generateCantoPublicKeyWithTx(
         async (): PromiseWithError<boolean> => {
           const { data, error } = await getCantoBalance(
             cantoNetwork.chainId,
-            cantoAddress
+            cantoAddress,
           );
           if (error) return NEW_ERROR("generateCantoPublicKeyWithTx", error);
           if (new BigNumber(data).lte("300000000000000000")) {
             return NEW_ERROR(
               "generateCantoPublicKeyWithTx",
-              "not enough canto"
+              "not enough canto",
             );
           }
           return NO_ERROR(true);
         },
-        { numTries: 3, sleepTime: 3000 }
+        { numTries: 3, sleepTime: 3000 },
       );
       if (sentCantoError) throw sentCantoError;
     }
@@ -69,7 +69,7 @@ export async function generateCantoPublicKeyWithTx(
         chainId,
         ethAddress,
         cantoAddress,
-        TX_DESCRIPTIONS.GENERATE_PUBLIC_KEY()
+        TX_DESCRIPTIONS.GENERATE_PUBLIC_KEY(),
       ),
     ]);
   } catch (err) {
@@ -81,7 +81,7 @@ const _generatePubKeyTx = (
   chainId: number,
   ethSender: string,
   cantoSender: string,
-  description: TransactionDescription
+  description: TransactionDescription,
 ): Transaction => {
   const pubKeyTx = createMsgsSend({
     fromAddress: cantoSender,

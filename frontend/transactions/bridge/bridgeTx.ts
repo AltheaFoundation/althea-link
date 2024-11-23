@@ -35,7 +35,7 @@ import { GRAVITY_BRIGDE_EVM } from "@/config/networks";
  * @returns {PromiseWithError<TxCreatorFunctionReturn>} list of transactions to make or error
  */
 export async function cantoBridgeTx(
-  txParams: BridgeTransactionParams
+  txParams: BridgeTransactionParams,
 ): PromiseWithError<TxCreatorFunctionReturn> {
   // figure out which type of bridge to use from the method type
   switch (txParams.method) {
@@ -52,14 +52,14 @@ export async function cantoBridgeTx(
     default: {
       return NEW_ERROR(
         "cantoBridgeTx",
-        TX_PARAM_ERRORS.PARAM_INVALID("method")
+        TX_PARAM_ERRORS.PARAM_INVALID("method"),
       );
     }
   }
 }
 
 export function validateCantoBridgeTxParams(
-  txParams: BridgeTransactionParams
+  txParams: BridgeTransactionParams,
 ): Validation {
   // make sure token is present
   if (!txParams.token) {
@@ -92,7 +92,7 @@ export function validateCantoBridgeTxParams(
 export async function getBridgeStatus(
   type: BridgingMethod,
   chainId: number,
-  txHash: string
+  txHash: string,
 ): PromiseWithError<BridgeStatus> {
   switch (type) {
     case BridgingMethod.GRAVITY_BRIDGE:

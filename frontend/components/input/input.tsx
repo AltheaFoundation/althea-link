@@ -65,7 +65,7 @@ const Input = (props: InputProps) => {
           props.tokenMin,
           props.tokenMax,
           "",
-          props.decimals
+          props.decimals,
         )
       : { error: false };
 

@@ -17,10 +17,10 @@ export interface AmbientHookReturn {
   transaction: {
     validateParams: (txParams: AmbientTransactionParams) => Validation;
     newAmbientPoolTxFlow: (
-      txParams: AmbientTransactionParams
+      txParams: AmbientTransactionParams,
     ) => NewTransactionFlow;
     newAmbientClaimRewardsFlow: (
-      txParams: AmbientClaimRewardsTxParams
+      txParams: AmbientClaimRewardsTxParams,
     ) => NewTransactionFlow;
   };
 }

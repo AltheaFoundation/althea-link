@@ -224,7 +224,7 @@ export default function usePool() {
 
   /** CANTO DEX */
   const sortedCantoDexPairs = pairs.allCantoDex.sort((a, b) =>
-    a.symbol.localeCompare(b.symbol)
+    a.symbol.localeCompare(b.symbol),
   );
   function validateCantoDexTx(params: Partial<CantoDexTransactionParams>) {
     return transactions.validateCantoDexLPParams({

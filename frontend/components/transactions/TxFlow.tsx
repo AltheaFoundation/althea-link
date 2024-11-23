@@ -120,7 +120,7 @@ const TxFlow = (props: Props) => {
                   onClick={() => {
                     if (props.txFlow?.analyticsTransactionFlowInfo) {
                       Analytics.actions.events.transactionFlows.tokensImported(
-                        props.txFlow?.analyticsTransactionFlowInfo
+                        props.txFlow?.analyticsTransactionFlowInfo,
                       );
                     }
                     for (const token of props.txFlow?.tokenMetadata ?? []) {
@@ -141,7 +141,7 @@ const TxFlow = (props: Props) => {
                 onClick={() => {
                   if (props.txFlow?.analyticsTransactionFlowInfo) {
                     const timeDifferenceInSeconds = Math.floor(
-                      (new Date().getTime() - props.txFlow.createdAt) / 1000
+                      (new Date().getTime() - props.txFlow.createdAt) / 1000,
                     );
                     Analytics.actions.events.transactionFlows.retry({
                       ...props.txFlow?.analyticsTransactionFlowInfo,

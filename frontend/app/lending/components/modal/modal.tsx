@@ -33,12 +33,12 @@ interface Props {
     validateParams: (
       amount: string,
       txType: CTokenLendingTxTypes,
-      max: boolean
+      max: boolean,
     ) => Validation;
     performTx: (
       amount: string,
       txType: CTokenLendingTxTypes,
-      max: boolean
+      max: boolean,
     ) => void;
   };
 }
@@ -56,7 +56,7 @@ export const LendingModal = (props: Props) => {
     // if the token is not $Note, show the balances in terms of note as well
     const cNoteAddress = getCantoCoreAddress(
       cToken.userDetails?.chainId ?? 0,
-      "cNote"
+      "cNote",
     );
     const isNote = areEqualAddresses(cToken.address, cNoteAddress ?? "");
     return (
@@ -109,12 +109,12 @@ export const LendingModal = (props: Props) => {
       validateParams: (
         amount: string,
         txType: CTokenLendingTxTypes,
-        max: boolean
+        max: boolean,
       ) => Validation;
       performTx: (
         amount: string,
         txType: CTokenLendingTxTypes,
-        max: boolean
+        max: boolean,
       ) => void;
     };
   }) => {
@@ -127,7 +127,7 @@ export const LendingModal = (props: Props) => {
       false,
     ];
     const collateralTxValidation = transaction.validateParams(
-      ...collateralParams
+      ...collateralParams,
     );
 
     return (
@@ -201,14 +201,14 @@ export const LendingModal = (props: Props) => {
       validateParams: (
         amount: string,
         txType: CTokenLendingTxTypes,
-        max: boolean
+        max: boolean,
       ) => Validation;
       performTx: (
         amount: string,
         txType: CTokenLendingTxTypes,
-        max: boolean
+        max: boolean,
       ) => void;
-    }
+    },
   ) {
     const [maxClicked, setMaxClicked] = useState(false);
     const [amount, setAmount] = useState("");
@@ -335,7 +335,7 @@ export const LendingModal = (props: Props) => {
                         true,
                         CTokenLendingTxTypes.SUPPLY,
                         props.position,
-                        props.transaction
+                        props.transaction,
                       ),
                     },
                     {
@@ -345,7 +345,7 @@ export const LendingModal = (props: Props) => {
                         true,
                         CTokenLendingTxTypes.WITHDRAW,
                         props.position,
-                        props.transaction
+                        props.transaction,
                       ),
                     },
                   ]
@@ -357,7 +357,7 @@ export const LendingModal = (props: Props) => {
                         false,
                         CTokenLendingTxTypes.BORROW,
                         props.position,
-                        props.transaction
+                        props.transaction,
                       ),
                     },
                     {
@@ -367,7 +367,7 @@ export const LendingModal = (props: Props) => {
                         false,
                         CTokenLendingTxTypes.REPAY,
                         props.position,
-                        props.transaction
+                        props.transaction,
                       ),
                     },
                   ]
@@ -487,7 +487,7 @@ const BorrowLimits = ({
         const limitAmount = formatBalance(
           percentOfAmount(maxBorrow, limit).data ?? "0",
           decimals,
-          { precision: decimals }
+          { precision: decimals },
         );
         return (
           <Text

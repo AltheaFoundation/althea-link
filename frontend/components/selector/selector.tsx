@@ -45,7 +45,7 @@ const Selector = (props: Props) => {
   }, [isOpen]);
 
   const zeroBalanceTokenIndex = props.items.findIndex(
-    (item) => item.secondary === "0"
+    (item) => item.secondary === "0",
   );
   return (
     <>
@@ -172,7 +172,7 @@ const Selector = (props: Props) => {
                       />
                     </div>
                   </Container>
-                )
+                ),
             )}
           </div>
 
@@ -240,7 +240,7 @@ const Selector = (props: Props) => {
                       {item.name} {item.secondary}
                     </Text>
                   </Container>
-                ))
+                )),
               )}
           </Container>
         </div>

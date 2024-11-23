@@ -7,7 +7,7 @@ import { CantoDexTransactionParams, CantoDexTxTypes } from ".";
  * @returns {NewTransactionFlow} New transaction flow
  */
 export const newCantoDexLPFlow = (
-  txParams: CantoDexTransactionParams
+  txParams: CantoDexTransactionParams,
 ): NewTransactionFlow => {
   return {
     title: txParams.txType + " " + txParams.pair.symbol,

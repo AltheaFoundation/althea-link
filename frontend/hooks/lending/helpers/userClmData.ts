@@ -21,7 +21,7 @@ import { CANTO_DATA_API_ENDPOINTS } from "@/config/api";
 export async function getAllUserCLMData(
   userEthAddress: string,
   chainId: number,
-  cTokenAddresses: string[]
+  cTokenAddresses: string[],
 ): PromiseWithError<{
   cTokens: CTokenWithUserData[];
   position?: UserLMPosition;
@@ -37,7 +37,7 @@ export async function getAllUserCLMData(
   }
   // remove cTokens from general data that are not in the cTokenAddresses list
   const filteredCTokens = generalCTokens.data.filter((cToken) =>
-    listIncludesAddress(cTokenAddresses, cToken.address)
+    listIncludesAddress(cTokenAddresses, cToken.address),
   );
 
   // return general data if no user
@@ -54,7 +54,7 @@ export async function getAllUserCLMData(
   // since user is present, combine the data
   const combinedCTokenData = filteredCTokens.map((cToken) => {
     const userCTokenDetails = userLMData.data.cTokens.find((userCToken) =>
-      areEqualAddresses(userCToken.cTokenAddress, cToken.address)
+      areEqualAddresses(userCToken.cTokenAddress, cToken.address),
     );
     if (userCTokenDetails) {
       return {
@@ -67,7 +67,7 @@ export async function getAllUserCLMData(
   // get total user positions
   const { data: positionTotals, error: positionError } = getLMTotalsFromCTokens(
     combinedCTokenData,
-    userLMData.data.compAccrued
+    userLMData.data.compAccrued,
   );
   if (positionError) {
     return NO_ERROR({

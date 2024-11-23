@@ -55,7 +55,7 @@ const formattedChains: Chain[] = [...Object.values(EVM_CHAINS)].map(
             }
           : contractInfo,
     } as Chain;
-  }
+  },
 );
 
 const { chains, publicClient } = configureChains(formattedChains, [

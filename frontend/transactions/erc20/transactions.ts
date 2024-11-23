@@ -22,12 +22,12 @@ export async function createApprovalTxs(
   ethAccount: string,
   tokens: { address: string; symbol: string }[],
   amounts: string[],
-  spender: { address: string; name: string }
+  spender: { address: string; name: string },
 ): PromiseWithError<Transaction[]> {
   // make param checks
   if (tokens.length !== amounts.length) {
     return NEW_ERROR(
-      "createApprovalTxs::tokenAddresses and amounts must be same length"
+      "createApprovalTxs::tokenAddresses and amounts must be same length",
     );
   }
   /** create tx list */
@@ -40,9 +40,9 @@ export async function createApprovalTxs(
         token.address,
         ethAccount,
         spender.address,
-        amounts[index]
-      )
-    )
+        amounts[index],
+      ),
+    ),
   );
   if (allowanceChecks.some((check) => check.error)) {
     return NEW_ERROR("createApprovalTxs: error getting token allowances");
@@ -63,8 +63,8 @@ export async function createApprovalTxs(
             tokens[index].address,
             spender.address,
             "0",
-            TX_DESCRIPTIONS.APPROVE_TOKEN(tokens[index].symbol, spender.name)
-          )
+            TX_DESCRIPTIONS.APPROVE_TOKEN(tokens[index].symbol, spender.name),
+          ),
         );
       }
       txList.push(
@@ -74,8 +74,8 @@ export async function createApprovalTxs(
           tokens[index].address,
           spender.address,
           amounts[index],
-          TX_DESCRIPTIONS.APPROVE_TOKEN(tokens[index].symbol, spender.name)
-        )
+          TX_DESCRIPTIONS.APPROVE_TOKEN(tokens[index].symbol, spender.name),
+        ),
       );
     }
   });

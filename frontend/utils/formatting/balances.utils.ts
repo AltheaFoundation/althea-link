@@ -10,7 +10,7 @@ import BigNumber from "bignumber.js";
  */
 export function convertToBigNumber(
   amount: string,
-  decimals: number = 0
+  decimals: number = 0,
 ): ReturnWithError<BigNumber> {
   try {
     // set this to avoid scientific notation
@@ -59,7 +59,7 @@ interface FormatBalanceOptions {
 export function displayAmount(
   amount: string | BigNumber,
   decimals: number,
-  options?: FormatBalanceOptions
+  options?: FormatBalanceOptions,
 ) {
   const defaultOptions: FormatBalanceOptions = {
     symbol: undefined,
@@ -88,7 +88,7 @@ export function truncateNumber(number: number, decimalPlaces: number) {
 export function formatBalance(
   amount: string | BigNumber,
   decimals: number,
-  options?: FormatBalanceOptions
+  options?: FormatBalanceOptions,
 ): string {
   // set this to avoid scientific notation
   BigNumber.set({ EXPONENTIAL_AT: 60 });
@@ -113,7 +113,7 @@ export function formatBalance(
   // make sure truncation is not negative or greater than decimals
   truncateAt = Math.max(
     0,
-    Math.min(truncateAt, decimals < 0 ? truncateAt : decimals)
+    Math.min(truncateAt, decimals < 0 ? truncateAt : decimals),
   );
   // convert amount to string
   const stringAmount = formattedAmount.toString();
@@ -127,7 +127,7 @@ export function formatBalance(
       ? stringAmount
       : stringAmount.slice(
           0,
-          decimalIndex + truncateAt + (truncateAt === 0 ? 0 : 1)
+          decimalIndex + truncateAt + (truncateAt === 0 ? 0 : 1),
         );
   // if short flag is turned on, return the short balance
   let finalAmount = truncatedAmount;
@@ -144,7 +144,7 @@ export function formatBalance(
     } else {
       const { shortAmount, suffix: _suffix } = formatBigBalance(
         truncatedAmount,
-        precision
+        precision,
       );
       finalAmount = shortAmount;
       suffix = _suffix;
@@ -167,7 +167,7 @@ export function formatBalance(
  */
 function formatBigBalance(
   amount: string,
-  precision: number = 2
+  precision: number = 2,
 ): {
   shortAmount: string;
   suffix: string;

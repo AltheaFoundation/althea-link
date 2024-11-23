@@ -12,7 +12,7 @@ import BigNumber from "bignumber.js";
  */
 export function convertTokenAmountToNote(
   tokenAmount: string,
-  price: string
+  price: string,
 ): ReturnWithError<BigNumber> {
   // convert everything to bigNumber for precision
   const [amountBN, priceBN] = [
@@ -38,7 +38,7 @@ export function convertTokenAmountToNote(
  */
 export function convertNoteAmountToToken(
   noteAmount: string,
-  price: string
+  price: string,
 ): ReturnWithError<BigNumber> {
   // convert everything to bigNumber for precision
   const [amountBN, priceBN] = [
@@ -62,7 +62,7 @@ export function convertNoteAmountToToken(
  */
 export function percentOfAmount(
   amount: string,
-  percent: number
+  percent: number,
 ): ReturnWithError<string> {
   // convert everything to bigNumber for precision
   const amountBN = convertToBigNumber(amount);
@@ -99,7 +99,7 @@ export function addTokenBalances(amount1: string, amount2: string): string {
  */
 export function subtractTokenBalances(
   amount1: string,
-  amount2: string
+  amount2: string,
 ): string {
   const [amount1BN, amount2BN] = [
     convertToBigNumber(amount1),
@@ -139,7 +139,7 @@ export function greaterThan(
   amount1: string,
   amount2: string,
   decimals1?: number,
-  decimals2?: number
+  decimals2?: number,
 ): boolean {
   const [amount1BN, amount2BN] = [
     convertToBigNumber(amount1, decimals1 ? -decimals1 : decimals1),
@@ -157,7 +157,7 @@ export function greaterThan(
  */
 export function minOf(
   amount1: string,
-  amount2: string
+  amount2: string,
 ): ReturnWithError<string> {
   const [amount1BN, amount2BN] = [
     convertToBigNumber(amount1),
