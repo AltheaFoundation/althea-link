@@ -15,6 +15,7 @@
         "address": "0x56C03B8C4FA80Ba37F5A7b60CAAAEF749bB5b220",
         "name": "Althea",
         "symbol": "ALTHEA",
+        "nativeName": "althea",
         "decimals": 18,
         "icon": "/tokens/althea.svg",
         "ibcDenom": "ibc/5B7B34C07642FAEAC81C04C488D5D622D7900600A9B37426EB0FA0B4D30AA9CE",

@@ -37,12 +37,12 @@ interface StakingModalParams {
   txValidation: (
     amount: string,
     selectedTx: StakingTxTypes,
-    validatorToRedelegate: Validator | null | undefined,
+    validatorToRedelegate: Validator | null | undefined
   ) => Validation;
   onConfirm: (
     amount: string,
     selectedTx: StakingTxTypes,
-    validatorToRedelegate: Validator | null | undefined,
+    validatorToRedelegate: Validator | null | undefined
   ) => void;
   validators: Validator[];
 }
@@ -50,7 +50,7 @@ export const StakingModal = (props: StakingModalParams) => {
   const [inputAmount, setInputAmount] = useState("");
 
   const [selectedTx, setSelectedTx] = useState<StakingTxTypes>(
-    StakingTxTypes.DELEGATE,
+    StakingTxTypes.DELEGATE
   );
   const [activeTab, setActiveTab] = useState<
     "delegate" | "undelegate" | "redelegate"
@@ -92,7 +92,7 @@ export const StakingModal = (props: StakingModalParams) => {
           .filter(
             (validator) =>
               validator.operator_address !==
-                props.validator?.operator_address && validator.jailed == false,
+                props.validator?.operator_address && validator.jailed == false
           )
           .map((validator) => {
             return {
@@ -109,7 +109,7 @@ export const StakingModal = (props: StakingModalParams) => {
               : -1;
           })
           .filter(
-            (e) => levenshteinDistance(searchQuery, e.description.moniker) < 6,
+            (e) => levenshteinDistance(searchQuery, e.description.moniker) < 6
           )
           .map((validator) => {
             return {
@@ -135,7 +135,7 @@ export const StakingModal = (props: StakingModalParams) => {
   const userDelegationBalance = props?.validator?.userDelegation.balance;
   const maxDelegateAmount = () => {
     const updatedBalance = BigNumber(props.cantoBalance).minus(
-      DELEGATE_FEE.amount,
+      DELEGATE_FEE.amount
     );
     return updatedBalance.isNegative() ? "0" : updatedBalance.toString();
   };
@@ -148,7 +148,7 @@ export const StakingModal = (props: StakingModalParams) => {
       validatorToRedelegate,
       props.cantoBalance,
       userDelegationBalance,
-    ],
+    ]
   );
 
   const handleCosmosStakeTx = async () => {
@@ -192,6 +192,8 @@ export const StakingModal = (props: StakingModalParams) => {
             },
           });
           break;
+        default:
+          throw new Error(`Unsupported transaction type: ${selectedTx}`);
       }
 
       if (!msg) return;
@@ -243,7 +245,7 @@ export const StakingModal = (props: StakingModalParams) => {
   const validateCosmosInput = (
     amount: string,
     selectedTx: StakingTxTypes,
-    validatorToRedelegate?: Validator | null,
+    validatorToRedelegate?: Validator | null
   ) => {
     if (!amount || Number(amount) <= 0) {
       return true;
@@ -303,7 +305,7 @@ export const StakingModal = (props: StakingModalParams) => {
               {displayAmount(
                 userDelegationBalance ? userDelegationBalance : "0",
                 18,
-                { short: false, precision: 2 },
+                { short: false, precision: 2 }
               )}
             </Text>
           </div>
@@ -354,8 +356,8 @@ export const StakingModal = (props: StakingModalParams) => {
             onChange={(selectedValidator) => {
               setValidatorToRedelegate(
                 props.validators.find(
-                  (e) => e.operator_address == selectedValidator,
-                ),
+                  (e) => e.operator_address == selectedValidator
+                )
               );
             }}
             searchProps={{
@@ -427,7 +429,7 @@ export const StakingModal = (props: StakingModalParams) => {
                   props.onConfirm(
                     inputAmount,
                     selectedTx,
-                    validatorToRedelegate,
+                    validatorToRedelegate
                   )
           }
           disabled={
@@ -436,7 +438,7 @@ export const StakingModal = (props: StakingModalParams) => {
               ? validateCosmosInput(
                   inputAmount,
                   selectedTx,
-                  validatorToRedelegate,
+                  validatorToRedelegate
                 )
               : txValidation.error)
           }

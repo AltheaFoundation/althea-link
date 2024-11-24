@@ -33,7 +33,7 @@ export const RWARow = ({
   <Text theme="primary-dark" key={cRwa.name + "cToken.balance"}>
     {displayAmount(
       cRwa.userDetails?.balanceOfUnderlying ?? "0",
-      cRwa.underlying.decimals,
+      cRwa.underlying.decimals
     )}
   </Text>,
   <Text theme="primary-dark" key={cRwa.name + "cToken.supplyApr"}>
@@ -42,7 +42,7 @@ export const RWARow = ({
   <Text theme="primary-dark" key={cRwa.name + "cToken.ubalance"}>
     {displayAmount(
       cRwa.userDetails?.supplyBalanceInUnderlying ?? "0",
-      cRwa.underlying.decimals,
+      cRwa.underlying.decimals
     )}
   </Text>,
   <Text theme="primary-dark" key={cRwa.name + "cToken.CF"}>
@@ -104,7 +104,7 @@ export const StableCoinRow = ({
   >
     {displayAmount(
       cStableCoin.userDetails?.balanceOfUnderlying ?? "0",
-      cStableCoin.underlying.decimals,
+      cStableCoin.underlying.decimals
     )}
   </Text>,
   <Container
@@ -151,7 +151,7 @@ export const StableCoinRow = ({
   >
     {displayAmount(
       cStableCoin.userDetails?.supplyBalanceInUnderlying ?? "0",
-      cStableCoin.underlying.decimals,
+      cStableCoin.underlying.decimals
     )}
   </Text>,
   //   <Text size="sm" theme="primary-dark" key={cStableCoin.name + "cToken.CF"}>
@@ -171,7 +171,7 @@ export const StableCoinRow = ({
   >
     {displayAmount(
       cStableCoin.userDetails?.borrowBalance ?? "0",
-      cStableCoin.decimals,
+      cStableCoin.decimals
     )}
   </Text>,
   <Text

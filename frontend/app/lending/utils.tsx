@@ -32,12 +32,12 @@ interface LendingComboReturn {
     performTx: (
       amount: string,
       txType: CTokenLendingTxTypes,
-      max: boolean,
+      max: boolean
     ) => void;
     validateParams: (
       amount: string,
       txType: CTokenLendingTxTypes,
-      max: boolean,
+      max: boolean
     ) => Validation;
   };
   selection: {
@@ -70,18 +70,18 @@ export function useLendingCombo(props: LendingComboProps): LendingComboReturn {
 
   const rwaAddressList = getCTokensFromType(chainId, "rwas");
   const rwas = cTokens.filter((cToken) =>
-    listIncludesAddress(rwaAddressList ?? [], cToken.address),
+    listIncludesAddress(rwaAddressList ?? [], cToken.address)
   );
 
   const stableCoinAddressList = getCTokensFromType(chainId, "stableCoins");
   const stableCoins = cTokens.filter((cToken) =>
-    listIncludesAddress(stableCoinAddressList ?? [], cToken.address),
+    listIncludesAddress(stableCoinAddressList ?? [], cToken.address)
   );
 
   // relevant user position data to show in UI
   const maxAccountLiquidity = addTokenBalances(
     position.totalBorrow,
-    position.liquidity,
+    position.liquidity
   );
   const outstandingDebt = position.totalBorrow;
   const percentLimitUsed =
@@ -98,7 +98,7 @@ export function useLendingCombo(props: LendingComboProps): LendingComboReturn {
     const bnValueOfAllRWA = rwas.reduce((acc, rwa) => {
       const { data: addedSupply, error } = convertTokenAmountToNote(
         rwa.underlyingTotalSupply,
-        rwa.price,
+        rwa.price
       );
       if (error) return acc;
       return acc.plus(addedSupply);
@@ -130,7 +130,7 @@ export function useLendingCombo(props: LendingComboProps): LendingComboReturn {
   function lendingTx(
     amount: string,
     txType: CTokenLendingTxTypes,
-    max: boolean,
+    max: boolean
   ) {
     if (!selection.selectedCToken || !signer) return;
     const txFlow = transaction.newLendingFlow({
@@ -151,7 +151,7 @@ export function useLendingCombo(props: LendingComboProps): LendingComboReturn {
   const validateParams = (
     amount: string,
     txType: CTokenLendingTxTypes,
-    max: boolean,
+    max: boolean
   ): Validation => {
     if (!selection.selectedCToken || !signer)
       return { error: true, reason: TX_PARAM_ERRORS.PARAM_MISSING("Signer") };

@@ -45,7 +45,7 @@ const Tabs = (props: Props) => {
               activeTab === index && styles.active,
               activeTab === index && "active",
               index === props.tabs.length - 1 && styles.last,
-              index === 0 && styles.first,
+              index === 0 && styles.first
             )}
             style={isMobile && tab.hideOnMobile ? { display: "none" } : {}}
           >

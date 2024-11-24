@@ -14,7 +14,7 @@ import { getAnalyticsStakingInfo } from "@/utils/analytics";
 export const GenerateValidatorTableRow = (
   validator: Validator,
   index: number,
-  onDelegate: (validator: Validator) => void,
+  onDelegate: (validator: Validator) => void
 ) => [
   <Container key={`name_${index}`}>
     <Text font="macan-font">{validator.rank}</Text>
@@ -50,7 +50,7 @@ export const GenerateValidatorTableRow = (
     <Button
       onClick={() => {
         Analytics.actions.events.staking.delegateClicked(
-          getAnalyticsStakingInfo(validator, "0"),
+          getAnalyticsStakingInfo(validator, "0")
         );
         onDelegate(validator);
       }}
@@ -64,7 +64,7 @@ export const GenerateValidatorTableRow = (
 export const GenerateMyStakingTableRow = (
   userStakedValidator: ValidatorWithDelegations,
   index: number,
-  onDelegate: (validator: Validator) => void,
+  onDelegate: (validator: Validator) => void
 ) => [
   <Container key={`name_${index}`}>
     <Text font="macan-font">{userStakedValidator?.description.moniker}</Text>
@@ -123,8 +123,8 @@ export const GenerateMyStakingTableRow = (
         Analytics.actions.events.staking.manageClicked(
           getAnalyticsStakingInfo(
             userStakedValidator,
-            userStakedValidator.userDelegation.balance,
-          ),
+            userStakedValidator.userDelegation.balance
+          )
         );
         onDelegate(userStakedValidator);
       }}
@@ -136,7 +136,7 @@ export const GenerateMyStakingTableRow = (
 
 export const GenerateUnbondingDelegationsTableRow = (
   userStakedValidator: UnbondingDelegation,
-  index: number,
+  index: number
 ) => [
   <Container key={`name_${index}`}>
     <Text font="macan-font">{userStakedValidator.validator_address}</Text>

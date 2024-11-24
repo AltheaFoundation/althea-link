@@ -15,7 +15,7 @@ export const GenerateValidatorTableRow = (
   validator: Validator,
   index: number,
   onDelegate: (validator: Validator) => void,
-  isMobile: boolean,
+  isMobile: boolean
 ) => [
   !isMobile && (
     <Container key={`rank_${index}`}>
@@ -74,7 +74,7 @@ export const GenerateValidatorTableRow = (
       <Button
         onClick={() => {
           Analytics.actions.events.staking.delegateClicked(
-            getAnalyticsStakingInfo(validator, "0"),
+            getAnalyticsStakingInfo(validator, "0")
           );
           onDelegate(validator);
         }}
@@ -90,7 +90,7 @@ export const GenerateMyStakingTableRow = (
   userStakedValidator: ValidatorWithDelegations,
   index: number,
   onDelegate: (validator: Validator) => void,
-  isMobile: boolean,
+  isMobile: boolean
 ) => [
   <Container
     key={`name_${index}`}
@@ -177,8 +177,8 @@ export const GenerateMyStakingTableRow = (
           Analytics.actions.events.staking.manageClicked(
             getAnalyticsStakingInfo(
               userStakedValidator,
-              userStakedValidator.userDelegation.balance,
-            ),
+              userStakedValidator.userDelegation.balance
+            )
           );
           onDelegate(userStakedValidator);
         }}
@@ -192,7 +192,7 @@ export const GenerateMyStakingTableRow = (
 export const GenerateUnbondingDelegationsTableRow = (
   userStakedValidator: UnbondingDelegation,
   index: number,
-  isMobile?: boolean,
+  isMobile?: boolean
 ) => {
   const completionDate = new Date(userStakedValidator.completion_date);
   return [

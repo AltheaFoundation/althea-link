@@ -123,10 +123,10 @@ const AddLiquidity = ({
   const positionValues = positionManager.displayPositionValues();
   const defaultExecutionPrice = defaultPriceRangeFormatted(pool, "DEFAULT");
   const [minExecutionPrice, setMinExecutionPrice] = useState(
-    defaultExecutionPrice.minPriceFormatted,
+    defaultExecutionPrice.minPriceFormatted
   );
   const [maxExecutionPrice, setMaxExecutionPrice] = useState(
-    defaultExecutionPrice.maxPriceFormatted,
+    defaultExecutionPrice.maxPriceFormatted
   );
   // pack the params into a single object
   const userParams = {
@@ -136,7 +136,7 @@ const AddLiquidity = ({
     nonWeiMaxExecutionPrice: maxExecutionPrice,
   };
   const validParams = verifyParams(
-    positionManager.createAddConcLiquidtyParams(userParams),
+    positionManager.createAddConcLiquidtyParams(userParams)
   );
 
   return (
@@ -148,7 +148,7 @@ const AddLiquidity = ({
           setLastUpdate("base");
           setAmountBase(e.target.value);
           setAmountQuote(
-            positionManager.getAmountFromAmountFormatted(e.target.value, true),
+            positionManager.getAmountFromAmountFormatted(e.target.value, true)
           );
         }}
         IconUrl={pool.base.logoURI}
@@ -159,7 +159,7 @@ const AddLiquidity = ({
         ambientAmountError={
           Number(pool.stats.lastPriceSwap) <=
             Number(
-              positionManager.getWeiRangePrice(positionValues.lowerPrice),
+              positionManager.getWeiRangePrice(positionValues.lowerPrice)
             ) && Number(amountBase) !== 0
         }
       />
@@ -171,7 +171,7 @@ const AddLiquidity = ({
           setLastUpdate("quote");
           setAmountQuote(e.target.value);
           setAmountBase(
-            positionManager.getAmountFromAmountFormatted(e.target.value, false),
+            positionManager.getAmountFromAmountFormatted(e.target.value, false)
           );
         }}
         IconUrl={pool.quote.logoURI}
@@ -182,7 +182,7 @@ const AddLiquidity = ({
         ambientAmountError={
           Number(pool.stats.lastPriceSwap) >=
             Number(
-              positionManager.getWeiRangePrice(positionValues.upperPrice),
+              positionManager.getWeiRangePrice(positionValues.upperPrice)
             ) && Number(amountQuote) !== 0
         }
       />
@@ -196,7 +196,7 @@ const AddLiquidity = ({
               pool.base.decimals - pool.quote.decimals,
               {
                 precision: 3,
-              },
+              }
             ) +
             " " +
             pool.base.symbol +
@@ -308,10 +308,10 @@ const RemoveLiquidity = ({
   const [percentToRemove, setPercentToRemove] = useState(0);
   const executionPriceRange = defaultPriceRangeFormatted(pool, "DEFAULT");
   const [minExecutionPrice, setMinExecutionPrice] = useState(
-    executionPriceRange.minPriceFormatted,
+    executionPriceRange.minPriceFormatted
   );
   const [maxExecutionPrice, setMaxExecutionPrice] = useState(
-    executionPriceRange.maxPriceFormatted,
+    executionPriceRange.maxPriceFormatted
   );
 
   const expectedTokens =
@@ -324,7 +324,7 @@ const RemoveLiquidity = ({
     nonWeiMaxExecutionPrice: maxExecutionPrice,
   };
   const validParams = verifyParams(
-    positionManager.createRemoveConcentratedLiquidtyParams(userParams),
+    positionManager.createRemoveConcentratedLiquidtyParams(userParams)
   );
 
   return (
@@ -429,7 +429,7 @@ const RemoveLiquidity = ({
         onClick={() =>
           sendTxFlow({
             ...positionManager.createRemoveConcentratedLiquidtyParams(
-              userParams,
+              userParams
             ),
             expectedBaseAmount: expectedTokens.base,
             expectedQuoteAmount: expectedTokens.quote,

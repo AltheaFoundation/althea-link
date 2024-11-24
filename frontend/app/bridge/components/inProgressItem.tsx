@@ -23,7 +23,7 @@ const InProgressTxItem = (props: TxItemProps) => {
         const { data, error } = await getBridgeStatus(
           bridge.type,
           props.tx.tx.chainId as number,
-          props.tx.hash,
+          props.tx.hash
         );
         if (error) {
           console.error(error);
@@ -37,7 +37,7 @@ const InProgressTxItem = (props: TxItemProps) => {
         props.tx.tx.bridge !== undefined &&
         props.tx.tx.bridge.lastStatus !== "SUCCESS",
       refetchInterval: 10000,
-    },
+    }
   );
 
   // get bridge info from tx

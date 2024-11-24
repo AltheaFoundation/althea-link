@@ -30,7 +30,7 @@ interface ManageCantoDexLPProps {
 }
 export const CantoDexLPModal = (props: ManageCantoDexLPProps) => {
   const [modalType, setModalType] = useState<"liquidity" | "stake" | "base">(
-    "base",
+    "base"
   );
 
   const Liquidity = () => (
@@ -86,8 +86,8 @@ export const CantoDexLPModal = (props: ManageCantoDexLPProps) => {
                   addTokenBalances(
                     props.pair.clmData?.userDetails
                       ?.supplyBalanceInUnderlying ?? "0",
-                    props.pair.clmData?.userDetails?.balanceOfUnderlying ?? "0",
-                  ),
+                    props.pair.clmData?.userDetails?.balanceOfUnderlying ?? "0"
+                  )
                 ) === 0,
               content: (
                 <Container
@@ -117,17 +117,17 @@ export const CantoDexLPModal = (props: ManageCantoDexLPProps) => {
     // total LP will be staked + unstaked balance
     const totalLP = addTokenBalances(
       props.pair.clmData?.userDetails?.supplyBalanceInUnderlying ?? "0",
-      props.pair.clmData?.userDetails?.balanceOfUnderlying ?? "0",
+      props.pair.clmData?.userDetails?.balanceOfUnderlying ?? "0"
     );
     // position value will be total LP * price
     const { data: positionValue } = convertTokenAmountToNote(
       totalLP,
-      props.pair.clmData?.price ?? "0",
+      props.pair.clmData?.price ?? "0"
     );
     // pool share determined by total value of LP and tvl
     const poolShare = divideBalances(
       positionValue?.toString() ?? "0",
-      props.pair.tvl,
+      props.pair.tvl
     );
 
     return (
@@ -154,14 +154,14 @@ export const CantoDexLPModal = (props: ManageCantoDexLPProps) => {
               value={displayAmount(
                 props.pair.clmData?.userDetails?.supplyBalanceInUnderlying ??
                   "0",
-                props.pair.decimals,
+                props.pair.decimals
               )}
             />
             <ModalItem
               name="Unstaked LP Tokens"
               value={displayAmount(
                 props.pair.clmData?.userDetails?.balanceOfUnderlying ?? "0",
-                props.pair.decimals,
+                props.pair.decimals
               )}
             />
           </Container>

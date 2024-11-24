@@ -85,7 +85,7 @@ export default function useBridgeCombo(): BridgeComboReturn {
       params.set(name, value);
       return params.toString();
     },
-    [searchParams],
+    [searchParams]
   );
 
   ///
@@ -134,7 +134,7 @@ export default function useBridgeCombo(): BridgeComboReturn {
 
   useEffect(() => {
     const { data: network, error } = getNetworkInfoFromChainId(
-      currentChainId ?? 1,
+      currentChainId ?? 1
     );
     if (error) {
       console.error(error);
@@ -202,7 +202,7 @@ export default function useBridgeCombo(): BridgeComboReturn {
   const maxBridgeAmount = maxBridgeAmountForToken(
     bridge.selections.token,
     bridgeFees.ready ? bridgeFees : null,
-    { gBridgeFee: selectedGBridgeFee },
+    { gBridgeFee: selectedGBridgeFee }
   );
 
   // pre-confirm check (will check all data except for user input address for IBC out)
@@ -229,7 +229,7 @@ export default function useBridgeCombo(): BridgeComboReturn {
       "1",
       maxBridgeAmount,
       bridge.selections.token?.symbol ?? "",
-      bridge.selections.token?.decimals ?? 0,
+      bridge.selections.token?.decimals ?? 0
     );
     if (amountCheck.error) return amountCheck;
     if (
@@ -252,7 +252,7 @@ export default function useBridgeCombo(): BridgeComboReturn {
     ) {
       const gasFee = bridgeFees.gasFees.reduce(
         (acc, obj) => acc + BigInt(obj.amount),
-        0n,
+        0n
       );
       if (cantoBalance.value < gasFee) {
         return {
@@ -267,7 +267,6 @@ export default function useBridgeCombo(): BridgeComboReturn {
     return { error: false };
   };
 
-  console.log(preConfirmCheck());
   const txParams = {
     amount: amountAsBigNumberString,
     ...gBridgeFees,
@@ -275,10 +274,6 @@ export default function useBridgeCombo(): BridgeComboReturn {
   // check to see if bridging will be possible with the current parameters
   const canBridge = bridge.bridge.validateParams(txParams);
 
-  console.log("preConfirmCheck:", preConfirmCheck());
-  console.log("canBridge:", canBridge);
-
-  console.log("Selected token:", bridge.selections.token);
   // transaction that will do the bridging
   async function bridgeTx() {
     // get flow

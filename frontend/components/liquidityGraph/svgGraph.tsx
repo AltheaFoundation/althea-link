@@ -29,17 +29,17 @@ const SVGLiquidityGraph = ({
     parentOptions ?? defaultInternalState;
   // state for axis
   const [xAxis, setXAxis] = React.useState<Axis>(
-    options?.axis?.x ?? { min: 0, max: 1 },
+    options?.axis?.x ?? { min: 0, max: 1 }
   );
   // positions for sliders based on current axis and values
   // will always be updated when axis or values change
   const leftPosition = React.useMemo(
     () => convertValueToGraphValue(minXValue, xAxis, size.width),
-    [minXValue, xAxis],
+    [minXValue, xAxis]
   );
   const rightPosition = React.useMemo(
     () => convertValueToGraphValue(maxXValue, xAxis, size.width),
-    [maxXValue, xAxis],
+    [maxXValue, xAxis]
   );
 
   // state for current element being dragged
@@ -87,7 +87,7 @@ const SVGLiquidityGraph = ({
     const newMax = convertGraphValueToValue(
       newRightPosition,
       xAxis,
-      size.width,
+      size.width
     );
     // make sure min and max are not the same or cross
     if (newMin >= newMax) return;
@@ -133,8 +133,8 @@ const SVGLiquidityGraph = ({
             ? { amountZoom: options.zoom.amountZoom }
             : { percentZoom: options?.zoom?.percentZoom ?? 0.1 }),
         },
-        options?.boundaries?.x,
-      ),
+        options?.boundaries?.x
+      )
     );
   }
 
@@ -156,7 +156,7 @@ const SVGLiquidityGraph = ({
           newMin,
           newMax,
         },
-        options?.boundaries?.x,
+        options?.boundaries?.x
       );
       return newAxis;
     });
@@ -353,7 +353,7 @@ const SVGLiquidityGraph = ({
               {convertGraphValueToValue(
                 size.width / 4,
                 xAxis,
-                size.width,
+                size.width
               ).toFixed(4)}
             </text>
             <text
@@ -367,7 +367,7 @@ const SVGLiquidityGraph = ({
               {convertGraphValueToValue(
                 size.width / 2,
                 xAxis,
-                size.width,
+                size.width
               ).toFixed(4)}
             </text>
             <text
@@ -381,7 +381,7 @@ const SVGLiquidityGraph = ({
               {convertGraphValueToValue(
                 (size.width * 3) / 4,
                 xAxis,
-                size.width,
+                size.width
               ).toFixed(4)}
             </text>
             <text

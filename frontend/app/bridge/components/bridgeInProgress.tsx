@@ -30,7 +30,7 @@ const BridgeInProgress = ({
     flowId: string,
     txIndex: number,
     lastStatus: TransactionStatus,
-    timeLeft: number | undefined,
+    timeLeft: number | undefined
   ) => void;
 }) => {
   const allTxs = [...txs.pending, ...txs.completed];
@@ -59,7 +59,7 @@ const BridgeInProgress = ({
                   tx.flowId,
                   tx.txIndex,
                   status.status,
-                  status.completedIn,
+                  status.completedIn
                 )
               }
             />

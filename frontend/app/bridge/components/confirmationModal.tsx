@@ -197,7 +197,7 @@ const ConfirmationModal = (props: Props) => {
               placeholder={`address: (${props.cosmosAddress.addressPrefix}...)`}
               value={props.cosmosAddress.currentAddress}
               onChange={function (
-                e: React.ChangeEvent<HTMLInputElement>,
+                e: React.ChangeEvent<HTMLInputElement>
               ): void {
                 props.cosmosAddress?.setAddress(e.target.value);
               }}
@@ -229,7 +229,7 @@ const ConfirmationModal = (props: Props) => {
                   <a
                     onClick={async () => {
                       const { data, error } = await connectToKeplr(
-                        props.cosmosAddress?.chainId ?? "",
+                        props.cosmosAddress?.chainId ?? ""
                       );
                       if (error) {
                         setKeplrError(formatError(error.message));

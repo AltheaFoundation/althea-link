@@ -22,11 +22,11 @@ interface Props {
   transaction: {
     performTx: (
       amountLP: string,
-      txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE,
+      txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE
     ) => void;
     validateAmount: (
       amount: string,
-      txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE,
+      txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE
     ) => Validation;
   };
 }
@@ -35,7 +35,7 @@ export const StakeLPModal = (props: Props) => {
   // get total values to decide what can be done with tokens
   const totalLP = addTokenBalances(
     props.clpToken.userDetails?.supplyBalanceInUnderlying ?? "0",
-    props.clpToken.userDetails?.balanceOfUnderlying ?? "0",
+    props.clpToken.userDetails?.balanceOfUnderlying ?? "0"
   );
 
   const CLMInfo = ({ cToken }: { cToken: CTokenWithUserData }) => (
@@ -67,14 +67,14 @@ export const StakeLPModal = (props: Props) => {
     transaction: {
       performTx: (
         amountLP: string,
-        txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE,
+        txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE
       ) => void;
       validateAmount: (
         amount: string,
-        txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE,
+        txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE
       ) => Validation;
     },
-    txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE,
+    txType: CantoDexTxTypes.STAKE | CantoDexTxTypes.UNSTAKE
   ) {
     const [amount, setAmount] = useState("");
     const bnAmount = (
@@ -189,7 +189,7 @@ export const StakeLPModal = (props: Props) => {
             content: Content(
               props.clpToken,
               props.transaction,
-              CantoDexTxTypes.STAKE,
+              CantoDexTxTypes.STAKE
             ),
           },
           {
@@ -197,7 +197,7 @@ export const StakeLPModal = (props: Props) => {
             content: Content(
               props.clpToken,
               props.transaction,
-              CantoDexTxTypes.UNSTAKE,
+              CantoDexTxTypes.UNSTAKE
             ),
           },
         ]}

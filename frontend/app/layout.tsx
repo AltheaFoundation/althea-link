@@ -61,7 +61,7 @@ export default function RootLayout({
   const signerOptions: SignerOptions = {
     // @ts-ignore
     signingStargate: (
-      _chain: string | Chain,
+      _chain: string | Chain
     ): SigningStargateClientOptions | undefined => {
       // @ts-ignore
       const mergedRegistry = new Registry([...cosmosProtoRegistry]);

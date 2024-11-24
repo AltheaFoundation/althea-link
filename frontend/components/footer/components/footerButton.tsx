@@ -48,7 +48,7 @@ const ThemeButton = () => {
     const localName =
       themeName === "dark" || themeName === "light" ? themeName : "dark";
     setName(
-      (localStorage.getItem("theme") as string) == "dark" ? "light" : "dark",
+      (localStorage.getItem("theme") as string) == "dark" ? "light" : "dark"
     );
   }, []);
 
@@ -84,7 +84,7 @@ const ThemeButton = () => {
       color="secondary"
       onChange={(value) => {
         Analytics.actions.events.themeChanged(
-          document.body.classList.contains("dark") ? "light" : "dark",
+          document.body.classList.contains("dark") ? "light" : "dark"
         );
         document.body.classList.contains("dark")
           ? setTheme("light")

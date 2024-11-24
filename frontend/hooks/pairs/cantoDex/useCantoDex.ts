@@ -34,7 +34,7 @@ export default function useCantoDex(
     },
     {
       onError: (error) => {
-        console.log(error);
+        console.error(error);
       },
     },
   );

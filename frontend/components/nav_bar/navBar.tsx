@@ -5,10 +5,10 @@ import Text from "../text";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { clsx } from "clsx";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+
 import TransactionModal from "../transactions/TxModal";
-import ThemeButton from "../footer/components/footerButton";
-import { useEffect, useRef, useState } from "react";
+
+import { useEffect, useRef, useState, useCallback } from "react";
 import Analytics from "@/provider/analytics";
 import useCantoSigner from "@/hooks/helpers/useCantoSigner";
 import { useAccount, useBalance } from "wagmi";
@@ -19,8 +19,10 @@ import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { HiddenWalletConnect } from "../wallet_connect/walletConnect";
 import { useChain } from "@cosmos-kit/react";
 const NavBar = () => {
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [modalState, setModalState] = useState({
+    isWalletModalOpen: false,
+    isAccountModalOpen: false,
+  });
   // This is used to connect safe as wallet,
   // if the app is opened in the safe context.
   useAutoConnect();
@@ -69,13 +71,20 @@ const NavBar = () => {
   //   chainId: signer?.chain.id,
   // });
 
-  const handleWalletIconClick = () => {
+  const handleWalletIconClick = useCallback(() => {
     if (isConnected || isWalletConnected) {
-      setIsAccountModalOpen(true);
+      setModalState((prev) => ({ ...prev, isAccountModalOpen: true }));
     } else {
-      setIsWalletModalOpen(true);
+      setModalState((prev) => ({ ...prev, isWalletModalOpen: true }));
     }
-  };
+  }, [isConnected, isWalletConnected]);
+
+  const handleClose = useCallback(() => {
+    setModalState({
+      isWalletModalOpen: false,
+      isAccountModalOpen: false,
+    });
+  }, []);
 
   return (
     <>
@@ -146,7 +155,7 @@ const NavBar = () => {
             href="/staking"
             className={clsx(
               styles["nav-link"],
-              currentPath == "/staking" && styles.active,
+              currentPath == "/staking" && styles.active
             )}
             onClick={() => Analytics.actions.events.clickedNavLink("Staking")}
           >
@@ -156,7 +165,7 @@ const NavBar = () => {
             href="/governance"
             className={clsx(
               styles["nav-link"],
-              currentPath.includes("governance") && styles.active,
+              currentPath.includes("governance") && styles.active
             )}
             onClick={() =>
               Analytics.actions.events.clickedNavLink("Governance")
@@ -242,12 +251,16 @@ const NavBar = () => {
         </div>
       </div>
       <HiddenWalletConnect
-        setIsOpen={setIsWalletModalOpen}
-        isOpen={isWalletModalOpen}
-        onClose={() => setIsWalletModalOpen(false)}
-        setIsAccountOpen={setIsAccountModalOpen}
-        isAccountOpen={isAccountModalOpen}
-        onAccountClose={() => setIsAccountModalOpen(false)}
+        isOpen={modalState.isWalletModalOpen}
+        isAccountOpen={modalState.isAccountModalOpen}
+        setIsOpen={(val) =>
+          setModalState((prev) => ({ ...prev, isWalletModalOpen: val }))
+        }
+        setIsAccountOpen={(val) =>
+          setModalState((prev) => ({ ...prev, isAccountModalOpen: val }))
+        }
+        onClose={handleClose}
+        onAccountClose={handleClose}
       />
     </>
   );

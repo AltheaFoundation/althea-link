@@ -3,14 +3,14 @@ import { Axis, Point, ZoomOptions } from "../types";
 export function convertValueToGraphValue(
   value: number,
   axis: Axis,
-  axisLength: number,
+  axisLength: number
 ): number {
   return ((value - axis.min) / (axis.max - axis.min)) * axisLength;
 }
 export function convertGraphValueToValue(
   graphValue: number,
   axis: Axis,
-  axisLength: number,
+  axisLength: number
 ): number {
   return (graphValue / axisLength) * (axis.max - axis.min) + axis.min;
 }
@@ -19,7 +19,7 @@ export function convertGraphValueToValue(
 export function estimateYFromX(
   x: number,
   pointBefore: Point,
-  pointAfter: Point,
+  pointAfter: Point
 ): number {
   // check before division by zero
   if (pointAfter.x === pointBefore.x) return pointBefore.y;
@@ -31,7 +31,7 @@ export function estimateYFromX(
 export function zoomNewAxis(
   currentAxis: Axis,
   zoomOptions: ZoomOptions,
-  boundaries?: Axis,
+  boundaries?: Axis
 ): Axis {
   // new axis boundaries to set
   let newMin = currentAxis.min;

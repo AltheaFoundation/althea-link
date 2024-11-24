@@ -29,7 +29,7 @@ const TransactionModal = () => {
 
   // get transaction flows for user
   const transactionFlows = txStore?.getUserTransactionFlows(
-    signer?.account.address ?? "",
+    signer?.account.address ?? ""
   );
 
   function getFlowFromId(id: string) {
@@ -218,7 +218,7 @@ const TransactionModal = () => {
                   onRetry={() => {
                     txStore?.performFlow(
                       signer?.account.address ?? "",
-                      currentFlowId,
+                      currentFlowId
                     );
                   }}
                   setBridgeStatus={(txIndex, status) =>
@@ -229,7 +229,7 @@ const TransactionModal = () => {
                       {
                         lastStatus: status.status,
                         timeLeft: status.completedIn,
-                      },
+                      }
                     )
                   }
                   closeModal={() => setIsOpen(false)}

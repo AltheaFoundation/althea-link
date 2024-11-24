@@ -30,11 +30,11 @@ export const UserCantoDexPairRow = ({
   // add staked and wallet balance
   const totalUserLpTokens = addTokenBalances(
     pair.clmData.userDetails.supplyBalanceInUnderlying,
-    pair.clmData.userDetails.balanceOfUnderlying,
+    pair.clmData.userDetails.balanceOfUnderlying
   );
   const { data: totalUserLPValue, error } = convertTokenAmountToNote(
     totalUserLpTokens,
-    pair.lpPrice,
+    pair.lpPrice
   );
   if (error) return [];
   const userPoolShare = divideBalances(totalUserLpTokens, pair.totalSupply);
@@ -104,7 +104,7 @@ export const UserCantoDexPairRow = ({
                   value:
                     convertTokenAmountToNote(
                       tokenAmounts.tokenA,
-                      pair.price1,
+                      pair.price1
                     ).data?.toString() ?? "0",
                   symbol: pair.token1.symbol,
                   decimals: pair.token1.decimals,
@@ -115,7 +115,7 @@ export const UserCantoDexPairRow = ({
                   value:
                     convertTokenAmountToNote(
                       tokenAmounts.tokenB,
-                      pair.price2,
+                      pair.price2
                     ).data?.toString() ?? "0",
                   symbol: pair.token2.symbol,
                   decimals: pair.token2.decimals,
@@ -144,7 +144,7 @@ export const UserCantoDexPairRow = ({
                 You have{" "}
                 {displayAmount(
                   pair.clmData.userDetails.balanceOfUnderlying,
-                  pair.decimals,
+                  pair.decimals
                 )}{" "}
                 unstaked LP tokens. You must stake them to earn rewards.
               </Text>
@@ -329,15 +329,15 @@ export const UserAmbientPairRow = ({
       position.concLiq,
       pool.stats.lastPriceSwap,
       position.bidTick,
-      position.askTick,
+      position.askTick
     );
     const baseNoteValue = convertTokenAmountToNote(
       tokenAmounts.base,
-      new BigNumber(10).pow(36 - pool.base.decimals).toString(),
+      new BigNumber(10).pow(36 - pool.base.decimals).toString()
     );
     const quoteNoteValue = convertTokenAmountToNote(
       tokenAmounts.quote,
-      new BigNumber(10).pow(36 - pool.quote.decimals).toString(),
+      new BigNumber(10).pow(36 - pool.quote.decimals).toString()
     );
     if (baseNoteValue.error || quoteNoteValue.error) {
       const emptyToken = {
@@ -356,8 +356,8 @@ export const UserAmbientPairRow = ({
       totalValue,
       addTokenBalances(
         baseNoteValue.data.toString(),
-        quoteNoteValue.data.toString(),
-      ),
+        quoteNoteValue.data.toString()
+      )
     );
     return {
       token1: {

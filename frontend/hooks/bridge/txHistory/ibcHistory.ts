@@ -118,7 +118,7 @@ async function getIBCTransactions(
         const { data: parsedTokenPacket, error: parseError } =
           parseFungibleTokenPacket(event);
         if (parseError) {
-          console.log(parseError);
+         // console.log(parseError);
         } else {
           filteredTransactions.push({
             chainId,

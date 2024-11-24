@@ -62,7 +62,7 @@ export default function StakingPage() {
   // handle txs
   function handleRewardsClaimClick(
     signer: GetWalletClientResult | undefined,
-    validatorAddresses: string[],
+    validatorAddresses: string[]
   ) {
     if (signer && signer.account) {
       const newFlow = transaction.newStakingFlow({
@@ -85,7 +85,7 @@ export default function StakingPage() {
     inputAmount: string,
     txType: StakingTxTypes,
     selectedValidators?: Validator[],
-    validatorToRedelegate?: Validator | null | undefined,
+    validatorToRedelegate?: Validator | null | undefined
   ): StakingTransactionParams | null => {
     switch (txType) {
       case StakingTxTypes.REDELEGATE:
@@ -125,7 +125,7 @@ export default function StakingPage() {
             amount:
               convertToBigNumber(
                 (Number(inputAmount) / selectedValidators.length).toString(),
-                18,
+                18
               ).data ?? "0",
           })),
           undelegate: false,
@@ -139,7 +139,7 @@ export default function StakingPage() {
     inputAmount: string,
     txType: StakingTxTypes,
     validatorToRedelegate?: Validator | null,
-    selectedValidators?: Validator[],
+    selectedValidators?: Validator[]
   ) {
     if (signer) {
       const txParams = stakingTxParams(
@@ -147,7 +147,7 @@ export default function StakingPage() {
         inputAmount,
         txType,
         txType === StakingTxTypes.MULTI_STAKE ? selectedValidators : undefined,
-        validatorToRedelegate,
+        validatorToRedelegate
       );
       if (txParams) {
         const newFlow = transaction.newStakingFlow(txParams);
@@ -163,7 +163,7 @@ export default function StakingPage() {
     inputAmount: string,
     txType: StakingTxTypes,
     validatorToRedelegate?: Validator | null,
-    selectedValidators?: Validator[],
+    selectedValidators?: Validator[]
   ): Validation {
     if (signer) {
       const txParams = stakingTxParams(
@@ -171,7 +171,7 @@ export default function StakingPage() {
         inputAmount,
         txType,
         txType === StakingTxTypes.MULTI_STAKE ? selectedValidators : undefined,
-        validatorToRedelegate,
+        validatorToRedelegate
       );
       if (txParams) {
         return transaction.validateTxParams(txParams);
@@ -207,10 +207,10 @@ export default function StakingPage() {
 
     // Sort active and inactive validators based on tokens
     const sortedActiveValidators = unsortedActiveValidators.sort((a, b) =>
-      BigInt(a.tokens) < BigInt(b.tokens) ? 1 : -1,
+      BigInt(a.tokens) < BigInt(b.tokens) ? 1 : -1
     );
     const sortedInActiveValidators = unsortedInActiveValidators.sort((a, b) =>
-      BigInt(a.tokens) < BigInt(b.tokens) ? 1 : -1,
+      BigInt(a.tokens) < BigInt(b.tokens) ? 1 : -1
     );
 
     // Add ranks based on the sorted order
@@ -223,7 +223,7 @@ export default function StakingPage() {
       (validator, index) => ({
         ...validator,
         rank: index + 1,
-      }),
+      })
     );
 
     return { activeValidators, inActiveValidators };
@@ -244,7 +244,7 @@ export default function StakingPage() {
             : -1;
         })
         .filter(
-          (e) => levenshteinDistance(searchQuery, e.description.moniker) < 6,
+          (e) => levenshteinDistance(searchQuery, e.description.moniker) < 6
         );
 
       return searchFilteredValidators;
@@ -257,12 +257,12 @@ export default function StakingPage() {
 
   const totalPages = useMemo(
     () => Math.ceil(filteredValidators.length / PAGE_NUMBER),
-    [filteredValidators.length],
+    [filteredValidators.length]
   );
 
   const paginatedvalidators: Validator[] = filteredValidators.slice(
     (currentPage - 1) * PAGE_NUMBER,
-    currentPage * PAGE_NUMBER,
+    currentPage * PAGE_NUMBER
   );
   const hasUserStaked: boolean =
     userStaking && userStaking.validators && userStaking.validators.length > 0
@@ -272,7 +272,7 @@ export default function StakingPage() {
   const totalStaked: number | undefined = hasUserStaked
     ? userStaking?.validators.reduce((sum, item) => {
         const amountNumber = parseFloat(
-          formatBalance(item.userDelegation.balance, 18),
+          formatBalance(item.userDelegation.balance, 18)
         );
         return sum + amountNumber;
       }, 0)
@@ -302,7 +302,7 @@ export default function StakingPage() {
         nativeBalance: userStaking.cantoBalance,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [userStaking.cantoBalance],
+    [userStaking.cantoBalance]
   );
 
   return isLoading ? (
@@ -389,8 +389,8 @@ export default function StakingPage() {
                   GenerateUnbondingDelegationsTableRow(
                     userStakingElement,
                     index,
-                    isMobile,
-                  ),
+                    isMobile
+                  )
                 ),
               ]}
             />
@@ -411,12 +411,12 @@ export default function StakingPage() {
                       .filter(
                         (e) =>
                           Number(formatBalance(e.userDelegation.balance, 18)) >
-                          0.0000001,
+                          0.0000001
                       )
                       .sort((a, b) =>
                         b.userDelegation.balance.localeCompare(
-                          a.userDelegation.balance,
-                        ),
+                          a.userDelegation.balance
+                        )
                       )
                       .map((validator) => () => handleClick(validator))
                   : undefined
@@ -484,20 +484,20 @@ export default function StakingPage() {
                   .filter(
                     (e) =>
                       Number(formatBalance(e.userDelegation.balance, 18)) >
-                      0.0000001,
+                      0.0000001
                   )
                   .sort((a, b) =>
                     b.userDelegation.balance.localeCompare(
-                      a.userDelegation.balance,
-                    ),
+                      a.userDelegation.balance
+                    )
                   )
                   .map((userStakingElement, index) =>
                     GenerateMyStakingTableRow(
                       userStakingElement,
                       index,
                       () => handleClick(userStakingElement),
-                      isMobile,
-                    ),
+                      isMobile
+                    )
                   ),
               ]}
             />
@@ -515,7 +515,7 @@ export default function StakingPage() {
                 isMobile
                   ? currentFilter == "ACTIVE"
                     ? paginatedvalidators.map(
-                        (validator) => () => handleClick(validator),
+                        (validator) => () => handleClick(validator)
                       )
                     : undefined
                   : undefined
@@ -627,8 +627,8 @@ export default function StakingPage() {
                           validator,
                           index,
                           () => handleClick(validator),
-                          isMobile,
-                        ),
+                          isMobile
+                        )
                       ),
                       <Pagination
                         isMobile={isMobile}
@@ -710,7 +710,7 @@ export default function StakingPage() {
                           ? userStaking.rewards?.total[0]?.amount
                           : "0.00",
                         18,
-                        { precision: 2 },
+                        { precision: 2 }
                       )}
                     </Text>
                     <Text> </Text>
@@ -751,7 +751,7 @@ export default function StakingPage() {
                       <Text font="macan" size={isMobile ? "x-lg" : "lg"}>
                         {displayAmount(
                           totalStaked ? totalStaked.toFixed(2) : "0",
-                          0,
+                          0
                         )}
                       </Text>
                     </div>
@@ -806,7 +806,7 @@ export default function StakingPage() {
             handleStakingTxClick(
               amount,
               selectedTx,
-              validatorToRedelegate ?? undefined,
+              validatorToRedelegate ?? undefined
             )
           }
           txValidation={(amount, selectedTx, validatorToRedelegate) =>
@@ -832,7 +832,7 @@ export default function StakingPage() {
               amount,
               selectedTx,
               undefined,
-              selectedValidators,
+              selectedValidators
             )
           }
           txValidation={(amount, selectedTx, selectedValidators) =>

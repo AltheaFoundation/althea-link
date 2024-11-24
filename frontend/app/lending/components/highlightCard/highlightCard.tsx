@@ -76,7 +76,7 @@ const HighlightCard = ({
             color="primary-dark"
             name={cToken.underlying.symbol + " Balance"}
             value={formattedAmount(
-              cToken.userDetails?.balanceOfUnderlying ?? "0",
+              cToken.userDetails?.balanceOfUnderlying ?? "0"
             )}
             symbol={true}
           />
@@ -106,7 +106,7 @@ const HighlightCard = ({
           color="primary-dark"
           name="Note Supplied"
           value={formattedSupplyAmount(
-            cToken.userDetails?.supplyBalanceInUnderlying ?? "0",
+            cToken.userDetails?.supplyBalanceInUnderlying ?? "0"
           )}
           symbol={true}
         />

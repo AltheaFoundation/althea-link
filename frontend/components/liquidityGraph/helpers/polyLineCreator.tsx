@@ -5,7 +5,7 @@ export function convertPointsToSvgPath(
   xAxis: Axis,
   points: Point[],
   svgSize: { width: number; height: number },
-  fillRange?: { minX: number; maxX: number },
+  fillRange?: { minX: number; maxX: number }
 ): { mainPath: string; filledPath: string } {
   // sort the points and remove negative y values
   const sortedPoints = points
@@ -17,7 +17,7 @@ export function convertPointsToSvgPath(
   const lastIndex = sortedPoints.findIndex((point) => point.x >= xAxis.max);
   const pointsWithinAxis = sortedPoints.slice(
     firstIndex,
-    lastIndex !== -1 ? lastIndex : undefined,
+    lastIndex !== -1 ? lastIndex : undefined
   );
 
   // if no points within axis, return empty string before doing any operations
@@ -77,7 +77,7 @@ export function convertPointsToSvgPath(
     pointsWithinAxis[pointsWithinAxis.length - 1],
     postLastPoint,
     { x: xAxis, y: yAxis },
-    svgSize,
+    svgSize
   );
   // add endpoints to main path
   mainPath = mainEndpoints.prefix + mainPath + mainEndpoints.suffix;
@@ -90,12 +90,12 @@ export function convertPointsToSvgPath(
       convertValueToGraphValue(
         estimateYFromX(fillRange.minX, preFirstFillPoint, postFirstFillPoint),
         yAxis,
-        svgSize.height,
+        svgSize.height
       );
     const graphFillMinX = convertValueToGraphValue(
       fillRange.minX,
       xAxis,
-      svgSize.width,
+      svgSize.width
     );
     filledPath =
       `${graphFillMinX},${svgSize.height} ${graphFillMinX},${graphFillMinY} ` +
@@ -107,12 +107,12 @@ export function convertPointsToSvgPath(
       convertValueToGraphValue(
         estimateYFromX(fillRange.maxX, preLastFillPoint, postLastFillPoint),
         yAxis,
-        svgSize.height,
+        svgSize.height
       );
     const graphFillMaxX = convertValueToGraphValue(
       fillRange.maxX,
       xAxis,
-      svgSize.width,
+      svgSize.width
     );
 
     filledPath =
@@ -129,7 +129,7 @@ function createPolyLineEndpoints(
   lastPoint: Point,
   postLastPoint: Point | undefined,
   axis: { x: Axis; y: Axis },
-  svgSize: { width: number; height: number },
+  svgSize: { width: number; height: number }
 ): {
   prefix: string;
   suffix: string;
@@ -142,7 +142,7 @@ function createPolyLineEndpoints(
     prefix += `0,${svgSize.height}, ${convertValueToGraphValue(
       firstPoint.x,
       axis.x,
-      svgSize.width,
+      svgSize.width
     )},${svgSize.height} `;
   } else {
     // there is a point before the axis, connect this point to the beginning of the graph, but from zero
@@ -151,7 +151,7 @@ function createPolyLineEndpoints(
       convertValueToGraphValue(
         estimateYFromX(axis.x.min, preFirstPoint, firstPoint),
         axis.y,
-        svgSize.height,
+        svgSize.height
       )
     } `;
   }
@@ -162,7 +162,7 @@ function createPolyLineEndpoints(
     suffix += `${convertValueToGraphValue(
       lastPoint.x,
       axis.x,
-      svgSize.width,
+      svgSize.width
     )}, ${svgSize.height}, ${svgSize.width},${svgSize.height} `;
   } else {
     // there is a point after the axis, connect this point to the end of the graph, but from zero
@@ -171,7 +171,7 @@ function createPolyLineEndpoints(
       convertValueToGraphValue(
         estimateYFromX(axis.x.max, lastPoint, postLastPoint),
         axis.y,
-        svgSize.height,
+        svgSize.height
       )
     } ${svgSize.width},${svgSize.height} `;
   }
@@ -182,7 +182,7 @@ function createPolyLineEndpoints(
 function estimateYFromX(
   x: number,
   pointBefore: Point,
-  pointAfter: Point,
+  pointAfter: Point
 ): number {
   // check before division by zero
   if (pointAfter.x === pointBefore.x) return pointBefore.y;
