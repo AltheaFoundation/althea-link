@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-actix-web = {version = "4", features = ["rustls"]}
+actix-web = {version = "4", features = ["rustls-0_23"]}
 actix-cors = "0.6"
-rustls = "0.20"
+rustls = "0.23"
 rustls-pemfile = "0.3"
 clap = { version = "4.0", features = ["derive"] }
 openssl = { version = "0.10", features = ["vendored"] }

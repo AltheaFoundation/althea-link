@@ -9,13 +9,15 @@ use crate::althea::endpoints::cosmos::{
     get_delegations, get_proposals, get_staking_info, get_validators,
 };
 use crate::althea::endpoints::get_constants;
-use crate::tls::{load_certs, load_private_key};
 use crate::Opts;
 use actix_cors::Cors;
 use actix_web::{middleware, web, App, HttpServer, Responder};
 use deep_space::Contact;
 use log::info;
+use rustls::pki_types::pem::PemObject;
+use rustls::pki_types::PrivateKeyDer;
 use rustls::ServerConfig;
+use tonic::transport::CertificateDer;
 
 async fn index() -> impl Responder {
     "althea.link"
@@ -81,17 +83,19 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
             .key_file
             .expect("key_file is required when https is enabled");
 
-        let cert_chain = load_certs(&cert_file);
-        let keys = load_private_key(&key_file);
+        let cert_chain = CertificateDer::pem_file_iter(cert_file)
+            .unwrap()
+            .map(|cert| cert.unwrap())
+            .collect();
+        let keys = PrivateKeyDer::from_pem_file(key_file).unwrap();
         let config = ServerConfig::builder()
-            .with_safe_defaults()
             .with_no_client_auth()
             .with_single_cert(cert_chain, keys)
             .unwrap();
 
         info!("Server starting at https://{}:{}", opts.address, opts.port);
         server
-            .bind_rustls(format!("{}:{}", opts.address, opts.port), config)
+            .bind_rustls_0_23(format!("{}:{}", opts.address, opts.port), config)
             .unwrap()
             .run()
             .await

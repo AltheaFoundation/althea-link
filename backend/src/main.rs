@@ -9,7 +9,6 @@ use std::{net::IpAddr, sync::Arc};
 pub mod althea;
 pub mod database;
 pub mod server;
-pub mod tls;
 
 #[derive(Parser, Clone)]
 #[clap(version = "1.0", author = "Christian Borst")]
