@@ -15,7 +15,7 @@ import Image from "next/image";
 import Text from "../text";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
 import Icon from "../icon/icon";
-import { QRCode } from "../qrcode/qrCode";
+
 import { WalletStatus } from "@cosmos-kit/core";
 
 export const WalletConnect = ({
@@ -746,13 +746,12 @@ export const HiddenWalletConnect = ({
             showDivider={false}
             showBackground={false}
           >
-            {currentView === "list" ? (
-              <div className={styles.wallet_modal}>
-                <div className={`${styles.wallet_options}`}>
-                  <div className={`${styles.wallet_list_container}`}>
-                    <div className={`${styles.wallet_list}`}>
-                      <WalletConnectButtons />
-                      {/* <Text size={"x-sm"} weight="500" color="#cfcfcf">
+            <div className={styles.wallet_modal}>
+              <div className={`${styles.wallet_options}`}>
+                <div className={`${styles.wallet_list_container}`}>
+                  <div className={`${styles.wallet_list}`}>
+                    <WalletConnectButtons />
+                    {/* <Text size={"x-sm"} weight="500" color="#cfcfcf">
                         COSMOS
                       </Text>
                       {mobile.map(
@@ -772,20 +771,10 @@ export const HiddenWalletConnect = ({
                           </div>
                         )
                       )} */}
-                    </div>
                   </div>
                 </div>
               </div>
-            ) : (
-              <QRCode
-                onReturn={() => {
-                  setCurrentView("list");
-                  setSelectedWallet(null);
-                }}
-                qrUri={selectedWallet?.qrUrl?.data}
-                name={selectedWallet?.walletInfo?.prettyName}
-              />
-            )}
+            </div>
           </Modal>
         )}
       </div>

@@ -1,4 +1,3 @@
-import { QRCodeSVG } from "qrcode.react";
 import Text from "../text";
 import Icon from "../icon/icon";
 import styles from "./qrcode.module.scss";
@@ -34,14 +33,7 @@ export const QRCode = ({
 
       <div className={styles.qr_content}>
         {qrUri ? (
-          <QRCodeSVG
-            value={qrUri}
-            bgColor={"#ffffff"}
-            fgColor={"#000000"}
-            level={"L"}
-            includeMargin={false}
-            className={styles.qr_code}
-          />
+          <Text size="sm">No QR code available</Text>
         ) : (
           <Text size="sm">No QR code available</Text>
         )}

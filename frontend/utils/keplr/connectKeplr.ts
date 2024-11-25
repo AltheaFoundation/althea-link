@@ -8,7 +8,7 @@ import { getNetworkInfoFromChainId, isCosmosNetwork } from "../networks";
  * @returns {PromiseWithError<{client: SigningStargateClient, address: string}>} client and address or error
  */
 export async function connectToKeplr(
-  cosmosChainId: string,
+  cosmosChainId: string
 ): PromiseWithError<{ client: SigningStargateClient; address: string }> {
   try {
     if (!window.keplr) throw Error("keplr not installed");
@@ -28,9 +28,9 @@ export async function connectToKeplr(
       offlineSigner,
       {
         gasPrice: GasPrice.fromString(
-          "300000" + network.nativeCurrency.baseName,
+          "300000" + network.nativeCurrency.baseName
         ),
-      },
+      }
     );
     return NO_ERROR({ client, address: accounts[0].address });
   } catch (err) {
