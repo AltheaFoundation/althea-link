@@ -2,6 +2,7 @@ backend/backend_db_path
 backend/target
 deploy/althea-link-backend
 deploy/frontend
+frontend/dump.rdb
 test.bash
 test_deploy_key.pub
 test_deploy_key
