@@ -63,7 +63,8 @@
     "viem": "^1.19.15",
     "wagmi": "^1.4.12",
     "web3": "^4.0.3",
-    "zustand": "^4.3.9"
+    "zustand": "^4.3.9",
+    "qrcode.react": "^4.1.0"
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "1.7.2",
