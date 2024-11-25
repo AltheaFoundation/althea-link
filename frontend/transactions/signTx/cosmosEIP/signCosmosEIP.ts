@@ -24,7 +24,7 @@ import { TX_SIGN_ERRORS } from "@/config/consts/errors";
 import { areEqualAddresses } from "@/utils/address";
 
 export async function signCosmosEIPTx(
-  tx: Transaction,
+  tx: Transaction
 ): PromiseWithError<string> {
   try {
     if (tx.type !== "COSMOS") throw Error("not cosmos tx");
@@ -33,14 +33,14 @@ export async function signCosmosEIPTx(
 
     /** switch chains if neccessary and get signer */
     const { data: signer, error: signerError } = await getEvmSignerOnChainId(
-      tx.chainId,
+      tx.chainId
     );
     if (signerError) throw signerError;
 
     /** check signer and tx from address */
     if (signer.account.address !== tx.fromAddress)
       throw Error(
-        TX_SIGN_ERRORS.INCORRECT_SIGNER(tx.fromAddress, signer.account.address),
+        TX_SIGN_ERRORS.INCORRECT_SIGNER(tx.fromAddress, signer.account.address)
       );
 
     /** tx context */
@@ -58,7 +58,7 @@ export async function signCosmosEIPTx(
           memo: "signed with metamask",
           ethAddress: tx.fromAddress,
         },
-        tx.msg,
+        tx.msg
       );
     if (txError) throw txError;
 
@@ -79,7 +79,7 @@ export async function signCosmosEIPTx(
  */
 async function signAndBroadcastCosmosTransaction(
   context: CosmosTxContext,
-  tx: UnsignedCosmosMessages,
+  tx: UnsignedCosmosMessages
 ): PromiseWithError<any> {
   try {
     // create correct fee object for EIP712
@@ -98,43 +98,43 @@ async function signAndBroadcastCosmosTransaction(
       context.chain.cosmosChainId,
       context.memo,
       feeObj,
-      eipMsgArray,
+      eipMsgArray
     );
     const eipToSign = createEIP712(
       tx.typesObject,
       context.chain.chainId,
-      eipPayload,
+      eipPayload
     );
 
-    if (!window || !window.ethereum) {
+    if (!window || !window?.ethereum) {
       return NEW_ERROR(
         "signAndBroadcastCosmosTransaction",
-        "Wallet not supported",
+        "Wallet not supported"
       );
     }
-    const connectedAccounts: string[] = await window.ethereum.request({
+    const connectedAccounts: string[] = await window?.ethereum.request({
       method: "eth_accounts",
     });
     if (!connectedAccounts || connectedAccounts.length === 0) {
       return NEW_ERROR(
         "signAndBroadcastCosmosTransaction",
-        "Wallet not supported",
+        "Wallet not supported"
       );
     }
     const index = connectedAccounts.findIndex((address: string) =>
-      areEqualAddresses(address, context.ethAddress),
+      areEqualAddresses(address, context.ethAddress)
     );
     if (index === -1) {
       return NEW_ERROR(
         "signAndBroadcastCosmosTransaction",
-        "Wallet not supported",
+        "Wallet not supported"
       );
     }
     // check public key on sender object, if none, create one
     if (!context.sender.pubkey) {
       // create a public key for the user IFF EIP712 Althea is used (since through metamask)
       try {
-        const signature = await window.ethereum.request({
+        const signature = await window?.ethereum.request({
           method: "personal_sign",
           params: [context.ethAddress, "generate_pubkey"],
         });
@@ -145,7 +145,7 @@ async function signAndBroadcastCosmosTransaction(
             50, 215, 18, 245, 169, 63, 252, 16, 225, 169, 71, 95, 254, 165, 146,
             216, 40, 162, 115, 78, 147, 125, 80, 182, 25, 69, 136, 250, 65, 200,
             94, 178,
-          ]),
+          ])
         );
         // sleep for 2 seconds to allow for the wallet to refresh
         await sleep(2000);
@@ -165,11 +165,11 @@ async function signAndBroadcastCosmosTransaction(
       context.sender.pubkey,
       context.sender.sequence ?? 0,
       context.sender.accountNumber ?? 0,
-      context.chain.cosmosChainId,
+      context.chain.cosmosChainId
     );
 
     // get signature from metamask
-    const signature = await window.ethereum.request({
+    const signature = await window?.ethereum.request({
       method: "eth_signTypedData_v4",
       params: [context.ethAddress, JSON.stringify(eipToSign)],
     });
@@ -184,8 +184,8 @@ async function signAndBroadcastCosmosTransaction(
           accountNumber: context.sender.accountNumber ?? 0,
           pubkey: context.sender.pubkey,
         },
-        signature,
-      ),
+        signature
+      )
     );
 
     // post tx to rpc
@@ -199,13 +199,13 @@ async function signAndBroadcastCosmosTransaction(
     const broadcastPost = await tryFetch(
       getCosmosAPIEndpoint(context.chain.cosmosChainId).data +
         "/cosmos/tx/v1beta1/txs",
-      postOptions,
+      postOptions
     );
 
     if (broadcastPost.error) {
       return NEW_ERROR(
         "signAndBroadcastCosmosTransaction",
-        broadcastPost.error,
+        broadcastPost.error
       );
     }
     return NO_ERROR(broadcastPost.data);
@@ -229,7 +229,7 @@ enum BroadcastMode {
 
 export function generatePostBodyBroadcast(
   txRaw: TxToSend,
-  broadcastMode: string = BroadcastMode.Sync,
+  broadcastMode: string = BroadcastMode.Sync
 ) {
   return `{ "tx_bytes": [${txRaw.message
     .serializeBinary()
@@ -257,7 +257,7 @@ function generateFeeObj(fee: Fee, feePayer: string): EIP712FeeObject {
 
 export async function waitForCosmosTx(
   chainId: string | number,
-  txHash: string,
+  txHash: string
 ): PromiseWithError<{
   status: string;
   error: any;
@@ -265,7 +265,7 @@ export async function waitForCosmosTx(
   // get cosmos tx data
   const { data: txData, error: txDataError } = await getCosmosTxDetailsFromHash(
     chainId,
-    txHash,
+    txHash
   );
   if (txDataError) {
     return NEW_ERROR("waitForTransaction", txDataError);
@@ -291,7 +291,7 @@ interface CosmosTxResponse {
 }
 export async function getCosmosTxDetailsFromHash(
   chainId: string | number,
-  txHash: string,
+  txHash: string
 ): PromiseWithError<CosmosTxResponse> {
   try {
     // get endpoint on correct chain
@@ -303,7 +303,7 @@ export async function getCosmosTxDetailsFromHash(
     const { data: response, error: fetchError } =
       await tryFetchWithRetry<CosmosTxResponse>(
         endpoint + "/cosmos/tx/v1beta1/txs/" + txHash,
-        5,
+        5
       );
     if (fetchError) throw fetchError;
 
