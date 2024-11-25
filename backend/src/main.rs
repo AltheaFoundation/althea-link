@@ -1,5 +1,7 @@
 use crate::server::start_server;
-use althea::start_ambient_indexer;
+use althea::{
+    database::save_latest_searched_block, start_ambient_indexer, DEFAULT_START_SEARCH_BLOCK,
+};
 use clap::Parser;
 use clarity::Address;
 use env_logger::Env;
@@ -76,6 +78,12 @@ async fn main() {
     openssl_probe::init_ssl_cert_env_vars();
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let db = database::open_database(opts.clone());
+
+    if database::clear_invalid_entries(&db) {
+        info!("Cleared invalid entries from the database, triggering resync");
+        save_latest_searched_block(&db, DEFAULT_START_SEARCH_BLOCK.into());
+    }
+
     let db = Arc::new(db);
 
     // Start the background indexer service
