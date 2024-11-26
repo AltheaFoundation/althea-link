@@ -252,7 +252,7 @@ export default function Page() {
         </div>
 
         <div>
-          <Text opacity={0.4}>{proposal.content.description}</Text>
+          <Text opacity={0.8}>{proposal.content.description}</Text>
         </div>
       </div>
       <div className={styles.proposalInfoContainer}>
