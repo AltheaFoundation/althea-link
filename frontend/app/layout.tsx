@@ -135,8 +135,7 @@ export default function RootLayout({
           modalTheme={modalThemeOverrides}
           walletConnectOptions={{
             signClient: {
-              projectId: process.env
-                .NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string,
+              projectId: "f165899a86759119c75b565ffe32ff9f",
               relayUrl: "wss://relay.walletconnect.org",
               metadata: {
                 name: "Althea",
