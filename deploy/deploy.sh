@@ -12,5 +12,9 @@ mkdir ../deploy/frontend
 cp -r out/* ../deploy/frontend/
 popd
 pushd $DIR
-ansible-playbook -i hosts deploy.yml
+if [ "$BRANCH_NAME" == "prod" ]; then
+    ansible-playbook -i hosts-prod deploy.yml
+else
+    ansible-playbook -i hosts-test deploy.yml
+fi
 popd

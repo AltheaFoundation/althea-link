@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - prod
 
 env:
   CARGO_TERM_COLOR: always
@@ -16,6 +17,7 @@ env:
   NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}
   NEXT_PUBLIC_ETH_PRICE_KEY: ${{ secrets.ETH_PRICE_KEY }}
   ETH_PRICE_KEY: ${{ secrets.ETH_PRICE_KEY }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
 
 jobs:
   deploy:
