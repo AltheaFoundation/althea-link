@@ -136,7 +136,7 @@ async function getEthPriceInUSDC(): PromiseWithError<string> {
       method: "GET",
       headers: {
         Accept: "application/json",
-        "X-API-KEY": process.env.ETH_PRICE_KEY as string,
+        "X-API-KEY": process.env.NEXT_PUBLIC_ETH_PRICE_KEY ?? "",
       },
     }
   );
