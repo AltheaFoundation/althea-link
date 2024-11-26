@@ -55,7 +55,7 @@ const formattedChains: Chain[] = [...Object.values(EVM_CHAINS)].map(
             }
           : contractInfo,
     } as Chain;
-  },
+  }
 );
 
 const { chains, publicClient } = configureChains(formattedChains, [
@@ -63,7 +63,7 @@ const { chains, publicClient } = configureChains(formattedChains, [
 ]);
 const { connectors } = getDefaultWallets({
   appName: "Althea App",
-  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string,
+  projectId: "f165899a86759119c75b565ffe32ff9f",
   chains,
 });
 
