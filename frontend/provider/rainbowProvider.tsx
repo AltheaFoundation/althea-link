@@ -63,7 +63,7 @@ const { chains, publicClient } = configureChains(formattedChains, [
 ]);
 const { connectors } = getDefaultWallets({
   appName: "Althea App",
-  projectId: "f165899a86759119c75b565ffe32ff9f",
+  projectId: process.env.WALLET_CONNECT_PROJECT_ID as string,
   chains,
 });
 
