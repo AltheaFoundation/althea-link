@@ -221,6 +221,18 @@
               padding-left: 2px;
             }
           }
+
+          .quorumContainer {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .quorumPercentage {
+            color: var(--text-color-secondary);
+            opacity: 0.8;
+          }
         }
       }
       .proposalInfoTimeLine {

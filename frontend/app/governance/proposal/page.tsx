@@ -35,6 +35,7 @@ import { cosmos } from "interchain";
 import { useTx } from "@/hooks/cosmos/useTx";
 import { altheaToEth } from "@gravity-bridge/address-converter";
 import { useToast } from "@/components/toast";
+import { useTotalBondedTokens } from "@/hooks/helpers/useCosmosBalance";
 const loadingGif = "/loading.gif";
 
 const VOTE_OPTION_COLORS = {
@@ -61,6 +62,16 @@ const COSMOS_VOTE_OPTION_MAP = {
   [VoteOption.ABSTAIN]: 2, // VOTE_OPTION_ABSTAIN
   [VoteOption.NO]: 3, // VOTE_OPTION_NO
   [VoteOption.VETO]: 4, // VOTE_OPTION_NO_WITH_VETO
+};
+
+const calculateQuorumPercentage = (
+  totalVotes: number,
+  bondedTokens: string
+): number => {
+  const requiredQuorum = 0.334; // 33.4%
+  const bondedTokensInEther = Number(bondedTokens) / 1e18;
+  const quorumPercentage = (totalVotes / bondedTokensInEther) * 100;
+  return Math.min(100, (quorumPercentage / requiredQuorum) * 100);
 };
 
 export default function Page() {
@@ -145,6 +156,8 @@ export default function Page() {
   const proposalId = Number(id);
   const router = useRouter();
 
+  const { data: totalBondedTokens } = useTotalBondedTokens();
+
   const [selectedVote, setSelectedVote] = useState<VoteOption | null>(null);
 
   if (isProposalsLoading) {
@@ -189,6 +202,15 @@ export default function Page() {
       borderColor={VOTE_OPTION_COLORS[option][1]}
     />
   );
+
+  const totalVotes = Object.values(votesData).reduce(
+    (sum, vote) => sum + Number(vote.amount),
+    0
+  );
+
+  const quorumPercentage = totalBondedTokens
+    ? calculateQuorumPercentage(totalVotes, totalBondedTokens)
+    : 0;
 
   return isProposalsLoading ? (
     <div className={styles.loaderContainer}>
@@ -410,9 +432,16 @@ export default function Page() {
                   Quorum{" "}
                 </Text>
               </div>
-              <div>
+              <div className={styles.quorumContainer}>
                 <Text font="macan" size={isMobile ? "md" : "x-sm"}>
                   {PROPOSAL_QUORUM_VALUE}
+                </Text>
+                <Text
+                  font="macan"
+                  size={isMobile ? "md" : "x-sm"}
+                  className={styles.quorumPercentage}
+                >
+                  ({quorumPercentage.toFixed(1)}% reached)
                 </Text>
               </div>
             </div>
