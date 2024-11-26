@@ -4,9 +4,18 @@ server {
 
         index index.html index.htm index.nginx-debian.html;
 
+        # Add explicit handling for static files
+        location /_next/static/ {
+                expires 1y;
+                add_header Cache-Control "public, no-transform";
+        }
+
+        location /static/ {
+                expires 1y;
+                add_header Cache-Control "public, no-transform";
+        }
+
         location / {
-                # First attempt to serve request as file, then
-                # as directory, then fall back to displaying index
                 try_files $uri $uri/ /index.html;
         }
 }
