@@ -30,7 +30,7 @@ type FeeTier = {
   usdValueFormatted: string;
 };
 export async function getGravityBridgeFeesFromToken(
-  tokenAddress: string,
+  tokenAddress: string
 ): PromiseWithError<{
   slow: FeeTier;
   medium: FeeTier;
@@ -73,7 +73,7 @@ export async function getGravityBridgeFeesFromToken(
           gravityToken.decimals,
           {
             precision: 2,
-          },
+          }
         ),
       };
     };
@@ -136,9 +136,9 @@ async function getEthPriceInUSDC(): PromiseWithError<string> {
       method: "GET",
       headers: {
         Accept: "application/json",
-        "X-API-KEY": process.env.NEXT_PUBLIC_ETH_PRICE_KEY as string,
+        "X-API-KEY": process.env.NEXT_PUBLIC_ETH_PRICE_KEY ?? "",
       },
-    },
+    }
   );
   if (error) return NEW_ERROR("getEthPriceInUSDC", error);
   return NO_ERROR(data.usdPriceFormatted);

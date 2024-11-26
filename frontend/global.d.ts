@@ -3,8 +3,5 @@ declare global {
   interface Window extends KeplrWindow {
     ethereum: any;
     keplr?: any;
-    cosmostation?: any;
-    leap?: any;
-    getOfflineSigner?: any;
   }
 }
