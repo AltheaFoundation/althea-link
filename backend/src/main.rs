@@ -6,6 +6,7 @@ use clap::Parser;
 use clarity::Address;
 use env_logger::Env;
 use log::info;
+use rustls::crypto::CryptoProvider;
 use std::{net::IpAddr, sync::Arc};
 
 pub mod althea;
@@ -75,6 +76,7 @@ pub struct Opts {
 #[tokio::main]
 async fn main() {
     let opts: Opts = Opts::parse();
+    CryptoProvider::install_default(rustls::crypto::aws_lc_rs::default_provider()).unwrap();
     openssl_probe::init_ssl_cert_env_vars();
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let db = database::open_database(opts.clone());
