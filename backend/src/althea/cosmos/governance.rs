@@ -24,11 +24,9 @@ use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::sleep;
 
-use crate::althea::ALTHEA_GRPC_URL;
 use cosmos_sdk_proto_althea::cosmos::gov::v1beta1::{
     query_client::QueryClient as GovQueryClient, QueryTallyResultRequest,
 };
-use tonic::transport::Endpoint;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProposalInfo {
@@ -208,7 +206,7 @@ pub async fn fetch_proposals(
     // Fetch current tally for active proposals
     for proposal in &mut proposals {
         if proposal.is_active() {
-            if let Ok(tally) = fetch_tally_result(proposal.proposal_id).await {
+            if let Ok(tally) = fetch_tally_result(contact.get_url(), proposal.proposal_id).await {
                 proposal.final_tally_result = Some(TallyResult {
                     yes: tally.yes,
                     abstain: tally.abstain,
@@ -695,9 +693,11 @@ impl From<cosmos_sdk_proto_althea::cosmos::bank::v1beta1::Metadata> for Serializ
 }
 
 // New function to fetch tally results
-async fn fetch_tally_result(proposal_id: u64) -> Result<TallyResult, Box<dyn std::error::Error>> {
-    let channel = Endpoint::from_static(ALTHEA_GRPC_URL).connect().await?;
-    let mut client = GovQueryClient::new(channel);
+async fn fetch_tally_result(
+    url: String,
+    proposal_id: u64,
+) -> Result<TallyResult, Box<dyn std::error::Error>> {
+    let mut client = GovQueryClient::connect(url).await?;
 
     let request = tonic::Request::new(QueryTallyResultRequest { proposal_id });
 

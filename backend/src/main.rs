@@ -36,6 +36,14 @@ pub struct Opts {
     #[clap(short = 't', long, value_delimiter = ',')]
     pool_templates: Vec<u64>,
 
+    /// The url of the EVM JSONRPC
+    #[clap(short, long, default_value = "http://localhost:8545")]
+    evm_rpc_url: String,
+
+    /// The url of the Cosmos RPC
+    #[clap(short, long, default_value = "http://localhost:9090")]
+    cosmos_rpc_url: String,
+
     /// The address to bind to
     #[clap(short, long, default_value = "0.0.0.0")]
     address: IpAddr,
@@ -65,7 +73,7 @@ pub struct Opts {
     halt_after_indexing: bool,
 
     /// If true the database will be compacted on startup
-    #[clap(short, long, default_value = "false")]
+    #[clap(long, default_value = "false")]
     compact: bool,
 
     /// If true the database will be compacted on startup then the server will halt

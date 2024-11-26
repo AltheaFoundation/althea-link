@@ -28,10 +28,6 @@ pub mod database;
 pub mod endpoints;
 pub mod error;
 
-pub const ALTHEA_GRPC_URL: &str = "http://66.172.36.142:3890";
-
-pub const ALTHEA_ETH_RPC_URL: &str = "https://nodes.chandrastation.com/evm/althea/";
-
 pub const ALTHEA_MAINNET_CHAIN_ID: &str = "althea_258432-1";
 pub const ALTHEA_MAINNET_EVM_CHAIN_ID: usize = 258432;
 pub const CACHE_DURATION: u64 = 6;
@@ -56,12 +52,12 @@ const DEFAULT_QUERIER: &str = "0xbf660843528035a5a4921534e156a27e64b231fe";
 
 /// Returns a Contact struct for interacting with Gravity Bridge, pre-configured with the url
 /// and prefix
-pub fn get_althea_contact(timeout: Duration) -> Contact {
-    Contact::new(ALTHEA_GRPC_URL, timeout, ALTHEA_PREFIX).unwrap()
+pub fn get_althea_contact(opts: &Opts, timeout: Duration) -> Contact {
+    Contact::new(&opts.cosmos_rpc_url, timeout, ALTHEA_PREFIX).unwrap()
 }
 
-pub fn get_althea_web3(timeout: Duration) -> Web3 {
-    Web3::new(ALTHEA_ETH_RPC_URL, timeout)
+pub fn get_althea_web3(opts: &Opts, timeout: Duration) -> Web3 {
+    Web3::new(&opts.evm_rpc_url, timeout)
 }
 
 pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
@@ -69,7 +65,7 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
     let templates = get_templates(&opts);
 
     // Start cache refresh tasks
-    let contact = get_althea_contact(TIMEOUT);
+    let contact = get_althea_contact(&opts, TIMEOUT);
     start_validator_cache_refresh_task(db.clone(), contact.clone());
     start_proposal_cache_refresh_task(db.clone(), contact.clone());
     start_delegation_cache_refresh_task(db.clone(), contact.clone());
@@ -79,7 +75,7 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
         let db = db.clone();
         let runner = System::new();
 
-        let web3 = get_althea_web3(TIMEOUT);
+        let web3 = get_althea_web3(&opts, TIMEOUT);
         runner.block_on(async move {
             initialize_templates(&db, &web3, opts.query_contract, &templates)
                 .await

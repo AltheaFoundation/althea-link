@@ -129,6 +129,8 @@ fn test_clear_invalid() {
         https: false,
         cert_file: None,
         key_file: None,
+        evm_rpc_url: String::new(),
+        cosmos_rpc_url: String::new(),
     });
     let prefix = "test";
     let k = "test1";

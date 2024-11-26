@@ -28,7 +28,7 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
 
     // Create shared Contact instance
     let contact = Contact::new(
-        super::althea::ALTHEA_GRPC_URL,
+        &opts.cosmos_rpc_url,
         super::althea::TIMEOUT,
         super::althea::ALTHEA_PREFIX,
     )

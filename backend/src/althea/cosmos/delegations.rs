@@ -8,13 +8,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use std::vec::Vec;
 
 use crate::althea::abi_util::format_u128_to_decimal_18;
-use crate::althea::ALTHEA_GRPC_URL;
 use crate::althea::DELEGATIONS_CACHE_DURATION;
 use cosmos_sdk_proto_althea::cosmos::staking::v1beta1::{
     query_client::QueryClient as StakingQueryClient, QueryDelegatorUnbondingDelegationsRequest,
 };
 use tokio;
-use tonic::transport::Endpoint;
 
 const DELEGATIONS_KEY_PREFIX: &str = "delegations_";
 
@@ -101,10 +99,10 @@ fn cache_delegations(db: &rocksdb::DB, delegator: &CosmosAddress, response: &Del
 }
 
 async fn fetch_unbonding_delegations(
+    url: String,
     delegator_address: CosmosAddress,
 ) -> Result<Vec<UnbondingDelegation>, Box<dyn std::error::Error>> {
-    let channel = Endpoint::from_static(ALTHEA_GRPC_URL).connect().await?;
-    let mut client = StakingQueryClient::new(channel);
+    let mut client = StakingQueryClient::connect(url).await?;
 
     let request = tonic::Request::new(QueryDelegatorUnbondingDelegationsRequest {
         delegator_addr: delegator_address.to_string(),
@@ -214,7 +212,8 @@ pub async fn fetch_delegations(
     }];
 
     // Fetch unbonding delegations
-    let unbonding_delegations = fetch_unbonding_delegations(delegator_address).await?;
+    let unbonding_delegations =
+        fetch_unbonding_delegations(contact.get_url(), delegator_address).await?;
     let unbonding_delegations = if unbonding_delegations.is_empty() {
         None
     } else {
