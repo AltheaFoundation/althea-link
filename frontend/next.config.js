@@ -10,7 +10,6 @@ const nextConfig = {
         pathname: "/**",
       },
     ],
-    unoptimized: true,
   },
   reactStrictMode: true,
   webpack: (config) => {
