@@ -30,11 +30,11 @@ export const NO_ERROR = <T>(data: T): ReturnWithError<T> => ({
 export function NEW_ERROR<T>(msg: string): ReturnWithError<T>;
 export function NEW_ERROR<T>(
   functionName: string,
-  err: Error | string | any,
+  err: Error | string | any
 ): ReturnWithError<T>;
 export function NEW_ERROR<T>(
   arg1: string,
-  arg2?: Error | string | any,
+  arg2?: Error | string | any
 ): ReturnWithError<T> {
   if (arg2) {
     return {
@@ -48,12 +48,12 @@ export function NEW_ERROR<T>(
   };
 }
 
-export const errMsg = (error: any): string => {
-  if (error instanceof BaseError) {
-    return error.details;
-  }
-  if (error.message) {
+export const errMsg = (error: any): any => {
+  if (error instanceof Error) {
     return error.message;
+  }
+  if (error && typeof error === "object" && error.name === "BaseError") {
+    return error.details || error.message;
   }
   return error;
 };

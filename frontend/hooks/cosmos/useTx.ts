@@ -2,11 +2,11 @@ import {
   DeliverTxResponse,
   isDeliverTxSuccess,
   StdFee,
+  SigningStargateClient,
 } from "@cosmjs/stargate";
 import { useChain } from "@cosmos-kit/react";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { useState } from "react";
-import { SigningStargateClient } from "@cosmjs/stargate";
 
 interface Msg {
   typeUrl: string;
@@ -42,25 +42,24 @@ export const useTx = (chainName: string) => {
         address,
         msgs,
         options.fee || (await estimateFee(msgs)),
-        options.memo || "",
+        options.memo || ""
       );
 
       setIsSigning(true);
       const res: DeliverTxResponse = await client.broadcastTx(
-        Uint8Array.from(TxRaw.encode(signed).finish()),
+        Uint8Array.from(TxRaw.encode(signed).finish())
       );
       if (isDeliverTxSuccess(res)) {
         if (options.onSuccess) options.onSuccess();
         setIsSigning(false);
 
         return options.returnError ? { error: null } : undefined;
-      } else {
-        setIsSigning(false);
-
-        return options.returnError
-          ? { error: res?.rawLog || "Unknown error" }
-          : undefined;
       }
+      setIsSigning(false);
+
+      return options.returnError
+        ? { error: res?.rawLog || "Unknown error" }
+        : undefined;
     } catch (e: any) {
       console.error("Failed to broadcast or simulate: ", e);
       setIsSigning(false);
