@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use crate::althea::endpoints::ambient::{
-    pool_liq_curve, pool_stats, query_all_burn_ambient, query_all_burn_ranged,
-    query_all_init_pools, query_all_mint_ambient, query_all_mint_ranged, query_pool,
+    moralis_eth_in_usdc, pool_liq_curve, pool_stats, query_all_burn_ambient,
+    query_all_burn_knockout, query_all_burn_ranged, query_all_init_pools, query_all_mint_ambient,
+    query_all_mint_knockout, query_all_mint_ranged, query_pool, slingshot_trade_get,
     user_pool_positions, user_positions,
 };
 use crate::althea::endpoints::cosmos::{
@@ -11,6 +12,7 @@ use crate::althea::endpoints::cosmos::{
 use crate::althea::endpoints::get_constants;
 use crate::Opts;
 use actix_cors::Cors;
+use actix_web::web::Data;
 use actix_web::{middleware, web, App, HttpServer, Responder};
 use deep_space::Contact;
 use log::info;
@@ -40,7 +42,7 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
         App::new()
             .app_data(db.clone())
             .app_data(contact.clone())
-            .app_data(op.clone())
+            .app_data(Data::new(op.clone()))
             .wrap(
                 Cors::default()
                     .allow_any_origin()
@@ -62,7 +64,9 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
                     .service(query_all_mint_ranged)
                     .service(query_all_burn_ranged)
                     .service(query_all_mint_ambient)
-                    .service(query_all_burn_ambient),
+                    .service(query_all_burn_ambient)
+                    .service(query_all_mint_knockout)
+                    .service(query_all_burn_knockout),
             )
             // Graphcache-go endpoints
             .service(
@@ -71,6 +75,17 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
                     .service(user_pool_positions)
                     .service(pool_liq_curve)
                     .service(pool_stats),
+            )
+            .service(
+                web::scope("/api")
+                    // Slingshot Trade endpoint
+                    .service(
+                        web::scope("/v3")
+                            // .service(slingshot_trade)
+                            .service(slingshot_trade_get),
+                    )
+                    // Moralis price endpoint
+                    .service(web::scope("/v2.2").service(moralis_eth_in_usdc)),
             )
             .wrap(middleware::Compress::default())
     });

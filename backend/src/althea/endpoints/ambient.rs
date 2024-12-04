@@ -1,10 +1,6 @@
-use crate::althea::database::{
-    get_syncing,
-    positions::Position::{Ambient, Ranged},
-    tracking::{LiquidityBump, TrackedPool},
-};
 use crate::althea::{
     database::{
+        curve::get_price,
         pools::{get_init_pool, get_init_pools},
         positions::{
             ambient::{get_all_burn_ambient, get_all_mint_ambient},
@@ -13,21 +9,32 @@ use crate::althea::{
         },
         tracking::get_tracked_pool,
     },
-    ALTHEA_MAINNET_EVM_CHAIN_ID,
+    get_mainnet_web3, ALTHEA_MAINNET_EVM_CHAIN_ID, DEFAULT_POOL_TEMPLATES, DEFAULT_QUERIER,
+};
+use crate::{
+    althea::database::{
+        get_syncing,
+        positions::{
+            knockout::{get_all_burn_knockout, get_all_mint_knockout},
+            Position::{Ambient, Ranged},
+        },
+        tracking::{LiquidityBump, TrackedPool},
+    },
+    Opts,
 };
 use actix_web::{
     get, post,
-    web::{self, Json},
+    web::{self},
     HttpResponse, Responder,
 };
 use clarity::{Address, Uint256};
 
-use log::info;
+use log::debug;
 use num_traits::ToPrimitive;
 use rocksdb::DB;
 use serde::{Deserialize, Serialize};
 
-use std::sync::Arc;
+use std::{str::FromStr, sync::Arc, time::Duration};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct PoolRequest {
@@ -50,12 +57,12 @@ pub struct PoolRequest {
 ///
 /// The response body will be a JSON array of `PoolInitEvent` objects representing the moment of creation of the pool
 #[post("/init_pool")]
-pub async fn query_pool(req: Json<PoolRequest>, db: web::Data<Arc<DB>>) -> impl Responder {
+pub async fn query_pool(req: web::Json<PoolRequest>, db: web::Data<Arc<DB>>) -> impl Responder {
     let req = req.into_inner();
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    info!("Querying pool {:?}", req);
+    debug!("Querying pool {:?}", req);
     let pool = get_init_pool(&db, req.base, req.quote, req.pool_idx);
     match pool {
         Some(pool) => HttpResponse::Ok().json(pool),
@@ -77,7 +84,7 @@ pub async fn query_all_init_pools(db: web::Data<Arc<DB>>) -> impl Responder {
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    info!("Querying all InitPools");
+    debug!("Querying all InitPools");
     let pools = get_init_pools(&db);
     if pools.is_empty() {
         HttpResponse::NotFound().body("No pools found")
@@ -100,7 +107,7 @@ pub async fn query_all_mint_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    info!("Querying all MintRanged events");
+    debug!("Querying all MintRanged events");
     let events = get_all_mint_ranged(&db, None);
     if events.is_empty() {
         HttpResponse::NotFound().body("No MintRangedEvents found")
@@ -123,7 +130,7 @@ pub async fn query_all_mint_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    info!("Querying all MintAmbinet events");
+    debug!("Querying all MintAmbient events");
     let events = get_all_mint_ambient(&db, None);
     if events.is_empty() {
         HttpResponse::NotFound().body("No MintAmbientEvents found")
@@ -146,7 +153,7 @@ pub async fn query_all_burn_ranged(db: web::Data<Arc<DB>>) -> impl Responder {
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    info!("Querying all BurnRanged events");
+    debug!("Querying all BurnRanged events");
     let events = get_all_burn_ranged(&db, None);
     if events.is_empty() {
         HttpResponse::NotFound().body("No BurnRangedEvents found")
@@ -169,7 +176,7 @@ pub async fn query_all_burn_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    info!("Querying all MintAmbient events");
+    debug!("Querying all MintAmbient events");
     let events = get_all_burn_ambient(&db, None);
     if events.is_empty() {
         HttpResponse::NotFound().body("No BurnAmbientEvents found")
@@ -178,10 +185,57 @@ pub async fn query_all_burn_ambient(db: web::Data<Arc<DB>>) -> impl Responder {
     }
 }
 
+/// Retrieves all known MintKnockout events
+///
+/// # Query
+///
+/// A simple HTTP GET request
+///
+/// # Response
+///
+/// The response body will be a JSON array of `MintKnockoutEvent` objects representing the moment of creation of the pools
+#[get("/all_mint_knockout")]
+pub async fn query_all_mint_knockout(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
+    debug!("Querying all MintKnockout events");
+    let events = get_all_mint_knockout(&db, None);
+    if events.is_empty() {
+        HttpResponse::NotFound().body("No MintKnockoutEvents found")
+    } else {
+        HttpResponse::Ok().json(events)
+    }
+}
+
+/// Retrieves all known BurnKnockout events
+///
+/// # Query
+///
+/// A simple HTTP GET request
+///
+/// # Response
+///
+/// The response body will be a JSON array of `BurnKnockoutEvent` objects representing the moment of creation of the pools
+#[get("/all_burn_knockout")]
+pub async fn query_all_burn_knockout(db: web::Data<Arc<DB>>) -> impl Responder {
+    if get_syncing(&db) {
+        return HttpResponse::ServiceUnavailable().body("Syncing");
+    }
+    debug!("Querying all BurnKnockout events");
+    let events = get_all_burn_knockout(&db, None);
+    if events.is_empty() {
+        HttpResponse::NotFound().body("No BurnKnockoutEvents found")
+    } else {
+        HttpResponse::Ok().json(events)
+    }
+}
+
 /// A request for a user's positions in a pool
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
 pub struct UserPoolPositionsRequest {
-    pub chain_id: Uint256,
+    pub chainId: Option<Uint256>,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -192,9 +246,10 @@ pub struct UserPoolPositionsRequest {
 /// Many of these fields are not used by the frontend, so the default values are used instead
 /// of trying to populate them with real data
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[allow(non_snake_case)]
 pub struct UserPosition {
     // USED
-    pub chain_id: Uint256,
+    pub chainId: Uint256,
     pub user: Address,
     pub base: Address,
     pub quote: Address,
@@ -244,7 +299,7 @@ pub struct StrangeInnerStruct {
 /// # Query
 ///
 /// A query string with the following parameters:
-/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - chainId: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
 /// - user: The user's address as a EIP 55 string
 /// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
 /// - quote: The address of the quote token in the pool as a EIP 55 string
@@ -270,7 +325,7 @@ pub async fn user_pool_positions(
     for position in positions {
         results.push(match position {
             Ranged(p) => UserPosition {
-                chain_id: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
+                chainId: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
                 user: p.user,
                 base: p.base,
                 quote: p.quote,
@@ -283,7 +338,7 @@ pub async fn user_pool_positions(
                 ..Default::default()
             },
             Ambient(p) => UserPosition {
-                chain_id: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
+                chainId: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
                 user: p.user,
                 base: p.base,
                 quote: p.quote,
@@ -300,8 +355,9 @@ pub async fn user_pool_positions(
 
 /// A request for a user's positions in a pool
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
 pub struct UserPositionsRequest {
-    pub chain_id: Uint256,
+    pub chainId: Option<Uint256>,
     pub user: Address,
 }
 
@@ -310,7 +366,7 @@ pub struct UserPositionsRequest {
 /// # Query
 ///
 /// A query string with the following parameters:
-/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - chainId: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
 /// - user: The user's address as a EIP 55 string
 ///
 /// # Response
@@ -332,7 +388,7 @@ pub async fn user_positions(
     for position in positions {
         results.push(match position {
             Ranged(p) => UserPosition {
-                chain_id: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
+                chainId: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
                 user: p.user,
                 base: p.base,
                 quote: p.quote,
@@ -345,7 +401,7 @@ pub async fn user_positions(
                 ..Default::default()
             },
             Ambient(p) => UserPosition {
-                chain_id: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
+                chainId: ALTHEA_MAINNET_EVM_CHAIN_ID.into(),
                 user: p.user,
                 base: p.base,
                 quote: p.quote,
@@ -362,11 +418,12 @@ pub async fn user_positions(
 
 /// A request which specifies a pool (and the unused chain id)
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
 pub struct PoolLiqCurveRequest {
-    pub chain_id: Uint256,
+    pub chainId: Option<String>,
     pub base: Address,
     pub quote: Address,
-    pub pool_idx: Uint256,
+    pub poolIdx: Uint256,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -407,7 +464,7 @@ pub async fn pool_liq_curve(
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
+    let pool = get_tracked_pool(&db, req.base, req.quote, req.poolIdx);
 
     match pool {
         Some(pool) => HttpResponse::Ok().json(PoolLiqCurveResp::from(pool)),
@@ -417,14 +474,15 @@ pub async fn pool_liq_curve(
 
 /// A request which specifies a pool (and the unused chain id)
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
 pub struct PoolStatsRequest {
-    pub chain_id: Uint256,
+    pub chainId: Option<String>,
     pub base: Address,
     pub quote: Address,
-    pub pool_idx: Uint256,
+    pub poolIdx: Uint256,
 
     // Not used
-    pub hist_time: Option<isize>,
+    pub histTime: Option<isize>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
@@ -463,7 +521,7 @@ impl From<TrackedPool> for PoolStatsResp {
 ///
 /// A query string with the following parameters:
 ///
-/// - chain_id: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
+/// - chainId: A number representing the id of the chain to use (not used, added for compatibility with legacy frontend queries)
 /// - base: The address of the base token in the pool (0 if native token) as a EIP 55 string
 /// - quote: The address of the quote token in the pool as a EIP 55 string
 /// - pool_idx: A number representing the pool's template index, needed for identifying the specific pool
@@ -481,10 +539,195 @@ pub async fn pool_stats(
     if get_syncing(&db) {
         return HttpResponse::ServiceUnavailable().body("Syncing");
     }
-    let pool = get_tracked_pool(&db, req.base, req.quote, req.pool_idx);
+    let pool = get_tracked_pool(&db, req.base, req.quote, req.poolIdx);
 
     match pool {
-        Some(pool) => HttpResponse::Ok().json(PoolStatsResp::from(pool)),
+        Some(pool) => {
+            let psr = PoolStatsResp::from(pool);
+            debug!("Returning pool stats: {:?}", psr);
+            HttpResponse::Ok().json(psr)
+        }
         None => HttpResponse::NotFound().body("No pool found for base quote poolIdx triple"),
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct SlingshotTradeRequest {
+    pub fromAmount: Uint256,
+    pub from: Address,
+    pub to: Address,
+}
+
+/// This post endpoint fulfils a lot of unnecessary structure to ultimately return just a single field: estimatedOutput
+/// this field indicates the price of req.from in terms of req.to obtained via a simple swap path.
+/// In reality, this endpoint is only ever used to query the native token price in terms of USDC.
+#[post("/trade")]
+pub async fn slingshot_trade(
+    req: web::Json<SlingshotTradeRequest>,
+    db: web::Data<Arc<DB>>,
+    opts: web::Data<Arc<Opts>>,
+) -> impl Responder {
+    let req = req.into_inner();
+    // Note: Strange part of the request includes "liquidityZone" as a header field
+
+    // We want to return the token price in USDC as the "estimatedOutput" field
+    // The frontend will then divide this value by 10^6, not sure how critical it is we account for that
+
+    let template: Uint256 = if opts.pool_templates.is_empty() {
+        DEFAULT_POOL_TEMPLATES
+    } else {
+        &opts.pool_templates
+    }
+    .first()
+    .map(|x| Uint256::from(*x))
+    .unwrap();
+
+    let mut flip = false;
+    let (base, quote) = if req.from < req.to {
+        (req.from, req.to)
+    } else {
+        flip = true;
+        (req.to, req.from)
+    };
+    let raw_price = get_price(&db, base, quote, template);
+    let mut price = raw_price.unwrap();
+    if flip {
+        let f_price = price.to_f64().unwrap();
+        let f_price = 1.0 / f_price;
+        price = f_price as u128;
+    }
+    HttpResponse::Ok().json(SlingshotTradeResponse {
+        estimatedOutput: price.to_string(),
+        ..Default::default()
+    })
+}
+
+// TODO: Remove
+// A testing endpoint which implements the same logic as the slingshot_trade endpoint, but accepts a get response
+#[get("/trade_get")]
+pub async fn slingshot_trade_get(
+    req: web::Query<SlingshotTradeRequest>,
+    opts: web::Data<Opts>,
+    db: web::Data<Arc<rocksdb::DB>>,
+) -> impl Responder {
+    let req = req.into_inner();
+    // Note: Strange part of the request includes "liquidityZone" as a header field
+
+    // We want to return the token price in USDC as the "estimatedOutput" field
+    // The frontend will then divide this value by 10^6, not sure how critical it is we account for that
+
+    let template: Uint256 = if opts.pool_templates.is_empty() {
+        DEFAULT_POOL_TEMPLATES
+    } else {
+        &opts.pool_templates
+    }
+    .first()
+    .map(|x| Uint256::from(*x))
+    .unwrap();
+
+    let mut flip = false;
+    let (base, quote) = if req.from < req.to {
+        (req.from, req.to)
+    } else {
+        flip = true;
+        (req.to, req.from)
+    };
+    let raw_price = get_price(&db, base, quote, template);
+    let mut price = raw_price.unwrap();
+    if flip {
+        let f_price = price.to_f64().unwrap();
+        let f_price = 1.0 / f_price;
+        price = f_price as u128;
+    }
+    HttpResponse::Ok().json(SlingshotTradeResponse {
+        estimatedOutput: price.to_string(),
+        ..Default::default()
+    })
+}
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[allow(non_snake_case)]
+pub struct SlingshotTradeResponse {
+    pub route: SlingshotTradeResponseRoute,
+    pub gasEstimateBlockchain: String,
+    pub gasEstimateHardcode: String,
+    pub estimatedOutput: String,
+    pub gasEstimate: String,
+    pub marketImpact: i64,
+    pub request: SlingshotTradeResponseRequest,
+    pub timestamp: i64,
+    pub routeIndex: i64,
+    pub uuid: String,
+    pub finalAmountOutMin: String,
+}
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[allow(non_snake_case)]
+pub struct SlingshotTradeResponseRoute {
+    pub weights: Vec<i64>,
+    pub weightsSum: i64,
+    pub swaps: Vec<Vec<SlingshotTradeResponseRouteSwap>>,
+}
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[allow(non_snake_case)]
+pub struct SlingshotTradeResponseRouteSwap {
+    pub tokenA: String,
+    pub tokenB: String,
+    pub dex: String,
+    pub pair: String,
+}
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
+#[allow(non_snake_case)]
+pub struct SlingshotTradeResponseRequest {
+    pub fromAmount: String,
+    pub from: String,
+    pub to: String,
+    pub gasOptimized: bool,
+    pub threeHop: bool,
+    pub useGasAwareV2: bool,
+    pub liquidityZone: String,
+}
+
+// Accepts a "chain" string param which we do not use
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct MoralisRequest {
+    pub chain: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct MoralisResponse {
+    pub usdPriceFormatted: String,
+}
+
+pub const WETH_MAINNET: &str = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+pub const USDC_MAINNET: &str = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+pub const WETH_USDC_UNI_FEE: u32 = 500;
+
+#[get("/erc20/{erc20}/price")]
+pub async fn moralis_eth_in_usdc(
+    _req: web::Path<Address>, // The path includes a token address which we do not use
+    _query: web::Query<MoralisRequest>,
+    opts: web::Data<Opts>,
+) -> impl Responder {
+    let web3 = get_mainnet_web3(&opts, Duration::from_secs(30));
+    let querier = Address::from_str(DEFAULT_QUERIER).unwrap();
+    let weth = Address::from_str(WETH_MAINNET).unwrap();
+    let usdc = Address::from_str(USDC_MAINNET).unwrap();
+    let price = web3
+        .get_uniswap_v3_price(
+            querier,
+            weth,
+            usdc,
+            Some(WETH_USDC_UNI_FEE.into()),
+            1000000000000000000u128.into(),
+            None,
+            None,
+        )
+        .await;
+    match price {
+        Ok(price) => HttpResponse::Ok().json(MoralisResponse {
+            usdPriceFormatted: price.to_string(),
+        }),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Error: {}", e)),
     }
 }
