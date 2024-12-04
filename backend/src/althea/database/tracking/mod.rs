@@ -227,14 +227,14 @@ pub fn get_tracked_pool(
     pool_idx: Uint256,
 ) -> Option<TrackedPool> {
     let v = db
-        .get(dirty_pool_key(base, quote, pool_idx).as_bytes())
+        .get(tracked_pool_key(base, quote, pool_idx).as_bytes())
         .unwrap()?;
-    let value: TrackedPool = bincode::deserialize(&v).unwrap();
-    Some(value)
+    Some(bincode::deserialize(&v).unwrap())
 }
 
 pub fn update_pool(db: &rocksdb::DB, update: PoolUpdateEvent) {
-    let initialized = get_dirty_pool(db, update.base, update.quote, update.pool_idx).is_some();
+    let dirty_status = get_dirty_pool(db, update.base, update.quote, update.pool_idx);
+    let initialized = dirty_status.is_some_and(|(_, last_block)| !last_block.is_zero());
     let pool = if !initialized {
         handle_init_pool(db, &update)
     } else {

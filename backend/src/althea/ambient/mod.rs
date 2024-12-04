@@ -3,11 +3,13 @@ use std::sync::Arc;
 use clarity::{Address, Uint256};
 use croc_query::get_template;
 use events::{
-    BURN_AMBIENT_SIGNATURE, BURN_RANGED_SIGNATURE, HARVEST_SIGNATURE, INIT_POOL_SIGNATURE,
-    MINT_AMBIENT_SIGNATURE, MINT_RANGED_SIGNATURE, SWAP_SIGNATURE,
+    BURN_AMBIENT_SIGNATURE, BURN_KNOCKOUT_SIGNATURE, BURN_RANGED_SIGNATURE, HARVEST_SIGNATURE,
+    INIT_POOL_SIGNATURE, MINT_AMBIENT_SIGNATURE, MINT_KNOCKOUT_SIGNATURE, MINT_RANGED_SIGNATURE,
+    SWAP_SIGNATURE, WITHDRAW_KNOCKOUT_SIGNATURE,
 };
 use futures::future::join_all;
 use futures::join;
+use knockout::{BurnKnockoutEvent, MintKnockoutEvent, WithdrawKnockoutEvent};
 use log::{debug, info};
 use pools::InitPoolEvent;
 use positions::{
@@ -21,6 +23,7 @@ use crate::althea::{
         pools::{save_init_pool, save_swap},
         positions::{
             ambient::{save_burn_ambient, save_mint_ambient},
+            knockout::{save_burn_knockout, save_mint_knockout, save_withdraw_knockout},
             ranged::{save_burn_ranged, save_harvest, save_mint_ranged},
         },
         tracking::{mark_pool_dirty, set_dirty_pool, update_pool},
@@ -111,14 +114,46 @@ pub async fn search_for_pool_events(
         vec![dex_ctr],
         vec![HARVEST_SIGNATURE],
     );
-    let (init, swap, mint_ranged, mint_ambient, burn_ranged, burn_ambient, harvest) = join!(
+    let mint_knockout_events = web3.check_for_events(
+        start_block,
+        Some(end_block),
+        vec![dex_ctr],
+        vec![MINT_KNOCKOUT_SIGNATURE],
+    );
+    let burn_knockout_events = web3.check_for_events(
+        start_block,
+        Some(end_block),
+        vec![dex_ctr],
+        vec![BURN_KNOCKOUT_SIGNATURE],
+    );
+    let withdraw_knockout_events = web3.check_for_events(
+        start_block,
+        Some(end_block),
+        vec![dex_ctr],
+        vec![WITHDRAW_KNOCKOUT_SIGNATURE],
+    );
+    let (
+        init,
+        swap,
+        mint_ranged,
+        mint_ambient,
+        burn_ranged,
+        burn_ambient,
+        harvest,
+        mint_knockout,
+        burn_knockout,
+        withdraw_knockout,
+    ) = join!(
         init_events,
         swap_events,
         mint_ranged_events,
         mint_ambient_events,
         burn_ranged_events,
         burn_ambient_events,
-        harvest_events
+        harvest_events,
+        mint_knockout_events,
+        burn_knockout_events,
+        withdraw_knockout_events
     );
 
     let (
@@ -129,6 +164,9 @@ pub async fn search_for_pool_events(
         burn_ranged_events,
         burn_ambient_events,
         harvest_events,
+        mint_knockout_events,
+        burn_knockout_events,
+        withdraw_knockout_events,
     ) = (
         init?,
         swap?,
@@ -137,6 +175,9 @@ pub async fn search_for_pool_events(
         burn_ranged?,
         burn_ambient?,
         harvest?,
+        mint_knockout?,
+        burn_knockout?,
+        withdraw_knockout?,
     );
     debug!(
         "Found {} events",
@@ -147,6 +188,9 @@ pub async fn search_for_pool_events(
             + burn_ranged_events.len()
             + burn_ambient_events.len()
             + harvest_events.len()
+            + mint_knockout_events.len()
+            + burn_knockout_events.len()
+            + withdraw_knockout_events.len()
     );
     let init_events = InitPoolEvent::from_logs(&init_events)?
         .into_iter()
@@ -196,6 +240,27 @@ pub async fn search_for_pool_events(
                 && (tokens.contains(&v.base) || tokens.contains(&v.quote))
         })
         .collect::<Vec<_>>();
+    let mint_knockout_events = MintKnockoutEvent::from_logs(&mint_knockout_events)?
+        .into_iter()
+        .filter(|v| {
+            templates.contains(&v.pool_idx)
+                && (tokens.contains(&v.base) || tokens.contains(&v.quote))
+        })
+        .collect::<Vec<_>>();
+    let burn_knockout_events = BurnKnockoutEvent::from_logs(&burn_knockout_events)?
+        .into_iter()
+        .filter(|v| {
+            templates.contains(&v.pool_idx)
+                && (tokens.contains(&v.base) || tokens.contains(&v.quote))
+        })
+        .collect::<Vec<_>>();
+    let withdraw_knockout_events = WithdrawKnockoutEvent::from_logs(&withdraw_knockout_events)?
+        .into_iter()
+        .filter(|v| {
+            templates.contains(&v.pool_idx)
+                && (tokens.contains(&v.base) || tokens.contains(&v.quote))
+        })
+        .collect::<Vec<_>>();
     if init_events.is_empty()
         && swap_events.is_empty()
         && mint_ranged_events.is_empty()
@@ -203,6 +268,9 @@ pub async fn search_for_pool_events(
         && burn_ranged_events.is_empty()
         && burn_ambient_events.is_empty()
         && harvest_events.is_empty()
+        && mint_knockout_events.is_empty()
+        && burn_knockout_events.is_empty()
+        && withdraw_knockout_events.is_empty()
     {
         debug!("No events found");
         return Ok(());
@@ -255,6 +323,21 @@ pub async fn search_for_pool_events(
         mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
         save_harvest(db, event);
     }
+    for event in mint_knockout_events {
+        debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
+        save_mint_knockout(db, event);
+    }
+    for event in burn_knockout_events {
+        debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
+        save_burn_knockout(db, event);
+    }
+    for event in withdraw_knockout_events {
+        debug!("Writing {event:?} to database");
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
+        save_withdraw_knockout(db, event);
+    }
     Ok(())
 }
 
@@ -271,6 +354,8 @@ pub fn track_pool(db: &Arc<rocksdb::DB>, pool: DirtyPoolTracker) -> Result<(), A
     if pool.last_block == Uint256::default() {
         if let Some(init) = get_init_pool(db, pool.base, pool.quote, pool.pool_idx) {
             update_pool(db, init.into());
+        } else {
+            debug!("No InitPool found for {pool:?}");
         }
     } else {
         // Get unhandled events by filtering for new ones
@@ -302,6 +387,7 @@ pub fn track_pool(db: &Arc<rocksdb::DB>, pool: DirtyPoolTracker) -> Result<(), A
         updates.sort_by_key(|v| (v.block, v.index));
 
         for update in updates {
+            debug!("Applying update {update:?}");
             update_pool(db, update);
         }
     }
@@ -347,19 +433,19 @@ pub async fn query_pool(
     // Only save items if the value is nonzero (empty) or if the key is already in the database
     if let Ok(curve) = curve {
         if !curve.is_zero() || get_curve(db, base, quote, pool_idx).is_some() {
-            info!("Writing curve to database for pool {base} {quote} {pool_idx}");
+            debug!("Writing curve to database for pool {base} {quote} {pool_idx}");
             save_curve(db, curve, base, quote, pool_idx);
         }
     }
     if let Ok(price) = price {
         if price != 0 || get_price(db, base, quote, pool_idx).is_some() {
-            info!("Writing price to database for pool {base} {quote} {pool_idx}");
+            debug!("Writing price to database for pool {base} {quote} {pool_idx}");
             save_price(db, price, base, quote, pool_idx);
         }
     }
     if let Ok(liq) = liq {
         if liq != 0 || get_liquidity(db, base, quote, pool_idx).is_some() {
-            info!("Writing liquidity to database for pool {base} {quote} {pool_idx}");
+            debug!("Writing liquidity to database for pool {base} {quote} {pool_idx}");
             save_liquidity(db, liq, base, quote, pool_idx);
         }
     }

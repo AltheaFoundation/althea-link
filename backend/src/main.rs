@@ -44,6 +44,10 @@ pub struct Opts {
     #[clap(short, long, default_value = "http://localhost:9090")]
     cosmos_rpc_url: String,
 
+    /// The url of the Ethereum Mainnet EVM JSONRPC
+    #[clap(long, default_value = "https://eth.althea.net")]
+    mainnet_rpc_url: String,
+
     /// The address to bind to
     #[clap(short, long, default_value = "0.0.0.0")]
     address: IpAddr,

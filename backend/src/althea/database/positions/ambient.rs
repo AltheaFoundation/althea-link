@@ -66,7 +66,7 @@ pub fn get_mint_ambient(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known MintAmbient events from the database
@@ -178,7 +178,7 @@ pub fn get_burn_ambient(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known BurnAmbient events from the database

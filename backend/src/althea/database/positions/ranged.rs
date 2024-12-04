@@ -81,7 +81,7 @@ pub fn get_mint_ranged(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known MintRanged events from the database
@@ -209,7 +209,7 @@ pub fn get_burn_ranged(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known BurnRanged events from the database
@@ -336,7 +336,7 @@ pub fn get_harvest(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known Harvest events from the database

@@ -11,7 +11,7 @@ use super::InitPoolEvent;
 
 pub const INIT_POOL_PREFIX: &str = "init-pool_";
 fn init_pool_key(base: Address, quote: Address, pool_idx: Uint256) -> String {
-    format!("{}{}_{}_{}", INIT_POOL_PREFIX, base, quote, pool_idx,)
+    format!("{}{}_{}_{}", INIT_POOL_PREFIX, base, quote, pool_idx)
 }
 
 // Gets all known InitPool events from the database
@@ -43,22 +43,16 @@ pub fn get_init_pool(
     quote: Address,
     pool_idx: Uint256,
 ) -> Option<InitPoolEvent> {
-    let v = db
-        .get(init_pool_key(base, quote, pool_idx).as_bytes())
-        .unwrap();
-    #[allow(clippy::question_mark)]
-    if v.is_none() {
-        return None;
-    }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    let k = init_pool_key(base, quote, pool_idx);
+    let v = db.get(k.as_bytes()).unwrap()?;
+
+    Some(bincode::deserialize(&v).expect("Invalid InitPool stored in database?"))
 }
 
 pub fn save_init_pool(db: &rocksdb::DB, pool: InitPoolEvent) {
     let k = init_pool_key(pool.base, pool.quote, pool.pool_idx);
-    debug!("Saving pool to key {}", k);
     let v = bincode::serialize(&pool).unwrap();
-
-    db.put(k.as_bytes(), v).unwrap();
+    db.put(k.as_bytes(), &v).unwrap();
 }
 
 pub const POOL_TEMPLATE_PREFIX: &str = "template_";
@@ -83,7 +77,7 @@ pub fn get_pool_template(db: &rocksdb::DB, pool_idx: Uint256) -> Option<Pool> {
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 pub fn save_pool_template(db: &rocksdb::DB, pool_idx: Uint256, template: Pool) {
@@ -158,7 +152,7 @@ pub fn get_swap(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known Swap events from the database
@@ -255,7 +249,7 @@ pub fn get_revision(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known PoolRevision events from the database

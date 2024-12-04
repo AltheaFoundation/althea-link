@@ -3,7 +3,7 @@ use crate::Opts;
 use actix_web::rt::System;
 use actix_web::web::{self};
 use ambient::pools::InitPoolEvent;
-use ambient::{initialize_templates, query_latest, search_for_pool_events};
+use ambient::{initialize_templates, query_latest, search_for_pool_events, track_pools};
 use clarity::{Address, Uint256};
 use cosmos::delegations::start_delegation_cache_refresh_task;
 use cosmos::governance::start_proposal_cache_refresh_task;
@@ -58,6 +58,10 @@ pub fn get_althea_contact(opts: &Opts, timeout: Duration) -> Contact {
 
 pub fn get_althea_web3(opts: &Opts, timeout: Duration) -> Web3 {
     Web3::new(&opts.evm_rpc_url, timeout)
+}
+
+pub fn get_mainnet_web3(opts: &Opts, timeout: Duration) -> Web3 {
+    Web3::new(&opts.mainnet_rpc_url, timeout)
 }
 
 pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
@@ -125,6 +129,11 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                     if let Err(e) = query_latest(&db, &web3, opts.query_contract, &pools).await {
                         error!("Error querying latest: {}", e);
                     }
+                }
+
+                let tracking = track_pools(&db);
+                if let Err(e) = tracking {
+                    error!("Error tracking pools: {}", e);
                 }
 
                 if opts.compact {

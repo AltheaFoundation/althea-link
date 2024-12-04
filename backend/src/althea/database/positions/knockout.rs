@@ -68,7 +68,7 @@ pub fn get_mint_knockout(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known MintKnockout events from the database
@@ -181,7 +181,7 @@ pub fn get_burn_knockout(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known BurnKnockout events from the database
@@ -294,7 +294,7 @@ pub fn get_withdraw_knockout(
     if v.is_none() {
         return None;
     }
-    bincode::deserialize(&v.unwrap()).unwrap()
+    Some(bincode::deserialize(&v.unwrap()).unwrap())
 }
 
 // Gets all known WithdrawKnockout events from the database

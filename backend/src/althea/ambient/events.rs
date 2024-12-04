@@ -104,7 +104,7 @@ pub const BURN_AMBIENT_SIGNATURE: &str =
 ///
 /// event MintKnockout(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int128 baseFlow, int128 quoteFlow, bool isBid, int24 lowerTick, int24 upperTick);
 pub const MINT_KNOCKOUT_SIGNATURE: &str =
-    "MintKnockout(address,address,address,uint256,uint128,bool,int24,int24)";
+    "MintKnockout(address,address,address,uint256,int128,int128,bool,int24,int24)";
 
 /// @notice Emitted when a knockout liquidity position is burned, removing an in-progress knockout position from the pool.
 /// @param user The address of the position holder.
