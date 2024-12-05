@@ -566,7 +566,7 @@ pub struct SlingshotTradeRequest {
 pub async fn slingshot_trade(
     req: web::Json<SlingshotTradeRequest>,
     db: web::Data<Arc<DB>>,
-    opts: web::Data<Arc<Opts>>,
+    opts: web::Data<Opts>,
 ) -> impl Responder {
     let req = req.into_inner();
     // Note: Strange part of the request includes "liquidityZone" as a header field

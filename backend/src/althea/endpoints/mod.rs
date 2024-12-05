@@ -34,7 +34,7 @@ pub struct FrontendConstants {
 /// - `tokens`: A list of the ERC20 tokens for which pools have been deployed
 /// - `templates`: A list of the poolIdx values for which pool templates exist
 #[get("/constants")]
-pub async fn get_constants(opts: web::Data<Arc<Opts>>) -> impl Responder {
+pub async fn get_constants(opts: web::Data<Opts>) -> impl Responder {
     let constants = FrontendConstants {
         dex: opts.dex_contract.to_string(),
         query: opts.query_contract.to_string(),
