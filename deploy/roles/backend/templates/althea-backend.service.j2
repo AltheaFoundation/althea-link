@@ -10,10 +10,10 @@ ExecStart=althea-link-backend --https \
 --cert-file=/etc/letsencrypt/live/{{ link_server_name }}/fullchain.pem \
 --key-file=/etc/letsencrypt/live/{{ link_server_name }}/privkey.pem \
 --pool-templates=36000 \
---pool-tokens="0x898dA72aB7628E1F12001A06Bc2af98A25502Cd0,0xc4Cb4eA86F9271A20eB72Ac9D7ca75637419FC08,0x892e95d3e908CAF025205Ec4C575B4423374fd17" \
---dex-contract="0xDA7d20C76cBD8b0c33e4A322E80488CC69fE5cdb" \
---multicall-contract="0x1b2f732Bf9d44795A2fc9a4445DcEb0d21eFe536" \
---query-contract="0x1E27d2e0B1Abb3bEC2F915152F0597EFdacf3da1"
+--pool-tokens="0x0412C7c846bb6b7DC462CF6B453f76D8440b2609,0x30dA8589BFa1E509A319489E014d384b87815D89,0x9676519d99E390A180Ab1445d5d857E3f6869065,0x7580bFE88Dd3d07947908FAE12d95872a260F2D8" \
+--dex-contract="0x7580bFE88Dd3d07947908FAE12d95872a260F2D8" \
+--multicall-contract="0x9726268F55d581d5F50c3853969010ACDCe7Cbff" \
+--query-contract="0xB2F37Ba3CaDEc9aAf43BC716B1B86656be2d06Eb"
 
 Restart=always
 Environment=RUST_LOG=info
