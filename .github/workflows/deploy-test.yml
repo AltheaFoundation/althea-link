@@ -1,0 +1,47 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+  ANSIBLE_HOST_KEY_CHECKING: False
+  OPS_SSH_KEY: ${{ secrets.SSH_KEY }}
+  NEXT_PUBLIC_ALTHEA_MAINNET_API_URL: https://test.althea.link:8080
+  NEXT_PUBLIC_ALTHEA_TESTNET_API_URL: https://test.althea.link:8080
+  NEXT_PUBLIC_AMBIENT_API_URL: http://localhost:8080
+  WALLET_CONNECT_PROJECT_ID: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}
+  NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID: ${{ secrets.WALLET_CONNECT_PROJECT_ID }}
+  NEXT_PUBLIC_ETH_PRICE_KEY: ${{ secrets.ETH_PRICE_KEY }}
+  ETH_PRICE_KEY: ${{ secrets.ETH_PRICE_KEY }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+
+jobs:
+  deploy:
+    name: Build and Deploy Althea.link
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "backend/"
+          cache-on-failure: true
+          cache-all-crates: true
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Install Python dependencies.
+        run: pip3 install ansible github3.py certbot certbot-dns-cloudflare
+      - name: Install cross
+        run: cargo install cross
+      - name: Setup SSH Connectivity
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$OPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+      - name: Prep node environment
+        run: cd frontend && npm install
+      - name: Build and deploy Althea.link
+        run: bash deploy/deploy-test.sh
