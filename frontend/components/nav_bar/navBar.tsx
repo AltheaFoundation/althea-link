@@ -131,16 +131,16 @@ const NavBar = () => {
         >
           <Text size="sm">Lending</Text>
         </Link> */}
-          {/* <Link
-          href="/lp"
-          className={clsx(
-            styles["nav-link"],
-            currentPath == "/lp" && styles.active
-          )}
-          onClick={() => Analytics.actions.events.clickedNavLink("Pools")}
-        >
-          <Text size="sm">Pools</Text>
-        </Link> */}
+          <Link
+            href="/lp"
+            className={clsx(
+              styles["nav-link"],
+              currentPath == "/lp" && styles.active
+            )}
+            onClick={() => Analytics.actions.events.clickedNavLink("Pools")}
+          >
+            <Text size="sm">Pools</Text>
+          </Link>
           {/* <Link
           href="/explore"
           className={clsx(
