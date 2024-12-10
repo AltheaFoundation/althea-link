@@ -582,7 +582,7 @@ pub async fn pool_stats(
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct SlingshotTradeRequest {
-    pub fromAmount: Uint256,
+    pub fromAmount: Option<String>,
     pub from: Address,
     pub to: Address,
 }
