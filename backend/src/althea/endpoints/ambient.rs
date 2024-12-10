@@ -596,37 +596,38 @@ pub async fn slingshot_trade(
     db: web::Data<Arc<DB>>,
     opts: web::Data<Opts>,
 ) -> impl Responder {
-    let req = req.into_inner();
-    // Note: Strange part of the request includes "liquidityZone" as a header field
+    return HttpResponse::Ok().json(SlingshotTradeResponse::default());
+    // let req = req.into_inner();
+    // // Note: Strange part of the request includes "liquidityZone" as a header field
 
-    // We want to return the token price in USDC as the "estimatedOutput" field
-    // The frontend will then divide this value by 10^6, not sure how critical it is we account for that
+    // // We want to return the token price in USDC as the "estimatedOutput" field
+    // // The frontend will then divide this value by 10^6, not sure how critical it is we account for that
 
-    let template: Uint256 = if opts.pool_templates.is_empty() {
-        DEFAULT_POOL_TEMPLATES
-    } else {
-        &opts.pool_templates
-    }
-    .first()
-    .map(|x| Uint256::from(*x))
-    .unwrap();
+    // let template: Uint256 = if opts.pool_templates.is_empty() {
+    //     DEFAULT_POOL_TEMPLATES
+    // } else {
+    //     &opts.pool_templates
+    // }
+    // .first()
+    // .map(|x| Uint256::from(*x))
+    // .unwrap();
 
-    let mut flip = false;
-    let (base, quote) = if req.from < req.to {
-        (req.from, req.to)
-    } else {
-        flip = true;
-        (req.to, req.from)
-    };
-    let raw_price = get_price(&db, base, quote, template);
-    let mut price: f64 = raw_price.unwrap().to_f64().unwrap();
-    if flip {
-        price = 1.0 / price;
-    }
-    HttpResponse::Ok().json(SlingshotTradeResponse {
-        estimatedOutput: price.to_string(),
-        ..Default::default()
-    })
+    // let mut flip = false;
+    // let (base, quote) = if req.from < req.to {
+    //     (req.from, req.to)
+    // } else {
+    //     flip = true;
+    //     (req.to, req.from)
+    // };
+    // let raw_price = get_price(&db, base, quote, template);
+    // let mut price: f64 = raw_price.unwrap().to_f64().unwrap();
+    // if flip {
+    //     price = 1.0 / price;
+    // }
+    // HttpResponse::Ok().json(SlingshotTradeResponse {
+    //     estimatedOutput: price.to_string(),
+    //     ..Default::default()
+    // })
 }
 
 // TODO: Remove
