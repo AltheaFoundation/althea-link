@@ -627,7 +627,7 @@ pub async fn slingshot_trade(
                 price = 1.0 / price;
             }
             HttpResponse::Ok().json(SlingshotTradeResponse {
-                estimatedOutput: price,
+                estimatedOutput: format!("{:e}", price),
                 ..Default::default()
             })
         }
@@ -673,7 +673,7 @@ pub async fn slingshot_trade_get(
                 price = 1.0 / price;
             }
             HttpResponse::Ok().json(SlingshotTradeResponse {
-                estimatedOutput: price,
+                estimatedOutput: format!("{:e}", price),
                 ..Default::default()
             })
         }
@@ -685,7 +685,7 @@ pub struct SlingshotTradeResponse {
     pub route: SlingshotTradeResponseRoute,
     pub gasEstimateBlockchain: String,
     pub gasEstimateHardcode: String,
-    pub estimatedOutput: f64,
+    pub estimatedOutput: String,
     pub gasEstimate: String,
     pub marketImpact: i64,
     pub request: SlingshotTradeResponseRequest,
