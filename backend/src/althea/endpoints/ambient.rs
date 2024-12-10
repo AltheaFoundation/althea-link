@@ -620,7 +620,7 @@ pub async fn slingshot_trade(
     };
     let raw_price = get_price(&db, base, quote, template);
     match raw_price {
-        None => HttpResponse::NotFound().body("No known price"),
+        None => HttpResponse::Ok().body("No known price"),
         Some(price) => {
             let mut price: f64 = price.to_f64().unwrap();
             if flip {
@@ -666,7 +666,7 @@ pub async fn slingshot_trade_get(
     };
     let raw_price = get_price(&db, base, quote, template);
     match raw_price {
-        None => HttpResponse::NotFound().body("No known price"),
+        None => HttpResponse::Ok().body("No known price"),
         Some(price) => {
             let mut price: f64 = price.to_f64().unwrap();
             if flip {
