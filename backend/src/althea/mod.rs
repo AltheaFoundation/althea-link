@@ -49,6 +49,7 @@ const DEFAULT_TOKEN_ADDRESSES: &[&str] = &[
 /// pool using these templates permissionlessly.
 const DEFAULT_POOL_TEMPLATES: &[u64] = &[36000, 36001];
 const DEFAULT_QUERIER: &str = "0xbf660843528035a5a4921534e156a27e64b231fe";
+const MAINNET_QUERIER: &str = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
 /// Returns a Contact struct for interacting with Gravity Bridge, pre-configured with the url
 /// and prefix

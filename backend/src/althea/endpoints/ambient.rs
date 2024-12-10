@@ -10,6 +10,7 @@ use crate::althea::{
         tracking::get_tracked_pool,
     },
     get_mainnet_web3, ALTHEA_MAINNET_EVM_CHAIN_ID, DEFAULT_POOL_TEMPLATES, DEFAULT_QUERIER,
+    MAINNET_QUERIER,
 };
 use crate::{
     althea::database::{
@@ -710,7 +711,7 @@ pub async fn moralis_eth_in_usdc(
     opts: web::Data<Opts>,
 ) -> impl Responder {
     let web3 = get_mainnet_web3(&opts, Duration::from_secs(30));
-    let querier = Address::from_str(DEFAULT_QUERIER).unwrap();
+    let querier = Address::from_str(MAINNET_QUERIER).unwrap();
     let weth = Address::from_str(WETH_MAINNET).unwrap();
     let usdc = Address::from_str(USDC_MAINNET).unwrap();
     let price = web3
