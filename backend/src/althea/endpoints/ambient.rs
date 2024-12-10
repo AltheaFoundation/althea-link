@@ -596,38 +596,42 @@ pub async fn slingshot_trade(
     db: web::Data<Arc<DB>>,
     opts: web::Data<Opts>,
 ) -> impl Responder {
-    return HttpResponse::Ok().json(SlingshotTradeResponse::default());
-    // let req = req.into_inner();
-    // // Note: Strange part of the request includes "liquidityZone" as a header field
+    let req = req.into_inner();
+    // Note: Strange part of the request includes "liquidityZone" as a header field
 
-    // // We want to return the token price in USDC as the "estimatedOutput" field
-    // // The frontend will then divide this value by 10^6, not sure how critical it is we account for that
+    // We want to return the token price in USDC as the "estimatedOutput" field
+    // The frontend will then divide this value by 10^6, not sure how critical it is we account for that
 
-    // let template: Uint256 = if opts.pool_templates.is_empty() {
-    //     DEFAULT_POOL_TEMPLATES
-    // } else {
-    //     &opts.pool_templates
-    // }
-    // .first()
-    // .map(|x| Uint256::from(*x))
-    // .unwrap();
+    let template: Uint256 = if opts.pool_templates.is_empty() {
+        DEFAULT_POOL_TEMPLATES
+    } else {
+        &opts.pool_templates
+    }
+    .first()
+    .map(|x| Uint256::from(*x))
+    .unwrap();
 
-    // let mut flip = false;
-    // let (base, quote) = if req.from < req.to {
-    //     (req.from, req.to)
-    // } else {
-    //     flip = true;
-    //     (req.to, req.from)
-    // };
-    // let raw_price = get_price(&db, base, quote, template);
-    // let mut price: f64 = raw_price.unwrap().to_f64().unwrap();
-    // if flip {
-    //     price = 1.0 / price;
-    // }
-    // HttpResponse::Ok().json(SlingshotTradeResponse {
-    //     estimatedOutput: price.to_string(),
-    //     ..Default::default()
-    // })
+    let mut flip = false;
+    let (base, quote) = if req.from < req.to {
+        (req.from, req.to)
+    } else {
+        flip = true;
+        (req.to, req.from)
+    };
+    let raw_price = get_price(&db, base, quote, template);
+    match raw_price {
+        None => HttpResponse::NotFound().body("No known price"),
+        Some(price) => {
+            let mut price: f64 = price.to_f64().unwrap();
+            if flip {
+                price = 1.0 / price;
+            }
+            HttpResponse::Ok().json(SlingshotTradeResponse {
+                estimatedOutput: price,
+                ..Default::default()
+            })
+        }
+    }
 }
 
 // TODO: Remove
@@ -661,14 +665,19 @@ pub async fn slingshot_trade_get(
         (req.to, req.from)
     };
     let raw_price = get_price(&db, base, quote, template);
-    let mut price: f64 = raw_price.unwrap().to_f64().unwrap();
-    if flip {
-        price = 1.0 / price;
+    match raw_price {
+        None => HttpResponse::NotFound().body("No known price"),
+        Some(price) => {
+            let mut price: f64 = price.to_f64().unwrap();
+            if flip {
+                price = 1.0 / price;
+            }
+            HttpResponse::Ok().json(SlingshotTradeResponse {
+                estimatedOutput: price,
+                ..Default::default()
+            })
+        }
     }
-    HttpResponse::Ok().json(SlingshotTradeResponse {
-        estimatedOutput: price.to_string(),
-        ..Default::default()
-    })
 }
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
 #[allow(non_snake_case)]
@@ -676,7 +685,7 @@ pub struct SlingshotTradeResponse {
     pub route: SlingshotTradeResponseRoute,
     pub gasEstimateBlockchain: String,
     pub gasEstimateHardcode: String,
-    pub estimatedOutput: String,
+    pub estimatedOutput: f64,
     pub gasEstimate: String,
     pub marketImpact: i64,
     pub request: SlingshotTradeResponseRequest,
