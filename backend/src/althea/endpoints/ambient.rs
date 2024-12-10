@@ -691,7 +691,7 @@ pub struct SlingshotTradeResponseRequest {
 // Accepts a "chain" string param which we do not use
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct MoralisRequest {
-    pub chain: String,
+    pub chain: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
