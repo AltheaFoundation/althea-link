@@ -30,7 +30,7 @@ use actix_web::{
 };
 use clarity::{Address, Uint256};
 
-use log::debug;
+use log::{debug, error};
 use num_traits::ToPrimitive;
 use rocksdb::DB;
 use serde::{Deserialize, Serialize};
@@ -232,6 +232,33 @@ pub async fn query_all_burn_knockout(db: web::Data<Arc<DB>>) -> impl Responder {
     }
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct PriceQuery {
+    pub from: Address,
+    pub to: Address,
+    pub pool_idx: Uint256,
+}
+pub struct PriceResponse {
+    pub price: f64,
+}
+#[get("/price")]
+pub async fn query_price(db: web::Data<Arc<DB>>, q: web::Query<PriceQuery>) -> impl Responder {
+    debug!("Querying current price");
+    let (base, quote, flip) = if q.from < q.to {
+        (q.from, q.to, false)
+    } else {
+        (q.to, q.from, true)
+    };
+    let price = get_price(&db, base, quote, q.pool_idx);
+    match price {
+        None => HttpResponse::NotFound().body("No known price"),
+        Some(price) => HttpResponse::Ok().json(if flip {
+            1.0 / price as f64
+        } else {
+            price as f64
+        }),
+    }
+}
 /// A request for a user's positions in a pool
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[allow(non_snake_case)]
@@ -592,11 +619,9 @@ pub async fn slingshot_trade(
         (req.to, req.from)
     };
     let raw_price = get_price(&db, base, quote, template);
-    let mut price = raw_price.unwrap();
+    let mut price: f64 = raw_price.unwrap().to_f64().unwrap();
     if flip {
-        let f_price = price.to_f64().unwrap();
-        let f_price = 1.0 / f_price;
-        price = f_price as u128;
+        price = 1.0 / price;
     }
     HttpResponse::Ok().json(SlingshotTradeResponse {
         estimatedOutput: price.to_string(),
@@ -635,11 +660,9 @@ pub async fn slingshot_trade_get(
         (req.to, req.from)
     };
     let raw_price = get_price(&db, base, quote, template);
-    let mut price = raw_price.unwrap();
+    let mut price: f64 = raw_price.unwrap().to_f64().unwrap();
     if flip {
-        let f_price = price.to_f64().unwrap();
-        let f_price = 1.0 / f_price;
-        price = f_price as u128;
+        price = 1.0 / price;
     }
     HttpResponse::Ok().json(SlingshotTradeResponse {
         estimatedOutput: price.to_string(),

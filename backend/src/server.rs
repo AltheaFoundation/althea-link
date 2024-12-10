@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::althea::endpoints::ambient::{
     moralis_eth_in_usdc, pool_liq_curve, pool_stats, query_all_burn_ambient,
     query_all_burn_knockout, query_all_burn_ranged, query_all_init_pools, query_all_mint_ambient,
-    query_all_mint_knockout, query_all_mint_ranged, query_pool, slingshot_trade,
+    query_all_mint_knockout, query_all_mint_ranged, query_pool, query_price, slingshot_trade,
     slingshot_trade_get, user_pool_positions, user_positions,
 };
 use crate::althea::endpoints::cosmos::{
@@ -66,7 +66,8 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
                     .service(query_all_mint_ambient)
                     .service(query_all_burn_ambient)
                     .service(query_all_mint_knockout)
-                    .service(query_all_burn_knockout),
+                    .service(query_all_burn_knockout)
+                    .service(query_price),
             )
             // Graphcache-go endpoints
             .service(
@@ -79,7 +80,11 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
             .service(
                 web::scope("/api")
                     // Slingshot Trade endpoint
-                    .service(web::scope("/v3").service(slingshot_trade))
+                    .service(
+                        web::scope("/v3")
+                            .service(slingshot_trade)
+                            .service(slingshot_trade_get),
+                    )
                     // Moralis price endpoint
                     .service(web::scope("/v2.2").service(moralis_eth_in_usdc)),
             )
