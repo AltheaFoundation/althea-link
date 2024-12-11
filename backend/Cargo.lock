@@ -356,6 +356,7 @@ dependencies = [
  "deep_space",
  "env_logger",
  "futures",
+ "itertools 0.12.1",
  "log",
  "num-integer",
  "num-traits",

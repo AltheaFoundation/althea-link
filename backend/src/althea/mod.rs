@@ -3,7 +3,9 @@ use crate::Opts;
 use actix_web::rt::System;
 use actix_web::web::{self};
 use ambient::pools::InitPoolEvent;
-use ambient::{initialize_templates, query_latest, search_for_pool_events, track_pools};
+use ambient::{
+    initialize_templates, possible_pools, query_latest, search_for_pool_events, track_pools,
+};
 use clarity::{Address, Uint256};
 use cosmos::delegations::start_delegation_cache_refresh_task;
 use cosmos::governance::start_proposal_cache_refresh_task;
@@ -13,6 +15,7 @@ use database::pools::get_init_pools;
 use database::{get_latest_searched_block, save_latest_searched_block, save_syncing};
 use deep_space::Contact;
 use endpoints::cosmos::{get_delegations, get_proposals, get_staking_info, get_validators};
+use itertools::Itertools;
 use log::{error, info};
 use std::cmp::min;
 use std::str::FromStr;
@@ -122,10 +125,16 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                 save_latest_searched_block(&db, end_block);
 
                 if end_block != start_block {
-                    let pools = get_init_pools(&db);
-                    let pools = pools
-                        .iter()
-                        .map(|p| (p.base, p.quote, p.pool_idx))
+                    // Query up to date info on pools which may exist but haven't been tracked yet, and any already tracked pools too
+                    let potential_pools = possible_pools(&tokens, &templates);
+                    let discovered_pools = get_init_pools(&db)
+                        .into_iter()
+                        .map(|v| (v.base, v.quote, v.pool_idx))
+                        .collect::<Vec<_>>();
+                    let pools = potential_pools
+                        .into_iter()
+                        .chain(discovered_pools)
+                        .unique()
                         .collect::<Vec<_>>();
                     if let Err(e) = query_latest(&db, &web3, opts.query_contract, &pools).await {
                         error!("Error querying latest: {}", e);

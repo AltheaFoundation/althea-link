@@ -34,6 +34,7 @@ num-integer = "0.1"
 deep_space = {version="2.27.1", features=["ethermint"]}
 clarity = "1.5"
 web30 = "1.5"
+itertools = "0"
 
 [dev-dependencies]
 actix = "0.13"

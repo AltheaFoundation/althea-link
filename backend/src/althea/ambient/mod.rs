@@ -395,6 +395,26 @@ pub fn track_pool(db: &Arc<rocksdb::DB>, pool: DirtyPoolTracker) -> Result<(), A
     Ok(())
 }
 
+/// Generates a list of possible pools we may want to track based on the tokens and templates
+/// note that it is possble we may track other pools if they involve exactly one of the tokens
+/// we care about but those pools will not be produced by this function
+pub fn possible_pools(
+    tokens: &[Address],
+    templates: &[Uint256],
+) -> Vec<(Address, Address, Uint256)> {
+    let mut pools = vec![];
+
+    for (i, t_i) in tokens.iter().enumerate() {
+        for t_j in &tokens[i + 1..] {
+            for template in templates {
+                pools.push((*t_i, *t_j, *template));
+            }
+        }
+    }
+
+    pools
+}
+
 pub async fn query_latest(
     db: &Arc<rocksdb::DB>,
     web30: &Web3,
