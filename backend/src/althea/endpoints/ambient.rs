@@ -9,8 +9,7 @@ use crate::althea::{
         },
         tracking::get_tracked_pool,
     },
-    get_mainnet_web3, ALTHEA_MAINNET_EVM_CHAIN_ID, DEFAULT_POOL_TEMPLATES, DEFAULT_QUERIER,
-    MAINNET_QUERIER,
+    get_mainnet_web3, ALTHEA_MAINNET_EVM_CHAIN_ID, DEFAULT_POOL_TEMPLATES, MAINNET_QUERIER,
 };
 use crate::{
     althea::database::{
@@ -30,7 +29,7 @@ use actix_web::{
 };
 use clarity::{Address, Uint256};
 
-use log::{debug, error};
+use log::debug;
 use num_traits::ToPrimitive;
 use rocksdb::DB;
 use serde::{Deserialize, Serialize};
@@ -536,7 +535,7 @@ impl From<TrackedPool> for PoolStatsResp {
         Self {
             base_tvl: pool.base_tvl.to_f64().unwrap(),
             quote_tvl: pool.quote_tvl.to_f64().unwrap(),
-            last_price_swap: pool.price.to_f64().unwrap(),
+            last_price_swap: pool.price,
             fee_rate: pool.fee_rate.to_f64().unwrap(),
             ..Default::default()
         }

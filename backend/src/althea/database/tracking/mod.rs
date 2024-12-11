@@ -9,6 +9,7 @@ use clarity::Address;
 use clarity::Int256;
 use clarity::Uint256;
 use log::debug;
+use log::error;
 use serde::Deserialize;
 use serde::Serialize;
 use updates::PoolUpdateEvent;
@@ -52,6 +53,8 @@ pub fn set_dirty_pool(
     };
     db.put(k.as_bytes(), bincode::serialize(&v).unwrap())
         .unwrap();
+
+    let stored = get_dirty_pool(db, base, quote, pool_idx);
 }
 
 /// Gets the dirty flag and last event block for a pool
@@ -72,9 +75,22 @@ pub fn get_dirty_pool(
     Some((value.dirty, value.last_block))
 }
 
+pub fn mark_pool_fresh(
+    db: &rocksdb::DB,
+    base: Address,
+    quote: Address,
+    pool_idx: Uint256,
+    block: Uint256,
+) {
+    set_dirty_pool(db, base, quote, pool_idx, false, block);
+}
+
 pub fn mark_pool_dirty(db: &rocksdb::DB, base: Address, quote: Address, pool_idx: Uint256) {
-    let (_, last_block) = get_dirty_pool(db, base, quote, pool_idx).unwrap();
-    set_dirty_pool(db, base, quote, pool_idx, true, last_block);
+    let block = {
+        let dirty_pool = get_dirty_pool(db, base, quote, pool_idx);
+        dirty_pool.unwrap_or((true, Uint256::default())).1
+    };
+    set_dirty_pool(db, base, quote, pool_idx, true, block);
 }
 
 pub fn get_all_dirty_pools(db: &rocksdb::DB) -> Vec<DirtyPoolTracker> {
@@ -88,7 +104,6 @@ pub fn get_all_dirty_pools(db: &rocksdb::DB) -> Vec<DirtyPoolTracker> {
                     break;
                 }
                 let value: DirtyPoolTracker = bincode::deserialize(&v).unwrap();
-                debug!("Dirty pool at key {:?} with value {:?}", k, value);
                 ret.push(value);
             }
             Err(_) => continue,
@@ -234,25 +249,27 @@ pub fn get_tracked_pool(
 
 pub fn update_pool(db: &rocksdb::DB, update: PoolUpdateEvent) {
     let dirty_status = get_dirty_pool(db, update.base, update.quote, update.pool_idx);
-    let initialized = dirty_status.is_some_and(|(_, last_block)| !last_block.is_zero());
-    let pool = if !initialized {
+    let not_initialized =
+        dirty_status.is_none() || dirty_status.is_some_and(|(_, last_block)| last_block.is_zero());
+    let pool = if not_initialized {
         handle_init_pool(db, &update)
     } else {
         let pool = get_tracked_pool(db, update.base, update.quote, update.pool_idx)
             .expect("Missing tracked pool for update");
-        handle_update(pool, update)
+        handle_update(pool, &update)
     };
+    mark_pool_fresh(db, update.base, update.quote, update.pool_idx, update.block);
 
     set_tracked_pool(db, pool);
 }
 
-pub fn handle_update(pool: TrackedPool, update: PoolUpdateEvent) -> TrackedPool {
+pub fn handle_update(pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPool {
     if update.is_liq {
-        handle_liq(pool, &update)
+        handle_liq(pool, update)
     } else if update.is_swap {
-        handle_swap(pool, &update)
+        handle_swap(pool, update)
     } else {
-        handle_revision(pool, &update)
+        handle_revision(pool, update)
     }
 }
 
@@ -271,8 +288,8 @@ pub fn handle_init_pool(db: &rocksdb::DB, update: &PoolUpdateEvent) -> TrackedPo
         base: update.base,
         quote: update.quote,
         pool_idx: update.pool_idx,
-        base_tvl: 0u128.into(),
-        quote_tvl: 0u128.into(),
+        base_tvl: update.base_flow.unsigned_abs().into(),
+        quote_tvl: update.quote_flow.unsigned_abs().into(),
         base_volume: 0u128.into(),
         quote_volume: 0u128.into(),
         base_fees: 0u128.into(),
@@ -576,7 +593,7 @@ fn ambient_noop() {
         quote_flow: 30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     if !pool.bumps.is_empty() {
         panic!("Ambient update created tick bump");
     }
@@ -602,7 +619,7 @@ fn ambient_burn() {
         quote_flow: 30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     let mint_liq = pool.ambient_liq;
     let update = BurnAmbientEvent {
         block_height: 1u8.into(),
@@ -614,7 +631,7 @@ fn ambient_burn() {
         quote_flow: -30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     let burn_liq = pool.ambient_liq;
     if burn_liq != Uint256::zero() {
         panic!(
@@ -649,7 +666,7 @@ fn range_mint() {
         quote_flow: 30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     let bid_liq = pool.get_bump(-250).unwrap().liquidity_delta;
     let ask_liq = pool.get_bump(500).unwrap().liquidity_delta;
 
@@ -690,7 +707,7 @@ fn range_burn() {
         quote_flow: 30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     assert!(pool.get_bump(-250).is_some());
     assert!(pool.get_bump(500).is_some());
     let update = BurnRangedEvent {
@@ -706,7 +723,7 @@ fn range_burn() {
         quote_flow: -30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     assert!(pool.get_bump(-250).is_none());
     assert!(pool.get_bump(500).is_none());
 }
@@ -735,7 +752,7 @@ fn knockout_bid() {
         quote_flow: 30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     let start_bid_liq = pool.get_bump(-250).unwrap().liquidity_delta;
     let start_ask_liq = pool.get_bump(500).unwrap().liquidity_delta;
 
@@ -751,7 +768,7 @@ fn knockout_bid() {
         is_bid: true,
         ..Default::default()
     };
-    let mut pool = handle_update(pool, update.into());
+    let mut pool = handle_update(pool, &update.into());
     let second_bid_liq = pool.get_bump(-250).unwrap().liquidity_delta;
     let second_ask_liq = pool.get_bump(500).unwrap().liquidity_delta;
 
@@ -818,7 +835,7 @@ fn knockout_ask() {
         quote_flow: 30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     let start_bid_liq = pool.get_bump(-250).unwrap().liquidity_delta;
     let start_ask_liq = pool.get_bump(500).unwrap().liquidity_delta;
 
@@ -834,7 +851,7 @@ fn knockout_ask() {
         is_bid: false,
         ..Default::default()
     };
-    let mut pool = handle_update(pool, update.into());
+    let mut pool = handle_update(pool, &update.into());
     let second_bid_liq = pool.get_bump(-250).unwrap().liquidity_delta;
     let second_ask_liq = pool.get_bump(500).unwrap().liquidity_delta;
 
@@ -900,7 +917,7 @@ fn knockout_burn() {
         quote_flow: 30000,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
     let start_bid_liq = pool.get_bump(-250).unwrap().liquidity_delta;
     let start_ask_liq = pool.get_bump(500).unwrap().liquidity_delta;
 
@@ -916,7 +933,7 @@ fn knockout_burn() {
         is_bid: true,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
 
     let update = BurnKnockoutEvent {
         block_height: 2u8.into(),
@@ -930,7 +947,7 @@ fn knockout_burn() {
         is_bid: true,
         ..Default::default()
     };
-    let pool = handle_update(pool, update.into());
+    let pool = handle_update(pool, &update.into());
 
     let bid_bump = pool.get_bump(-250).unwrap();
     let ask_bump = pool.get_bump(500).unwrap();

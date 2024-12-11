@@ -80,7 +80,11 @@ pub async fn start_server(opts: Opts, db: Arc<rocksdb::DB>) {
             .service(
                 web::scope("/api")
                     // Slingshot Trade endpoint
-                    .service(web::scope("/v3").service(slingshot_trade))
+                    .service(
+                        web::scope("/v3")
+                            .service(slingshot_trade)
+                            .service(slingshot_trade_get),
+                    )
                     // Moralis price endpoint
                     .service(web::scope("/v2.2").service(moralis_eth_in_usdc)),
             )

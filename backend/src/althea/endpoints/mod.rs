@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use actix_web::{get, web, HttpResponse, Responder};
 use clarity::Uint256;
 use serde::{Deserialize, Serialize};
