@@ -533,10 +533,10 @@ pub struct PoolStatsResp {
 impl From<TrackedPool> for PoolStatsResp {
     fn from(pool: TrackedPool) -> Self {
         Self {
-            base_tvl: pool.base_tvl.to_f64().unwrap(),
-            quote_tvl: pool.quote_tvl.to_f64().unwrap(),
+            base_tvl: pool.base_tvl.to_i128().unwrap().to_f64().unwrap(),
+            quote_tvl: pool.quote_tvl.to_i128().unwrap().to_f64().unwrap(),
             last_price_swap: pool.price,
-            fee_rate: pool.fee_rate.to_f64().unwrap(),
+            fee_rate: pool.fee_rate,
             ..Default::default()
         }
     }
