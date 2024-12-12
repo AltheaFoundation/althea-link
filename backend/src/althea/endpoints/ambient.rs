@@ -462,6 +462,7 @@ pub struct PoolLiqCurveResp {
 impl From<TrackedPool> for PoolLiqCurveResp {
     fn from(pool: TrackedPool) -> Self {
         Self {
+            // TODO: This is a temporary conversion - need a better Uint256->f64 conversion
             ambient_liq: pool.ambient_liq.to_u128().unwrap().to_f64().unwrap(),
             liquidity_bumps: pool.bumps,
         }
@@ -533,7 +534,9 @@ pub struct PoolStatsResp {
 impl From<TrackedPool> for PoolStatsResp {
     fn from(pool: TrackedPool) -> Self {
         Self {
+            // TODO: This is a temporary conversion - need a better Uint256->f64 conversion
             base_tvl: pool.base_tvl.to_i128().unwrap().to_f64().unwrap(),
+            // TODO: This is a temporary conversion - need a better Uint256->f64 conversion
             quote_tvl: pool.quote_tvl.to_i128().unwrap().to_f64().unwrap(),
             last_price_swap: pool.price,
             fee_rate: pool.fee_rate,
