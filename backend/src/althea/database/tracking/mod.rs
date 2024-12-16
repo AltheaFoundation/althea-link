@@ -10,6 +10,7 @@ use clarity::Int256;
 use clarity::Uint256;
 use log::debug;
 use log::error;
+use num_traits::ToPrimitive;
 use serde::Deserialize;
 use serde::Serialize;
 use updates::PoolUpdateEvent;
@@ -53,8 +54,6 @@ pub fn set_dirty_pool(
     };
     db.put(k.as_bytes(), bincode::serialize(&v).unwrap())
         .unwrap();
-
-    let stored = get_dirty_pool(db, base, quote, pool_idx);
 }
 
 /// Gets the dirty flag and last event block for a pool
@@ -123,8 +122,8 @@ pub struct TrackedPool {
     pub quote_tvl: Uint256,
     pub base_volume: Uint256,
     pub quote_volume: Uint256,
-    pub base_fees: Uint256,
-    pub quote_fees: Uint256,
+    pub base_fees: f64,
+    pub quote_fees: f64,
     pub price: f64,
 
     pub ambient_liq: Uint256,
@@ -292,8 +291,8 @@ pub fn handle_init_pool(db: &rocksdb::DB, update: &PoolUpdateEvent) -> TrackedPo
         quote_tvl: update.quote_flow.unsigned_abs().into(),
         base_volume: 0u128.into(),
         quote_volume: 0u128.into(),
-        base_fees: 0u128.into(),
-        quote_fees: 0u128.into(),
+        base_fees: 0.0,
+        quote_fees: 0.0,
         price,
         ambient_liq,
         bumps: vec![],
@@ -469,24 +468,34 @@ pub fn handle_swap(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPo
     pool.base_volume += base_mag.into();
     pool.quote_volume += quote_mag.into();
     // Accumulate fees and add to ambient liquidity
-    pool.base_fees += ((base_mag as f64 * pool.fee_rate) as u128).into();
-    pool.quote_fees += ((quote_mag as f64 * pool.fee_rate) as u128).into();
-    let new_price = derive_price_swap(
-        update.base_flow,
-        update.quote_flow,
-        pool.fee_rate,
-        update.base_flow > 0,
-    );
-    let old_price = pool.price;
-    pool.price = new_price;
-    // Determine if any knockouts were crossed and handle those changes to liquidity
-    // using updateKOCross in graphcache-go model/liquidityCurve.go
-    let old_tick = tick_from_root_price(old_price);
-    let new_tick = tick_from_root_price(new_price);
-    let ko_bumps: Vec<LiquidityBump> = get_crossed_ko_bumps(&pool, old_tick, new_tick);
+    if update.base_flow >= 0 {
+        pool.base_fees += base_mag as f64 * pool.fee_rate;
+    }
+    if update.quote_flow >= 0 {
+        pool.quote_fees += quote_mag as f64 * pool.fee_rate;
+    }
+    if is_flow_dual_stable(update.base_flow as f64, update.quote_flow as f64) {
+        let new_price = derive_price_swap(
+            base_mag.to_f64().unwrap(),
+            quote_mag.to_f64().unwrap(),
+            pool.fee_rate,
+            update.base_flow < 0,
+        );
+        let old_price = pool.price;
+        pool.price = new_price;
+        error!(
+            "Swap ({}-{}) old_price {old_price} new_price {new_price}",
+            pool.base, pool.quote
+        );
+        // Determine if any knockouts were crossed and handle those changes to liquidity
+        // using updateKOCross in graphcache-go model/liquidityCurve.go
+        let old_tick = tick_from_root_price(old_price);
+        let new_tick = tick_from_root_price(new_price);
+        let ko_bumps: Vec<LiquidityBump> = get_crossed_ko_bumps(&pool, old_tick, new_tick);
 
-    for bump in ko_bumps {
-        cross_ko_bump(&mut pool, &bump, new_price < old_price);
+        for bump in ko_bumps {
+            cross_ko_bump(&mut pool, &bump, new_price < old_price);
+        }
     }
 
     pool
@@ -501,16 +510,16 @@ fn add_uint256_int256(a: Uint256, b: Int256) -> Uint256 {
     }
 }
 
-fn derive_price_swap(base_flow: i128, quote_flow: i128, fee_rate: f64, is_buy: bool) -> f64 {
-    let base = base_flow.abs();
-    let quote = quote_flow.abs();
-    let rate = if is_buy {
-        1.0 + fee_rate
-    } else {
-        1.0 - fee_rate
-    };
+fn is_flow_dual_stable(base_flow: f64, quote_flow: f64) -> bool {
+    base_flow.abs() >= 1000.0 && quote_flow.abs() >= 1000.0
+}
 
-    ((base / quote / 1000000i128) as f64) * rate
+fn derive_price_swap(base_mag: f64, quote_mag: f64, fee_rate: f64, is_buy: bool) -> f64 {
+    if is_buy {
+        (base_mag / quote_mag).abs() * (1.0 + (fee_rate / 1000000.0))
+    } else {
+        (base_mag / quote_mag).abs() * (1.0 - (fee_rate / 1000000.0))
+    }
 }
 
 fn get_crossed_ko_bumps(pool: &TrackedPool, old_tick: i32, new_tick: i32) -> Vec<LiquidityBump> {

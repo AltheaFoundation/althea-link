@@ -39,7 +39,7 @@ pub const DELEGATIONS_CACHE_DURATION: u64 = 4;
 pub const ALTHEA_PREFIX: &str = "althea";
 pub const TIMEOUT: Duration = Duration::from_secs(45);
 pub const DEFAULT_START_SEARCH_BLOCK: u128 = 0u128;
-const DEFAULT_SEARCH_RANGE: u128 = 1000u128;
+const DEFAULT_SEARCH_RANGE: u128 = 10000u128;
 /// Tokens we care to index pools for - any user may create pools permissionlessly
 /// but that does not mean we care to report their data to the frontend
 const DEFAULT_TOKEN_ADDRESSES: &[&str] = &[

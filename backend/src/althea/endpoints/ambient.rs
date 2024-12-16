@@ -536,10 +536,11 @@ impl From<TrackedPool> for PoolStatsResp {
         Self {
             // TODO: This is a temporary conversion - need a better Uint256->f64 conversion
             base_tvl: pool.base_tvl.to_i128().unwrap().to_f64().unwrap(),
-            // TODO: This is a temporary conversion - need a better Uint256->f64 conversion
             quote_tvl: pool.quote_tvl.to_i128().unwrap().to_f64().unwrap(),
             last_price_swap: pool.price,
-            fee_rate: pool.fee_rate,
+            last_price_indic: pool.price,
+            last_price_liq: pool.price,
+            fee_rate: pool.fee_rate * 0.0001,
             ..Default::default()
         }
     }
