@@ -15,7 +15,7 @@ const DEFAULT_CONC_LIQ_TICK_RANGES = {
 export type TickRangeKey = keyof typeof DEFAULT_CONC_LIQ_TICK_RANGES;
 // array for the values
 export const ALL_TICK_KEYS = Object.keys(
-  DEFAULT_CONC_LIQ_TICK_RANGES,
+  DEFAULT_CONC_LIQ_TICK_RANGES
 ) as Array<TickRangeKey>;
 
 // Options User has to create new position
@@ -32,7 +32,7 @@ export interface UserAddConcentratedLiquidityOptions {
 // default price range from pool and tick key
 export const defaultPriceRangeFormatted = (
   pool: AmbientPool,
-  tickRange: TickRangeKey,
+  tickRange: TickRangeKey
 ) => {
   // get current price
   const midpointPrice = pool.stats.lastPriceSwap;
@@ -42,14 +42,14 @@ export const defaultPriceRangeFormatted = (
   const minPriceFormatted = formatBalance(
     getPriceFromTick(lowerTick),
     pool.base.decimals - pool.quote.decimals,
-    { precision: 5 },
+    { precision: 5 }
   );
   // upper tick and price
   const upperTick = midpointTick + DEFAULT_CONC_LIQ_TICK_RANGES[tickRange];
   const maxPriceFormatted = formatBalance(
     getPriceFromTick(upperTick),
     pool.base.decimals - pool.quote.decimals,
-    { precision: 5 },
+    { precision: 5 }
   );
   return {
     minPriceFormatted,

@@ -25,8 +25,6 @@ interface UseLPProps {
 interface UseLPReturn {
   isLoading: boolean;
   pairs: {
-    allCantoDex: CantoDexPairWithUserCTokenData[];
-    userCantoDex: CantoDexPairWithUserCTokenData[];
     allAmbient: AmbientPool[];
     userAmbient: AmbientPool[];
   };
@@ -41,16 +39,16 @@ interface UseLPReturn {
   };
   transactions: {
     newCantoDexLPFlow: (
-      txParams: CantoDexTransactionParams,
+      txParams: CantoDexTransactionParams
     ) => NewTransactionFlow;
     validateCantoDexLPParams: (
-      txParams: CantoDexTransactionParams,
+      txParams: CantoDexTransactionParams
     ) => Validation;
     newAmbientPoolTxFlow: (
-      txParams: AmbientTransactionParams,
+      txParams: AmbientTransactionParams
     ) => NewTransactionFlow;
     validateAmbientPoolTxParams: (
-      txParams: AmbientTransactionParams,
+      txParams: AmbientTransactionParams
     ) => Validation;
     newClaimRewardsFlow: () => NewTransactionFlow;
   };
@@ -63,14 +61,9 @@ export default function useLP(props: UseLPProps): UseLPReturn {
   const ambient = useAmbientPools(props);
 
   // get user pairs
-  const userCantoDexPairs = cantoDex.pairs.filter(
-    (pair) =>
-      (pair.clmData?.userDetails?.balanceOfCToken !== "0" ||
-        pair.clmData?.userDetails?.balanceOfUnderlying !== "0") &&
-      pair.clmData?.userDetails?.balanceOfCToken !== undefined,
-  );
+
   const userAmbientPairs = ambient.ambientPools.filter(
-    (pool) => pool.userPositions.length > 0 || pool.userRewards !== "0",
+    (pool) => pool.userPositions.length > 0 || pool.userRewards !== "0"
   );
 
   // create list with all pairs
@@ -86,8 +79,9 @@ export default function useLP(props: UseLPProps): UseLPReturn {
   // get the pair from the pair list with balances
   function getPair(address: string): ReturnWithError<LPPairType> {
     const pair = allPairs.find((pair) =>
-      areEqualAddresses(pair.address, address),
+      areEqualAddresses(pair.address, address)
     );
+
     return pair ? NO_ERROR(pair) : NEW_ERROR("Pair not found");
   }
 
@@ -102,7 +96,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
       ethAccount: props.userEthAddress ?? "",
     };
     // need wCanto for importing token
-    const wCantoAddress = getCantoCoreAddress(props.chainId, "wcanto");
+    const wCantoAddress = getCantoCoreAddress(props.chainId, "walthea");
 
     // get ambient pools that have rewards
     const ambientRewardsPools = [];
@@ -143,8 +137,6 @@ export default function useLP(props: UseLPProps): UseLPReturn {
   return {
     isLoading: cantoDex.isLoading && ambient.isLoading,
     pairs: {
-      allCantoDex: cantoDex.pairs,
-      userCantoDex: userCantoDexPairs,
       allAmbient: ambient.ambientPools,
       userAmbient: userAmbientPairs,
     },
@@ -153,7 +145,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
       ambient: ambient.totalRewards,
       total: addTokenBalances(
         cantoDex.position.totalRewards,
-        ambient.totalRewards,
+        ambient.totalRewards
       ),
     },
     selection: {

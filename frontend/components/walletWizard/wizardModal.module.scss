@@ -1,0 +1,244 @@
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 32px;
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  align-items: center;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  > * {
+    text-align: center;
+    max-width: 100%;
+    line-height: 1.5;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 48px;
+  position: relative;
+
+  .wallet-connect {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    max-width: 280px;
+
+    button {
+      width: 100% !important;
+      min-width: 200px;
+      height: 48px !important;
+      background-color: rgba(0, 0, 0, 0.4) !important;
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+      }
+    }
+  }
+}
+
+.migration {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  gap: 24px;
+  padding: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+
+  .text {
+    width: 100%;
+    text-align: left;
+    color: var(--text-secondary-color);
+    margin-bottom: 8px;
+  }
+}
+
+.address-blocks {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+
+  .address-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    label {
+      font-size: 14px;
+      color: var(--text-secondary-color);
+    }
+
+    .address {
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      font-family: monospace;
+      word-break: break-all;
+    }
+  }
+}
+
+.amount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  label {
+    font-size: 14px;
+    color: var(--text-secondary-color);
+  }
+
+  &-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.amountIcon {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #000;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+}
+
+.addressBlocks:first-of-type {
+  margin-bottom: 80rem;
+}
+
+.close {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  cursor: pointer;
+  transition:
+    transform 0.3s 0.2s cubic-bezier(0.165, 0.84, 0.44, 1),
+    scale 0.3s ease-in;
+  scale: 0.9;
+  z-index: 30;
+  &:hover {
+    transform: rotateZ(270deg);
+    scale: 1.1;
+    transition:
+      transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+      scale 0.3s ease-in;
+  }
+}
+
+.addressBlocks:last-of-type {
+  margin-top: 20px;
+}
+
+.button:hover {
+  background-color: #e0e0e0;
+}
+
+.button:active {
+  transform: translateY(2px);
+}
+
+.toastButton {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 16px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination {
+  position: absolute;
+  left: 50%;
+  top: 70%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.successMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 10px;
+  width: 100%;
+  text-align: center;
+}
+
+.successMessage > .text {
+  margin-bottom: 5px;
+}
+
+.successMessage > .button {
+  margin-top: 15px;
+}
+
+.toastContainer {
+  position: fixed;
+  top: 65px;
+  right: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0 auto;
+  padding: 32px;
+  height: 8rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--althea-blue);
+  background: var(--card-sub-surface-color, #dfdfdf);
+  box-shadow: 6px 6px 0px 0px rgba(17, 17, 17, 0.15);
+
+  &::after {
+    height: 9px;
+    border-right: 1px solid var(--primary-90-color);
+    position: absolute;
+    left: 58.6%;
+  }
+}
+
+.toastCaption {
+  margin-top: 0px;
+}

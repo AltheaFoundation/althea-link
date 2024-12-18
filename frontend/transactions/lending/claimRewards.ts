@@ -19,7 +19,7 @@ import { isValidEthAddress } from "@/utils/address";
 import { TX_PARAM_ERRORS } from "@/config/consts/errors";
 
 export async function clmClaimRewardsTx(
-  txParams: CLMClaimRewardsTxParams,
+  txParams: CLMClaimRewardsTxParams
 ): PromiseWithError<TxCreatorFunctionReturn> {
   try {
     // validate params
@@ -30,7 +30,7 @@ export async function clmClaimRewardsTx(
 
     // get all addresses for tx
     const [wcantoAddress, comptrollerAddress, reservoirAddress] = [
-      getCantoCoreAddress(txParams.chainId, "wcanto"),
+      getCantoCoreAddress(txParams.chainId, "walthea"),
       getCantoCoreAddress(txParams.chainId, "comptroller"),
       getCantoCoreAddress(txParams.chainId, "reservoir"),
     ];
@@ -45,7 +45,7 @@ export async function clmClaimRewardsTx(
       await getTokenBalance(
         txParams.chainId,
         wcantoAddress,
-        comptrollerAddress,
+        comptrollerAddress
       );
     if (comptrollerBalanceError) throw comptrollerBalanceError;
 
@@ -56,8 +56,8 @@ export async function clmClaimRewardsTx(
           txParams.chainId,
           txParams.ethAccount,
           reservoirAddress,
-          TX_DESCRIPTIONS.DRIP_COMPTROLLER(),
-        ),
+          TX_DESCRIPTIONS.DRIP_COMPTROLLER()
+        )
       );
     }
     // push claim rewards tx
@@ -69,9 +69,9 @@ export async function clmClaimRewardsTx(
         TX_DESCRIPTIONS.CLAIM_REWARDS(
           displayAmount(txParams.estimatedRewards, 18),
           "WCANTO",
-          "Lending",
-        ),
-      ),
+          "Lending"
+        )
+      )
     );
 
     // return with no error
@@ -83,7 +83,7 @@ export async function clmClaimRewardsTx(
 
 // nothing to validate for claming rewards retry
 export function validateClmClaimRewardsRetryTx(
-  txParams: CLMClaimRewardsTxParams,
+  txParams: CLMClaimRewardsTxParams
 ): ReturnWithError<Validation> {
   /** check eth account */
   if (!isValidEthAddress(txParams.ethAccount)) {

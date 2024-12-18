@@ -71,7 +71,7 @@ export const WalletConnect = ({
   const balance = useBalance({
     address: balanceAddress,
     watch: true,
-    chainId: signer?.chain.id ?? 258432,
+    chainId: signer?.chain.id ?? 6633438,
   });
   const pathname = usePathname();
   const homeView = pathname === "/";

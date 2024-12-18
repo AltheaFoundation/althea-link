@@ -105,7 +105,7 @@ export const RemoveLiquidityModal = ({
     address: string;
     symbol: string;
   }) => {
-    const wcantoAddress = getCantoCoreAddress(Number(token.chainId), "wcanto");
+    const wcantoAddress = getCantoCoreAddress(Number(token.chainId), "walthea");
     return areEqualAddresses(token.address, wcantoAddress ?? "")
       ? "CANTO"
       : token.symbol;

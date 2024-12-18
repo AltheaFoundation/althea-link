@@ -43,13 +43,13 @@ const CANTO_CORE_ADDRESSES = {
     mainnet: "0xB65Ec550ff356EcA6150F733bA9B954b2e0Ca488",
     testnet: "0x477eaF5DECf6299EE937954084f0d53EFc57346F",
   },
-  wcanto: {
-    mainnet: "0x826551890Dc65655a0Aceca109aB11AbDbD7a07B",
-    testnet: "0x04a72466De69109889Db059Cb1A4460Ca0648d9D",
+  walthea: {
+    mainnet: "0x7580bFE88Dd3d07947908FAE12d95872a260F2D8",
+    testnet: "0x7580bFE88Dd3d07947908FAE12d95872a260F2D8",
   },
   weth: {
-    mainnet: "0x5FD55A1B9FC24967C4dB09C513C3BA0DFa7FF687",
-    testnet: "0xCa03230E7FB13456326a234443aAd111AC96410A",
+    mainnet: "0x7580bFE88Dd3d07947908FAE12d95872a260F2D8",
+    testnet: "0x7580bFE88Dd3d07947908FAE12d95872a260F2D8",
   },
 } as const;
 
@@ -58,7 +58,7 @@ type ContractName = keyof typeof CANTO_CORE_ADDRESSES;
 type ChainType = "mainnet" | "testnet";
 export function getCantoCoreAddress(
   chainId: number,
-  contractName: ContractName,
+  contractName: ContractName
 ): `0x${string}` | null {
   // make sure on canto chain id
   let chainType: ChainType;

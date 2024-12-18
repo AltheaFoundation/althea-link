@@ -17,7 +17,7 @@ export const CANTO_DATA_API_ENDPOINTS = {
   stakingApr: "/apr",
   allCTokens: "/v1/lending/cTokens",
   singleCToken: (address: string) => `/v1/lending/cToken/${address}`,
-  allPairs: "/v1/dex/pairs",
+  allPairs: "/debug/init_pools",
   allProposals: "/proposals",
 };
 /**
@@ -28,14 +28,14 @@ export const CANTO_DATA_API_ENDPOINTS = {
  */
 export async function getCantoApiData<T>(
   chainId: number,
-  endpointSuffix: string,
+  endpointSuffix: string
 ): PromiseWithError<T> {
   if (!isCantoChainId(chainId)) {
     return NEW_ERROR("getCantoApiData: chainId not supported");
   }
   // get response from api
   const { data, error } = await tryFetch<T>(
-    CANTO_DATA_BASE_URL(chainId) + endpointSuffix,
+    CANTO_DATA_BASE_URL(chainId) + endpointSuffix
   );
   if (error) {
     return NEW_ERROR("getCantoApiData", error);

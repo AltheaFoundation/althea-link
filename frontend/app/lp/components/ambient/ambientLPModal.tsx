@@ -176,7 +176,7 @@ const PositionList = ({
               <Text size="md" font="macan-font">
                 Range: (
                 {displayAmount(
-                  getPriceFromTick(item.bidTick),
+                  getPriceFromTick(item.bid_tick),
                   pool.base.decimals - pool.quote.decimals,
                   {
                     precision: 5,
@@ -184,7 +184,7 @@ const PositionList = ({
                 )}{" "}
                 -{" "}
                 {displayAmount(
-                  getPriceFromTick(item.askTick),
+                  getPriceFromTick(item.ask_tick),
                   pool.base.decimals - pool.quote.decimals,
                   {
                     precision: 5,
@@ -195,10 +195,10 @@ const PositionList = ({
               <Text size="md" font="macan-font">
                 {displayAmount(
                   concLiquidityNoteValue(
-                    item.concLiq,
-                    pool.stats.lastPriceSwap.toString(),
-                    item.bidTick,
-                    item.askTick,
+                    item.conc_liq.toString(),
+                    pool.stats.lastPriceSwap,
+                    item.bid_tick,
+                    item.ask_tick,
                     new BigNumber(10).pow(36 - pool.base.decimals).toString(),
                     new BigNumber(10).pow(36 - pool.quote.decimals).toString()
                   ),

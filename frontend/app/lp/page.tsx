@@ -27,16 +27,19 @@ import {
   getAnalyticsAmbientLiquidityPoolInfo,
 } from "@/utils/analytics";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
+import { useChain } from "@cosmos-kit/react";
+import { WalletWizardModal } from "@/components/walletWizard/wizardModal";
+import ToastWizard from "@/components/walletWizard/wizardToast";
+import { useState, useEffect } from "react";
 
 export default function Page() {
   const {
-    fakePairs,
+    pairs,
     rewards,
     filteredPairs,
     setFilteredPairs,
     selectedPair,
     setPair,
-    sortedCantoDexPairs,
     validateCantoDexTx,
     sendCantoDexTxFlow,
     validateAmbientTxParams,
@@ -46,12 +49,38 @@ export default function Page() {
     rewardTime,
   } = usePool();
 
+  const [isWalletWizardOpen, setIsWalletWizardOpen] = useState(false);
+  const [showToast, setShowToast] = useState(true);
+  const { address } = useChain("althea");
+
+  // Initialize showToast from localStorage only when there's no address
+  useEffect(() => {
+    if (!address) {
+      const toastClosed = localStorage.getItem("wizardToastClosed");
+      if (toastClosed === null) {
+        setShowToast(true);
+      } else {
+        setShowToast(false);
+      }
+    } else {
+      // If address is connected, always show toast
+      setShowToast(true);
+    }
+  }, [address]); // Re-run when address changes
+
+  const handleCloseToast = () => {
+    setShowToast(false);
+    // Only store in localStorage if there's no address
+    if (!address) {
+      localStorage.setItem("wizardToastClosed", "true");
+    }
+  };
+
   //   if mobile only
   // if (!window.matchMedia("(min-width: 768px)").matches) {
   //   return <DesktopOnly />;
   // }
   const { isMobile } = useScreenSize();
-  const pairs = fakePairs.pairs;
   //main content
   return (
     <div className={styles.container}>
@@ -95,7 +124,7 @@ export default function Page() {
         />
       </Container>
       <Spacer height="30px" />
-      {pairs.userCantoDex.length + pairs.userAmbient.length > 0 && (
+      {pairs.userAmbient.length > 0 && (
         <>
           <Table
             title="Your Pairs"
@@ -160,14 +189,6 @@ export default function Page() {
                       //   };
                       // }
                     }),
-                    ...pairs.userCantoDex.map((pair) => () => {
-                      Analytics.actions.events.liquidityPool.manageLPClicked(
-                        // @ts-ignore
-                        getAnalyticsCantoLiquidityPoolInfo(pair)
-                      );
-                      // @ts-ignore
-                      setPair(pair.address);
-                    }),
                   ]
                 : undefined
             }
@@ -184,21 +205,6 @@ export default function Page() {
                     setPair(poolAddress);
                   },
                   rewardTime: rewardTime,
-                  isMobile,
-                })
-              ),
-              ...pairs.userCantoDex.map((pair) =>
-                UserCantoDexPairRow({
-                  // @ts-ignore
-                  pair,
-
-                  onManage: (pairAddress) => {
-                    Analytics.actions.events.liquidityPool.manageLPClicked(
-                      // @ts-ignore
-                      getAnalyticsCantoLiquidityPoolInfo(pair)
-                    );
-                    setPair(pairAddress);
-                  },
                   isMobile,
                 })
               ),
@@ -251,20 +257,6 @@ export default function Page() {
                     });
                     setPair(pool.address);
                   }),
-                ...sortedCantoDexPairs
-                  .filter(
-                    (pair) =>
-                      filteredPairs === "all" ||
-                      (filteredPairs === "stable" && pair.stable) ||
-                      (filteredPairs === "volatile" && !pair.stable)
-                  )
-                  .map((pair) => () => {
-                    Analytics.actions.events.liquidityPool.addLPClicked({
-                      lpType: "CANTO",
-                      cantoLp: pair.symbol,
-                    });
-                    setPair(pair.address);
-                  }),
               ]
             : undefined
         }
@@ -290,29 +282,22 @@ export default function Page() {
                 isMobile,
               })
             ),
-          ...sortedCantoDexPairs
-            .filter(
-              (pair) =>
-                filteredPairs === "all" ||
-                (filteredPairs === "stable" && pair.stable) ||
-                (filteredPairs === "volatile" && !pair.stable)
-            )
-            .map((pair) =>
-              GeneralCantoDexPairRow({
-                pair,
-                onAddLiquidity: (pairAddress) => {
-                  Analytics.actions.events.liquidityPool.addLPClicked({
-                    lpType: "CANTO",
-                    cantoLp: pair.symbol,
-                  });
-                  setPair(pairAddress);
-                },
-                isMobile,
-              })
-            ),
         ]}
       />
       <Spacer height="40px" />
+      <div id="modal-root">
+        {showToast && address && (
+          <ToastWizard
+            isVisible={true}
+            onOpenModal={() => setIsWalletWizardOpen(true)}
+            onClose={handleCloseToast}
+          />
+        )}
+        <WalletWizardModal
+          isOpen={isWalletWizardOpen}
+          onOpen={setIsWalletWizardOpen}
+        />
+      </div>
     </div>
   );
 }

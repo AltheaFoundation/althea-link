@@ -42,6 +42,7 @@ export const NewAmbientPositionModal = ({
   verifyParams,
 }: NewPositionModalProps) => {
   const { base: baseToken, quote: quoteToken } = pool;
+
   const positionManager = useNewAmbientPositionManager(pool);
   const positionValidation = verifyParams(
     positionManager.txParams.addLiquidity()

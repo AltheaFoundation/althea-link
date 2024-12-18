@@ -28,6 +28,8 @@ import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { althea, altheaAssets } from "@/provider/chainRegistry";
 import { modalThemeOverrides } from "@/provider/cosmosKitModal";
 import { useState } from "react";
+import { WalletWizardModal } from "@/components/walletWizard/wizardModal";
+import ToastWizard from "@/components/walletWizard/wizardToast";
 
 const nm_plex = IBM_Plex_Sans({
   weight: ["400", "500", "700"],
@@ -150,8 +152,8 @@ export default function RootLayout({
             isLazy: true,
             endpoints: {
               altheatestnet: {
-                rpc: ["https://nodes.chandrastation.com/rpc/althea/"],
-                rest: ["https://nodes.chandrastation.com/api/althea//"],
+                rpc: ["http://testnet.althea.net:26657"],
+                rest: ["http://testnet.althea.net:1317/"],
               },
             },
           }}
@@ -190,6 +192,7 @@ export default function RootLayout({
               /> */}
                   <NavBar />
                   {children}
+
                   <div
                     style={{
                       display: "flex",
