@@ -326,10 +326,10 @@ export const UserAmbientPairRow = ({
   let totalValue = "0";
   const allPositionValues = pool.userPositions.map((position) => {
     const tokenAmounts = concentratedLiquidityTokenAmounts(
-      position.concLiq,
+      position.conc_liq.toString(),
       pool.stats.lastPriceSwap,
-      position.bidTick,
-      position.askTick
+      position.bid_tick,
+      position.ask_tick
     );
     const baseNoteValue = convertTokenAmountToNote(
       tokenAmounts.base,

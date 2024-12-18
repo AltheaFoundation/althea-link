@@ -343,6 +343,9 @@ pub async fn search_for_pool_events(
 
 pub fn track_pools(db: &Arc<rocksdb::DB>) -> Result<(), AltheaError> {
     for pool in get_all_dirty_pools(db) {
+        if !pool.dirty {
+            continue;
+        }
         if let Err(e) = track_pool(db, pool) {
             error!("Unable to track pool: {e}");
         }
@@ -351,48 +354,69 @@ pub fn track_pools(db: &Arc<rocksdb::DB>) -> Result<(), AltheaError> {
 }
 
 pub fn track_pool(db: &Arc<rocksdb::DB>, pool: DirtyPoolTracker) -> Result<(), AltheaError> {
+    // Handle the init pool on its own - skip anything else if we don't have an InitPool event
     if pool.last_block == Uint256::default() {
         if let Some(init) = get_init_pool(db, pool.base, pool.quote, pool.pool_idx) {
             update_pool(db, init.into());
         } else {
             debug!("No InitPool found for {pool:?}");
-        }
-    } else {
-        // Get unhandled events by filtering for new ones
-        let mint_ambient = get_all_mint_ambient_after_block(db, None, pool.last_block);
-        let burn_ambient = get_all_burn_ambient_after_block(db, None, pool.last_block);
-        let mint_ranged = get_all_mint_ranged_after_block(db, None, pool.last_block);
-        let burn_ranged = get_all_burn_ranged_after_block(db, None, pool.last_block);
-        let harvest = get_all_harvest_after_block(db, None, pool.last_block);
-        let mint_knockout = get_all_mint_knockout_after_block(db, None, pool.last_block);
-        let burn_knockout = get_all_burn_knockout_after_block(db, None, pool.last_block);
-        let withdraw_knockout = get_all_withdraw_knockout_after_block(db, None, pool.last_block);
-        let swap = get_all_swap_after_block(db, None, pool.last_block);
-        let revision = get_all_revision_after_block(db, None, pool.last_block);
-
-        // Sort the events by block number and index and apply them in order
-        let mut updates: Vec<PoolUpdateEvent> = mint_ambient
-            .into_iter()
-            .map(PoolUpdateEvent::from)
-            .chain(burn_ambient.into_iter().map(PoolUpdateEvent::from))
-            .chain(mint_ranged.into_iter().map(PoolUpdateEvent::from))
-            .chain(burn_ranged.into_iter().map(PoolUpdateEvent::from))
-            .chain(harvest.into_iter().map(PoolUpdateEvent::from))
-            .chain(mint_knockout.into_iter().map(PoolUpdateEvent::from))
-            .chain(burn_knockout.into_iter().map(PoolUpdateEvent::from))
-            .chain(withdraw_knockout.into_iter().map(PoolUpdateEvent::from))
-            .chain(swap.into_iter().map(PoolUpdateEvent::from))
-            .chain(revision.into_iter().map(PoolUpdateEvent::from))
-            .collect();
-        updates.sort_by_key(|v| (v.block, v.index));
-
-        for update in updates {
-            debug!("Applying update {update:?}");
-            update_pool(db, update);
+            return Ok(());
         }
     }
 
+    // Now handle anything else
+    let mint_ambient = get_all_mint_ambient_after_block(db, None, pool.last_block);
+    let burn_ambient = get_all_burn_ambient_after_block(db, None, pool.last_block);
+    let mint_ranged = get_all_mint_ranged_after_block(db, None, pool.last_block);
+    let burn_ranged = get_all_burn_ranged_after_block(db, None, pool.last_block);
+    let harvest = get_all_harvest_after_block(db, None, pool.last_block);
+    let mint_knockout = get_all_mint_knockout_after_block(db, None, pool.last_block);
+    let burn_knockout = get_all_burn_knockout_after_block(db, None, pool.last_block);
+    let withdraw_knockout = get_all_withdraw_knockout_after_block(db, None, pool.last_block);
+    let swap = get_all_swap_after_block(db, None, pool.last_block);
+    let revision = get_all_revision_after_block(db, None, pool.last_block);
+
+    // Sort the events by block number and index and apply them in order
+    let mut updates: Vec<PoolUpdateEvent> = mint_ambient
+        .into_iter()
+        .map(PoolUpdateEvent::from)
+        .chain(burn_ambient.into_iter().map(PoolUpdateEvent::from))
+        .chain(mint_ranged.into_iter().map(PoolUpdateEvent::from))
+        .chain(burn_ranged.into_iter().map(PoolUpdateEvent::from))
+        .chain(harvest.into_iter().map(PoolUpdateEvent::from))
+        .chain(mint_knockout.into_iter().map(PoolUpdateEvent::from))
+        .chain(burn_knockout.into_iter().map(PoolUpdateEvent::from))
+        .chain(withdraw_knockout.into_iter().map(PoolUpdateEvent::from))
+        .chain(swap.into_iter().map(PoolUpdateEvent::from))
+        .chain(revision.into_iter().map(PoolUpdateEvent::from))
+        .collect();
+    updates.sort_by_key(|v| (v.block, v.index));
+
+    for update in updates {
+        update_pool(db, update);
+    }
+
     Ok(())
+}
+
+/// Generates a list of possible pools we may want to track based on the tokens and templates
+/// note that it is possble we may track other pools if they involve exactly one of the tokens
+/// we care about but those pools will not be produced by this function
+pub fn possible_pools(
+    tokens: &[Address],
+    templates: &[Uint256],
+) -> Vec<(Address, Address, Uint256)> {
+    let mut pools = vec![];
+
+    for (i, t_i) in tokens.iter().enumerate() {
+        for t_j in &tokens[i + 1..] {
+            for template in templates {
+                pools.push((*t_i, *t_j, *template));
+            }
+        }
+    }
+
+    pools
 }
 
 pub async fn query_latest(

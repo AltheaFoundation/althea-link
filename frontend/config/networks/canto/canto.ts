@@ -35,7 +35,7 @@ export const CANTO_MAINNET_EVM: EVMNetwork = {
     getAddressLink: getEthAddressLink(cantoMainBlockExplorerEVM),
     getTransactionLink: getEthTransactionLink(cantoMainBlockExplorerEVM),
   },
-  multicall3Address: "0xe9cBc7b381aA17C7574671e445830E3b90648368",
+  multicall3Address: "0x9726268F55d581d5F50c3853969010ACDCe7Cbff",
 };
 
 export const CANTO_MAINNET_COSMOS: CosmosNetwork = {
@@ -76,7 +76,7 @@ export const CANTO_TESTNET_EVM: EVMNetwork = {
     getAddressLink: getEthAddressLink(cantoMainBlockExplorerEVM),
     getTransactionLink: getEthTransactionLink(cantoMainBlockExplorerEVM),
   },
-  multicall3Address: "0xe9cBc7b381aA17C7574671e445830E3b90648368",
+  multicall3Address: "0x9726268F55d581d5F50c3853969010ACDCe7Cbff",
 };
 
 export const CANTO_TESTNET_COSMOS: CosmosNetwork = {

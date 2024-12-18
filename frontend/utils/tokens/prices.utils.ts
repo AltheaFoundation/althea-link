@@ -12,9 +12,9 @@ import { NEW_ERROR, NO_ERROR, PromiseWithError } from "@/config/interfaces";
  */
 export async function getTokenPriceInUSDC(
   tokenAddress: string,
-  decimals: number,
+  decimals: number
 ): PromiseWithError<string> {
-  const usdcAddress = "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd";
+  const usdcAddress = "0x0412C7c846bb6b7DC462CF6B453f76D8440b2609";
   if (tokenAddress === usdcAddress) {
     return NO_ERROR("1");
   }
@@ -32,12 +32,12 @@ export async function getTokenPriceInUSDC(
         from: tokenAddress,
         to: usdcAddress,
       }),
-    },
+    }
   );
   if (error) {
     return NEW_ERROR("getTokenPriceInUSDC", error);
   }
-  return NO_ERROR(new BigNumber(data.estimatedOutput).div(10 ** 6).toString());
+  return NO_ERROR(data.estimatedOutput);
 }
 
 /**
@@ -50,7 +50,7 @@ export async function getTokenPriceInUSDC(
 export async function getSwapAmountFromAmount(
   fromAmount: string,
   fromAddress: string,
-  toAddress: string,
+  toAddress: string
 ): PromiseWithError<string> {
   const { data, error } = await tryFetch<{ estimatedOutput: string }>(
     SLINGSHOT_API_URL + "/trade",
@@ -66,7 +66,7 @@ export async function getSwapAmountFromAmount(
         from: fromAddress,
         to: toAddress,
       }),
-    },
+    }
   );
   if (error) {
     return NEW_ERROR("getSwapAmountFromAmount", error);

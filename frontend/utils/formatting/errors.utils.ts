@@ -5,6 +5,7 @@
  */
 export function formatError(errorMsg: string): string {
   // errors will look like "functionName::functionName: error message"
+
   const split = errorMsg.split(":");
   return "Error:" + split[split.length - 1];
 }

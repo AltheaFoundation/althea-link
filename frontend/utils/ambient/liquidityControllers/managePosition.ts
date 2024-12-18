@@ -46,13 +46,13 @@ export class AmbientPositionManager {
   // display values for modals
   displayPositionValues() {
     return {
-      lowerTick: this.position.bidTick,
-      upperTick: this.position.askTick,
+      lowerTick: this.position.bid_tick,
+      upperTick: this.position.ask_tick,
       lowerPrice: this.getFormattedPrice(
-        getPriceFromTick(this.position.bidTick),
+        getPriceFromTick(this.position.bid_tick)
       ),
       upperPrice: this.getFormattedPrice(
-        getPriceFromTick(this.position.askTick),
+        getPriceFromTick(this.position.ask_tick)
       ),
     };
   }
@@ -60,7 +60,7 @@ export class AmbientPositionManager {
   //conversions for prices
   getWeiRangePrice(priceFormatted: string): string {
     const scale = BigNumber(10).pow(
-      this.pool.base.decimals - this.pool.quote.decimals,
+      this.pool.base.decimals - this.pool.quote.decimals
     );
     const priceWei = scale.multipliedBy(priceFormatted).toString();
     return priceWei;
@@ -69,7 +69,7 @@ export class AmbientPositionManager {
     return formatBalance(
       priceWei,
       this.pool.base.decimals - this.pool.quote.decimals,
-      { precision: 5 },
+      { precision: 5 }
     );
   }
 
@@ -78,14 +78,14 @@ export class AmbientPositionManager {
    */
   getAmountFromAmountFormatted(amount: string, isBase: boolean): string {
     // get wei prices from ticks
-    const minPriceWei = getPriceFromTick(this.position.bidTick);
-    const maxPriceWei = getPriceFromTick(this.position.askTick);
+    const minPriceWei = getPriceFromTick(this.position.bid_tick);
+    const maxPriceWei = getPriceFromTick(this.position.ask_tick);
     return getDisplayTokenAmountFromRange(
       amount,
       isBase,
       minPriceWei,
       maxPriceWei,
-      this.pool,
+      this.pool
     );
   }
 
@@ -99,7 +99,7 @@ export class AmbientPositionManager {
     const amountWei =
       convertToBigNumber(
         nonWeiAmount,
-        isBase ? this.pool.base.decimals : this.pool.quote.decimals,
+        isBase ? this.pool.base.decimals : this.pool.quote.decimals
       ).data?.toString() ?? "0";
     // get execution prices in wei
     const minExecPriceWei = this.getWeiRangePrice(nonWeiMinExecutionPrice);
@@ -110,8 +110,8 @@ export class AmbientPositionManager {
       txType: AmbientTxType.ADD_CONC_LIQUIDITY,
       amount: amountWei,
       isAmountBase: isBase,
-      lowerTick: this.position.bidTick,
-      upperTick: this.position.askTick,
+      lowerTick: this.position.bid_tick,
+      upperTick: this.position.ask_tick,
       minExecPriceWei,
       maxExecPriceWei,
     };
@@ -125,21 +125,21 @@ export class AmbientPositionManager {
     quote: string;
   } {
     const liquidityToRemove = percentOfAmount(
-      this.position.concLiq,
-      percentToRemove,
+      this.position.conc_liq.toString(),
+      percentToRemove
     );
     return {
       base: baseTokenFromConcLiquidity(
         liquidityToRemove.data?.toString() ?? "0",
         this.pool.stats.lastPriceSwap.toString(),
-        this.position.bidTick,
-        this.position.askTick,
+        this.position.bid_tick,
+        this.position.ask_tick
       ),
       quote: quoteTokenFromConcLiquidity(
         liquidityToRemove.data?.toString() ?? "0",
         this.pool.stats.lastPriceSwap.toString(),
-        this.position.bidTick,
-        this.position.askTick,
+        this.position.bid_tick,
+        this.position.ask_tick
       ),
     };
   }
@@ -150,8 +150,8 @@ export class AmbientPositionManager {
     nonWeiMaxExecutionPrice,
   }: UserRemoveFromExistingPositionParams): AmbientRemoveConcentratedLiquidityParams {
     const liquidityToRemove = percentOfAmount(
-      this.position.concLiq,
-      percentToRemove,
+      this.position.conc_liq.toString(),
+      percentToRemove
     );
     // get execution prices in wei
     const minExecPriceWei = this.getWeiRangePrice(nonWeiMinExecutionPrice);
@@ -160,11 +160,11 @@ export class AmbientPositionManager {
       txType: AmbientTxType.REMOVE_CONC_LIQUIDITY,
       pool: this.pool,
       liquidity: roundLiquidityForAmbientTx(
-        liquidityToRemove.data?.toString() ?? "0",
+        liquidityToRemove.data?.toString() ?? "0"
       ),
-      positionId: this.position.positionId,
-      upperTick: this.position.askTick,
-      lowerTick: this.position.bidTick,
+      positionId: this.position.position_id,
+      upperTick: this.position.ask_tick,
+      lowerTick: this.position.bid_tick,
       minExecPriceWei,
       maxExecPriceWei,
     };

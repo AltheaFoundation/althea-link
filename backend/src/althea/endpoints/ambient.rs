@@ -9,7 +9,7 @@ use crate::althea::{
         },
         tracking::get_tracked_pool,
     },
-    get_mainnet_web3, ALTHEA_MAINNET_EVM_CHAIN_ID, DEFAULT_POOL_TEMPLATES, DEFAULT_QUERIER,
+    get_mainnet_web3, ALTHEA_MAINNET_EVM_CHAIN_ID, DEFAULT_POOL_TEMPLATES, MAINNET_QUERIER,
 };
 use crate::{
     althea::database::{
@@ -231,6 +231,33 @@ pub async fn query_all_burn_knockout(db: web::Data<Arc<DB>>) -> impl Responder {
     }
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct PriceQuery {
+    pub from: Address,
+    pub to: Address,
+    pub pool_idx: Uint256,
+}
+pub struct PriceResponse {
+    pub price: f64,
+}
+#[get("/price")]
+pub async fn query_price(db: web::Data<Arc<DB>>, q: web::Query<PriceQuery>) -> impl Responder {
+    debug!("Querying current price");
+    let (base, quote, flip) = if q.from < q.to {
+        (q.from, q.to, false)
+    } else {
+        (q.to, q.from, true)
+    };
+    let price = get_price(&db, base, quote, q.pool_idx);
+    match price {
+        None => HttpResponse::NotFound().body("No known price"),
+        Some(price) => HttpResponse::Ok().json(if flip {
+            1.0 / price as f64
+        } else {
+            price as f64
+        }),
+    }
+}
 /// A request for a user's positions in a pool
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[allow(non_snake_case)]
@@ -435,6 +462,7 @@ pub struct PoolLiqCurveResp {
 impl From<TrackedPool> for PoolLiqCurveResp {
     fn from(pool: TrackedPool) -> Self {
         Self {
+            // TODO: This is a temporary conversion - need a better Uint256->f64 conversion
             ambient_liq: pool.ambient_liq.to_u128().unwrap().to_f64().unwrap(),
             liquidity_bumps: pool.bumps,
         }
@@ -506,10 +534,13 @@ pub struct PoolStatsResp {
 impl From<TrackedPool> for PoolStatsResp {
     fn from(pool: TrackedPool) -> Self {
         Self {
-            base_tvl: pool.base_tvl.to_f64().unwrap(),
-            quote_tvl: pool.quote_tvl.to_f64().unwrap(),
-            last_price_swap: pool.price.to_f64().unwrap(),
-            fee_rate: pool.fee_rate.to_f64().unwrap(),
+            // TODO: This is a temporary conversion - need a better Uint256->f64 conversion
+            base_tvl: pool.base_tvl.to_i128().unwrap().to_f64().unwrap(),
+            quote_tvl: pool.quote_tvl.to_i128().unwrap().to_f64().unwrap(),
+            last_price_swap: pool.price,
+            last_price_indic: pool.price,
+            last_price_liq: pool.price,
+            fee_rate: pool.fee_rate * 0.0001,
             ..Default::default()
         }
     }
@@ -554,7 +585,7 @@ pub async fn pool_stats(
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[allow(non_snake_case)]
 pub struct SlingshotTradeRequest {
-    pub fromAmount: Uint256,
+    pub fromAmount: Option<String>,
     pub from: Address,
     pub to: Address,
 }
@@ -591,16 +622,19 @@ pub async fn slingshot_trade(
         (req.to, req.from)
     };
     let raw_price = get_price(&db, base, quote, template);
-    let mut price = raw_price.unwrap();
-    if flip {
-        let f_price = price.to_f64().unwrap();
-        let f_price = 1.0 / f_price;
-        price = f_price as u128;
+    match raw_price {
+        None => HttpResponse::Ok().body("No known price"),
+        Some(price) => {
+            let mut price: f64 = price.to_f64().unwrap();
+            if flip {
+                price = 1.0 / price;
+            }
+            HttpResponse::Ok().json(SlingshotTradeResponse {
+                estimatedOutput: format!("{:e}", price),
+                ..Default::default()
+            })
+        }
     }
-    HttpResponse::Ok().json(SlingshotTradeResponse {
-        estimatedOutput: price.to_string(),
-        ..Default::default()
-    })
 }
 
 // TODO: Remove
@@ -634,16 +668,19 @@ pub async fn slingshot_trade_get(
         (req.to, req.from)
     };
     let raw_price = get_price(&db, base, quote, template);
-    let mut price = raw_price.unwrap();
-    if flip {
-        let f_price = price.to_f64().unwrap();
-        let f_price = 1.0 / f_price;
-        price = f_price as u128;
+    match raw_price {
+        None => HttpResponse::Ok().body("No known price"),
+        Some(price) => {
+            let mut price: f64 = price.to_f64().unwrap();
+            if flip {
+                price = 1.0 / price;
+            }
+            HttpResponse::Ok().json(SlingshotTradeResponse {
+                estimatedOutput: format!("{:e}", price),
+                ..Default::default()
+            })
+        }
     }
-    HttpResponse::Ok().json(SlingshotTradeResponse {
-        estimatedOutput: price.to_string(),
-        ..Default::default()
-    })
 }
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
 #[allow(non_snake_case)]
@@ -690,7 +727,7 @@ pub struct SlingshotTradeResponseRequest {
 // Accepts a "chain" string param which we do not use
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct MoralisRequest {
-    pub chain: String,
+    pub chain: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -710,7 +747,7 @@ pub async fn moralis_eth_in_usdc(
     opts: web::Data<Opts>,
 ) -> impl Responder {
     let web3 = get_mainnet_web3(&opts, Duration::from_secs(30));
-    let querier = Address::from_str(DEFAULT_QUERIER).unwrap();
+    let querier = Address::from_str(MAINNET_QUERIER).unwrap();
     let weth = Address::from_str(WETH_MAINNET).unwrap();
     let usdc = Address::from_str(USDC_MAINNET).unwrap();
     let price = web3

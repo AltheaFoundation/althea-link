@@ -98,7 +98,7 @@ export function queryAmbientPoolLiquidityCurve(
     chainid,
     `/gcgo/pool_liq_curve?chainId=${chainIdToHex(
       chainid
-    )}&base=${base}&quote=${quote}&poolIidx=${poolIdx}`
+    )}&base=${base}&quote=${quote}&poolIdx=${poolIdx}`
   );
 }
 
@@ -149,36 +149,33 @@ export function querySinglePosition(
   );
 }
 
-export interface PoolPositionsReturn {
-  data: {
-    chainId: string;
-    base: string;
-    quote: string;
-    poolIdx: number;
-    bidTick: number;
-    askTick: number;
-    isBid: boolean;
-    user: string;
-    timeFirstMint: number;
-    latestUpdateTime: number;
-    lastMintTx: string;
-    firstMintTx: string;
-    positionType: "concentrated" | "ambient";
-    ambientLiq: number;
-    concLiq: number;
-    rewardLiq: number;
-    liqRefreshTime: number;
-    aprDuration: number;
-    aprPostLiq: number;
-    aprContributedLiq: number;
-    aprEst: number;
-    positionId: string;
-  }[];
-  provenance: {
-    hostname: string;
-    serveTime: number;
-  };
+export interface PoolPosition {
+  chainId: string;
+  base: string;
+  quote: string;
+  pool_idx: number;
+  bid_tick: number;
+  ask_tick: number;
+  is_bid: boolean;
+  user: string;
+  time_first_mint: number;
+  latest_update_time: number;
+  last_mint_tx: string;
+  first_mint_tx: string;
+  position_type: "concentrated" | "ambient";
+  ambient_liq: number;
+  conc_liq: number;
+  reward_liq: number;
+  liq_refresh_time: number;
+  apr_duration: number;
+  apr_post_liq: number;
+  apr_contributed_liq: number;
+  apr_est: number;
+  position_id: string;
 }
+
+export type PoolPositionsReturn = PoolPosition[];
+
 export function queryPoolPositions(
   chainId: number,
   userEthAddress: string,

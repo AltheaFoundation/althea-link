@@ -15,6 +15,7 @@ export default function usePool() {
     chainId,
     userEthAddress: connectedEthAccount,
   });
+
   /** general selection */
   const { pair: selectedPair, setPair } = selection;
 

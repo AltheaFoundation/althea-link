@@ -3,7 +3,9 @@ use crate::Opts;
 use actix_web::rt::System;
 use actix_web::web::{self};
 use ambient::pools::InitPoolEvent;
-use ambient::{initialize_templates, query_latest, search_for_pool_events, track_pools};
+use ambient::{
+    initialize_templates, possible_pools, query_latest, search_for_pool_events, track_pools,
+};
 use clarity::{Address, Uint256};
 use cosmos::delegations::start_delegation_cache_refresh_task;
 use cosmos::governance::start_proposal_cache_refresh_task;
@@ -13,6 +15,7 @@ use database::pools::get_init_pools;
 use database::{get_latest_searched_block, save_latest_searched_block, save_syncing};
 use deep_space::Contact;
 use endpoints::cosmos::{get_delegations, get_proposals, get_staking_info, get_validators};
+use itertools::Itertools;
 use log::{error, info};
 use std::cmp::min;
 use std::str::FromStr;
@@ -36,7 +39,7 @@ pub const DELEGATIONS_CACHE_DURATION: u64 = 4;
 pub const ALTHEA_PREFIX: &str = "althea";
 pub const TIMEOUT: Duration = Duration::from_secs(45);
 pub const DEFAULT_START_SEARCH_BLOCK: u128 = 0u128;
-const DEFAULT_SEARCH_RANGE: u128 = 1000u128;
+const DEFAULT_SEARCH_RANGE: u128 = 10000u128;
 /// Tokens we care to index pools for - any user may create pools permissionlessly
 /// but that does not mean we care to report their data to the frontend
 const DEFAULT_TOKEN_ADDRESSES: &[&str] = &[
@@ -49,6 +52,7 @@ const DEFAULT_TOKEN_ADDRESSES: &[&str] = &[
 /// pool using these templates permissionlessly.
 const DEFAULT_POOL_TEMPLATES: &[u64] = &[36000, 36001];
 const DEFAULT_QUERIER: &str = "0xbf660843528035a5a4921534e156a27e64b231fe";
+const MAINNET_QUERIER: &str = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
 
 /// Returns a Contact struct for interacting with Gravity Bridge, pre-configured with the url
 /// and prefix
@@ -121,10 +125,16 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
                 save_latest_searched_block(&db, end_block);
 
                 if end_block != start_block {
-                    let pools = get_init_pools(&db);
-                    let pools = pools
-                        .iter()
-                        .map(|p| (p.base, p.quote, p.pool_idx))
+                    // Query up to date info on pools which may exist but haven't been tracked yet, and any already tracked pools too
+                    let potential_pools = possible_pools(&tokens, &templates);
+                    let discovered_pools = get_init_pools(&db)
+                        .into_iter()
+                        .map(|v| (v.base, v.quote, v.pool_idx))
+                        .collect::<Vec<_>>();
+                    let pools = potential_pools
+                        .into_iter()
+                        .chain(discovered_pools)
+                        .unique()
                         .collect::<Vec<_>>();
                     if let Err(e) = query_latest(&db, &web3, opts.query_contract, &pools).await {
                         error!("Error querying latest: {}", e);

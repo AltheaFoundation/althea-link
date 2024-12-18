@@ -81,6 +81,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
     const pair = allPairs.find((pair) =>
       areEqualAddresses(pair.address, address)
     );
+
     return pair ? NO_ERROR(pair) : NEW_ERROR("Pair not found");
   }
 
@@ -95,7 +96,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
       ethAccount: props.userEthAddress ?? "",
     };
     // need wCanto for importing token
-    const wCantoAddress = getCantoCoreAddress(props.chainId, "wcanto");
+    const wCantoAddress = getCantoCoreAddress(props.chainId, "walthea");
 
     // get ambient pools that have rewards
     const ambientRewardsPools = [];

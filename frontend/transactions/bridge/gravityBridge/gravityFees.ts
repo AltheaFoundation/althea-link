@@ -131,7 +131,7 @@ const gravityTokens: {
 
 async function getEthPriceInUSDC(): PromiseWithError<string> {
   const { data, error } = await tryFetch<{ usdPriceFormatted: string }>(
-    "https://deep-index.moralis.io/api/v2.2/erc20/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/price?chain=eth",
+    "http://localhost:8080/api/v2.2/erc20/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/price?chain=eth",
     {
       method: "GET",
       headers: {

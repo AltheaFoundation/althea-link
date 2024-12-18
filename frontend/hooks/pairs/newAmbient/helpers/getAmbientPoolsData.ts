@@ -37,9 +37,7 @@ const poolQueries = (
         pool.quote.address,
         pool.poolIdx
       )
-    : Promise.resolve(
-        NO_ERROR({ data: [], provenance: { hostname: "", serveTime: 0 } })
-      ),
+    : Promise.resolve(NO_ERROR([])),
   userEthAddress
     ? queryUserAmbientRewards(chainId, userEthAddress, pool.rewardsLedger)
     : Promise.resolve(NO_ERROR("0")),
@@ -59,17 +57,21 @@ export async function getAllAmbientPoolsData(
     return NEW_ERROR("getAllAmbientPoolsData: error fetching data");
   }
   // get wcanto price
-  const wcantoAddress = getCantoCoreAddress(chainId, "wcanto");
+  const wcantoAddress = getCantoCoreAddress(chainId, "walthea");
   if (!wcantoAddress) {
     return NEW_ERROR("getAllAmbientPoolsData: chainId not supported");
   }
-  const { data: cantoPrice } = await getTokenPriceInUSDC(wcantoAddress, 18);
+  // this gets the price of walthea compared to USDC - but our implementation compares the price of wrapped althea to 0x0412C7c846bb6b7DC462CF6B453f76D8440b2609
+  // which is just a random erc20 althea is pooled with in the testnet, so to get around this for now lets just set the price of althea to 1
+  // const { data: cantoPrice } = await getTokenPriceInUSDC(wcantoAddress, 18);
+  const cantoPrice = "0.05";
 
   // combine user data with pool to create final object with correct types
   return NO_ERROR(
     poolData.map((dataArray, idx) => {
       const stats = dataArray[0].data;
-      const userPositions = dataArray[1].data?.data ?? [];
+      const userPositions = dataArray[1].data ?? [];
+
       const rewards = dataArray[2].data;
 
       // convert into strings without scientific notation
@@ -89,12 +91,12 @@ export async function getAllAmbientPoolsData(
       const userPosArray = (userPositions ?? [])
         .map((pos) => ({
           ...pos,
-          ambientLiq: new BigNumber(pos.ambientLiq || "0").toString(),
-          concLiq: new BigNumber(pos.concLiq || "0").toString(),
-          rewardLiq: new BigNumber(pos.rewardLiq || "0").toString(),
-          aprPostLiq: new BigNumber(pos.aprPostLiq || "0").toString(),
+          ambientLiq: new BigNumber(pos.ambient_liq || "0").toString(),
+          concLiq: new BigNumber(pos.conc_liq || "0").toString(),
+          rewardLiq: new BigNumber(pos.reward_liq || "0").toString(),
+          aprPostLiq: new BigNumber(pos.apr_post_liq || "0").toString(),
           aprContributedLiq: new BigNumber(
-            pos.aprContributedLiq || "0"
+            pos.apr_contributed_liq || "0"
           ).toString(),
         }))
         .filter((pos) => pos?.concLiq !== "0");
@@ -117,7 +119,11 @@ export async function getAllAmbientPoolsData(
         totals: {
           noteTvl: tvl,
           apr: {
-            poolApr: ambientAPR("225000000000000000", tvl, cantoPrice ?? "0"),
+            poolApr: ambientAPR(
+              "225000000000000000",
+              tvl,
+              new BigNumber(cantoPrice ?? "0").toString()
+            ),
           },
         },
       };
