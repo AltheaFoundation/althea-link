@@ -10,6 +10,7 @@ use clarity::Int256;
 use clarity::Uint256;
 use log::debug;
 use log::error;
+use log::warn;
 use num_traits::ToPrimitive;
 use serde::Deserialize;
 use serde::Serialize;
@@ -367,7 +368,7 @@ pub fn handle_liq(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPoo
             if let Some(price) = updated_price {
                 pool.price = price;
             } else {
-                error!("Unable to compute price from concentrated flow: base_flow (is something zero?): {}, quote_flow: {}, bid_tick: {}, ask_tick: {}", update.base_flow, update.quote_flow, bid_tick, ask_tick);
+                warn!("Unable to compute price from concentrated flow: base_flow (is something zero?): {}, quote_flow: {}, bid_tick: {}, ask_tick: {}", update.base_flow, update.quote_flow, bid_tick, ask_tick);
             }
         }
         // Initialize or fetch the liquidity bumps at bid and ask tick
