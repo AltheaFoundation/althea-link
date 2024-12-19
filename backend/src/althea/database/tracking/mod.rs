@@ -9,7 +9,6 @@ use clarity::Address;
 use clarity::Int256;
 use clarity::Uint256;
 use log::debug;
-use log::error;
 use log::warn;
 use num_traits::ToPrimitive;
 use serde::Deserialize;
