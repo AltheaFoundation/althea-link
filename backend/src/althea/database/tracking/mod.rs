@@ -17,6 +17,7 @@ use updates::PoolUpdateEvent;
 
 use crate::althea::database::pools::get_pool_template;
 
+use super::pools::get_init_pools;
 use super::InitPoolEvent;
 
 /// Tracks the state of a given pool's dirty flag and last event block
@@ -303,7 +304,7 @@ pub fn handle_init_pool(db: &rocksdb::DB, update: &PoolUpdateEvent) -> TrackedPo
 
 fn root_price_from_reserves(base: u128, quote: u128) -> f64 {
     if quote == 0 {
-        return 0.0;
+        return 1.0;
     }
     ((base as f64) / (quote as f64)).sqrt()
 }
@@ -328,17 +329,19 @@ pub fn handle_liq(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPoo
     pool.base_tvl = add_uint256_int256(pool.base_tvl, update.base_flow.into());
     pool.quote_tvl = add_uint256_int256(pool.quote_tvl, update.quote_flow.into());
 
-    // Increment ambient liquidity
-    pool.ambient_liq = if update.ambient_liq >= 0u8.into() {
-        pool.ambient_liq + update.ambient_liq.to_uint256().unwrap()
-    } else {
-        let abs = Uint256(update.ambient_liq.0.unsigned_abs());
-        pool.ambient_liq - abs
-    };
     let mut remove_bid_bump = false;
     let mut remove_ask_bump = false;
     // Increment concentrated liquidity
     if let (Some(bid_tick), Some(ask_tick)) = (update.bid_tick, update.ask_tick) {
+        if update.bid_tick != update.ask_tick && !update.is_harvest {
+            let updated_price =
+                derive_price_conc_flow(update.base_flow, update.quote_flow, bid_tick, ask_tick);
+            if let Some(price) = updated_price {
+                pool.price = price;
+            } else {
+                error!("Unable to compute price from concentrated flow: base_flow (is something zero?): {}, quote_flow: {}, bid_tick: {}, ask_tick: {}", update.base_flow, update.quote_flow, bid_tick, ask_tick);
+            }
+        }
         // Initialize or fetch the liquidity bumps at bid and ask tick
         pool.init_bump(bid_tick);
         pool.init_bump(ask_tick);
@@ -379,6 +382,17 @@ pub fn handle_liq(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPoo
             }
         }
         remove_ask_bump = should_remove_bump(ask_bump);
+
+        // Finally update the ambient liquidity (in the event rewards were collected)
+        // TODO: Unable to calculate ambient liquidity due to event issues, fix this by altering the events
+        // pool.ambient_liq = add_uint256_int256(pool.ambient_liq, update.ambient_liq);
+    } else {
+        // Increment ambient liquidity
+        // TODO: Unable to calculate ambient liquidity due to event issues, fix this by altering the events
+        // there isn't an issue with the ambient events but including this with broken concentrated events causes a uint underflow panic
+        // pool.ambient_liq = add_uint256_int256(pool.ambient_liq, update.ambient_liq);
+
+        pool.price = derive_price_from_amb_flow(update.base_flow, update.quote_flow);
     }
 
     if remove_bid_bump {
@@ -389,6 +403,26 @@ pub fn handle_liq(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPoo
     }
 
     pool
+}
+
+fn derive_price_conc_flow(
+    base_flow: i128,
+    quote_flow: i128,
+    bid_tick: i32,
+    ask_tick: i32,
+) -> Option<f64> {
+    if quote_flow == 0 || base_flow == 0 {
+        None
+    } else {
+        let root_price = derive_root_price_from_conc_flow(
+            base_flow as f64,
+            quote_flow as f64,
+            bid_tick,
+            ask_tick,
+        );
+        let price = root_price.powf(2.0);
+        Some(price)
+    }
 }
 
 fn liquidity_magnitude(update: &PoolUpdateEvent) -> f64 {
@@ -415,7 +449,7 @@ fn conc_liquidity_magnitude(update: &PoolUpdateEvent, base_mag: f64, quote_mag: 
     } else if update.base_flow == 0 {
         quote_mag / (1.0 / bid_price - 1.0 / ask_price)
     } else {
-        let curr_price = root_price_from_conc_flow(
+        let curr_price = derive_root_price_from_conc_flow(
             base_mag,
             quote_mag,
             update.bid_tick.unwrap(),
@@ -425,16 +459,21 @@ fn conc_liquidity_magnitude(update: &PoolUpdateEvent, base_mag: f64, quote_mag: 
     }
 }
 
-fn root_price_from_conc_flow(base_mag: f64, quote_mag: f64, bid_tick: i32, ask_tick: i32) -> f64 {
-    if base_mag == 0.0 || quote_mag == 0.0 {
+fn derive_root_price_from_conc_flow(
+    base_flow: f64,
+    quote_flow: f64,
+    bid_tick: i32,
+    ask_tick: i32,
+) -> f64 {
+    if base_flow == 0.0 || quote_flow == 0.0 {
         return 0.0;
     }
 
     let bid_price = root_price_from_tick(bid_tick);
     let ask_price = root_price_from_tick(ask_tick);
-    let a = quote_mag * ask_price;
-    let b = base_mag - (quote_mag * bid_price * ask_price);
-    let c = -base_mag * ask_price;
+    let a = quote_flow * ask_price;
+    let b = base_flow - (quote_flow * bid_price * ask_price);
+    let c = -base_flow * ask_price;
 
     let s_pos = (-b + (b * b - 4f64 * a * c).sqrt()) / (2f64 * a);
     let s_neg = (-b - (b * b - 4f64 * a * c).sqrt()) / (2f64 * a);
@@ -454,6 +493,14 @@ fn should_remove_bump(bump: &LiquidityBump) -> bool {
     bump.liquidity_delta.abs() < 0.0001
         && bump.knockout_bid_liq.abs() < 0.0001
         && bump.knockout_ask_liq.abs() < 0.0001
+}
+
+fn derive_price_from_amb_flow(base_flow: i128, quote_flow: i128) -> f64 {
+    if quote_flow == 0 {
+        return 1.0;
+    }
+    let price = (base_flow as f64) / (quote_flow as f64);
+    price.abs()
 }
 
 pub fn handle_swap(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPool {

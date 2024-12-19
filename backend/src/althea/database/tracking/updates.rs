@@ -3,6 +3,7 @@ use std::cmp::min;
 use clarity::Address;
 use clarity::Int256;
 use clarity::Uint256;
+use num_traits::ToPrimitive;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -17,7 +18,7 @@ use crate::althea::ambient::positions::MintAmbientEvent;
 use crate::althea::ambient::positions::MintRangedEvent;
 use crate::althea::ambient::swap::SwapEvent;
 
-use super::root_price_from_conc_flow;
+use super::derive_root_price_from_conc_flow;
 use super::root_price_from_reserves;
 use super::root_price_from_tick;
 use super::InitPoolEvent;
@@ -104,11 +105,8 @@ impl From<MintRangedEvent> for PoolUpdateEvent {
 impl From<BurnRangedEvent> for PoolUpdateEvent {
     fn from(value: BurnRangedEvent) -> Self {
         let conc_liq: Int256 = value.liq.into();
-        assert!(value.base_flow <= 0 && value.quote_flow <= 0);
-        let full_liq_impact =
-            (Int256::from(value.base_flow) * Int256::from(value.quote_flow)).sqrt();
-        assert!(full_liq_impact >= Uint256(conc_liq.0.unsigned_abs()));
-        let amb_liq: Int256 = conc_liq - full_liq_impact.to_int256().unwrap();
+
+        // Note: ambient liquidity must be calculated later using the curve's price
         PoolUpdateEvent {
             block: value.block_height,
             base: value.base,
@@ -117,7 +115,6 @@ impl From<BurnRangedEvent> for PoolUpdateEvent {
             base_flow: value.base_flow,
             quote_flow: value.quote_flow,
             conc_liq: -conc_liq,
-            ambient_liq: -amb_liq,
             bid_tick: Some(value.bid_tick),
             ask_tick: Some(value.ask_tick),
             is_liq: true,
@@ -225,7 +222,7 @@ impl From<MintKnockoutEvent> for PoolUpdateEvent {
             } else if base_mag == 0 {
                 (quote_mag as f64 / (1.0 / lower_price - 1.0 / upper_price)) as i128
             } else {
-                let price = root_price_from_conc_flow(
+                let price = derive_root_price_from_conc_flow(
                     base_mag as f64,
                     quote_mag as f64,
                     bid_tick,
