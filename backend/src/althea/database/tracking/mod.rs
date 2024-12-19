@@ -17,7 +17,6 @@ use updates::PoolUpdateEvent;
 
 use crate::althea::database::pools::get_pool_template;
 
-use super::pools::get_init_pools;
 use super::InitPoolEvent;
 
 /// Tracks the state of a given pool's dirty flag and last event block
