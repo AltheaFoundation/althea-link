@@ -3,7 +3,6 @@ use std::cmp::min;
 use clarity::Address;
 use clarity::Int256;
 use clarity::Uint256;
-use num_traits::ToPrimitive;
 use serde::Deserialize;
 use serde::Serialize;
 

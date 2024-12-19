@@ -17,6 +17,7 @@ use updates::PoolUpdateEvent;
 
 use crate::althea::database::pools::get_pool_template;
 
+use super::pools::get_init_pools;
 use super::InitPoolEvent;
 
 /// Tracks the state of a given pool's dirty flag and last event block
@@ -244,6 +245,34 @@ pub fn get_tracked_pool(
         .get(tracked_pool_key(base, quote, pool_idx).as_bytes())
         .unwrap()?;
     Some(bincode::deserialize(&v).unwrap())
+}
+
+pub fn reset_all_pool_indexes(db: &rocksdb::DB) {
+    let dirty = get_all_dirty_pools(db);
+    let pools_iter = dirty.iter().map(|p| (p.base, p.quote, p.pool_idx));
+
+    // First, delete the dirty and tracked pool objects in the database
+    for (base, quote, pool_idx) in pools_iter {
+        let dpk = dirty_pool_key(base, quote, pool_idx);
+        let tpk = tracked_pool_key(base, quote, pool_idx);
+
+        db.delete(dpk.as_bytes())
+            .unwrap_or_else(|e| panic!("Unable to delete dirty pool at key {}: {e}", dpk));
+        db.delete(tpk.as_bytes())
+            .unwrap_or_else(|e| panic!("Unable to delete tracked pool at key {}: {e}", tpk));
+    }
+
+    // Now recreate the dirty pool objects from the InitPoolEvents already stored - this should trigger the pools to be tracked again
+    for event in get_init_pools(db) {
+        set_dirty_pool(
+            db,
+            event.base,
+            event.quote,
+            event.pool_idx,
+            true,
+            Uint256::default(),
+        );
+    }
 }
 
 pub fn update_pool(db: &rocksdb::DB, update: PoolUpdateEvent) {
