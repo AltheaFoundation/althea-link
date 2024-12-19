@@ -530,10 +530,6 @@ pub fn handle_swap(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPo
         );
         let old_price = pool.price;
         pool.price = new_price;
-        error!(
-            "Swap ({}-{}) old_price {old_price} new_price {new_price}",
-            pool.base, pool.quote
-        );
         // Determine if any knockouts were crossed and handle those changes to liquidity
         // using updateKOCross in graphcache-go model/liquidityCurve.go
         let old_tick = tick_from_root_price(old_price);
