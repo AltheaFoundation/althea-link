@@ -1,0 +1,85 @@
+.dropdownContainer {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.dropdownButton {
+  width: 100%;
+  padding: 12px;
+  background: var(--background-color-end);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-dark-color);
+
+  &:hover:not(.disabled) {
+    border-color: var(--card-primary-color);
+    background: var(--button-highlight);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.dropdownContent {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: var(--background-color-end);
+  justify-content: center;
+  border-radius: var(--border-radius);
+  z-index: 10;
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px;
+  background: var(--background-color-end);
+  border: 1px solid var(--border-stroke-color);
+  border-radius: var(--border-radius);
+  color: var(--text-dark-color);
+  font-size: 14px;
+
+  &::placeholder {
+    color: var(--text-dark-40-color);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--althea-blue);
+  }
+}
+
+.tokenList {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.tokenOption {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: var(--text-dark-color);
+
+  &:hover {
+    background: var(--button-highlight);
+  }
+}
+
+.balance {
+  margin-left: auto !important;
+  color: var(--text-dark-40-color);
+}
+
+.chevron {
+  margin-left: auto;
+}

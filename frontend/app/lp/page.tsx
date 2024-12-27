@@ -4,9 +4,7 @@ import Modal from "@/components/modal/modal";
 import Table from "@/components/table/table";
 import {
   GeneralAmbientPairRow,
-  GeneralCantoDexPairRow,
   UserAmbientPairRow,
-  UserCantoDexPairRow,
 } from "./components/pairRow";
 import Text from "@/components/text";
 import { CantoDexLPModal } from "./components/dexModals/cantoDexLPModal";
@@ -22,10 +20,7 @@ import Container from "@/components/container/container";
 import ToggleGroup from "@/components/groupToggle/ToggleGroup";
 import usePool from "./utils";
 import Analytics from "@/provider/analytics";
-import {
-  getAnalyticsCantoLiquidityPoolInfo,
-  getAnalyticsAmbientLiquidityPoolInfo,
-} from "@/utils/analytics";
+import { getAnalyticsAmbientLiquidityPoolInfo } from "@/utils/analytics";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
 import { useChain } from "@cosmos-kit/react";
 import { WalletWizardModal } from "@/components/walletWizard/wizardModal";
@@ -114,7 +109,7 @@ export default function Page() {
         width="100%"
       >
         <Text size="x-lg" font="nm_plex" className={styles.title}>
-          Pools
+          POOLS
         </Text>
         <Rewards
           onClick={sendClaimRewardsFlow}

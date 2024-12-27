@@ -12,6 +12,7 @@ use cosmos::governance::start_proposal_cache_refresh_task;
 use cosmos::staking::start_staking_info_cache_refresh_task;
 use cosmos::validators::start_validator_cache_refresh_task;
 use database::pools::get_init_pools;
+use database::tracking::reset_all_pool_indexes;
 use database::{get_latest_searched_block, save_latest_searched_block, save_syncing};
 use deep_space::Contact;
 use endpoints::cosmos::{get_delegations, get_proposals, get_staking_info, get_validators};
@@ -79,6 +80,12 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
     start_delegation_cache_refresh_task(db.clone(), contact.clone());
     start_staking_info_cache_refresh_task(db.clone(), contact.clone());
 
+    if opts.reindex {
+        info!("Reindexing database");
+        reset_all_pool_indexes(&db);
+        track_pools(&db).expect("Error reindexing pools");
+    }
+
     thread::spawn(move || {
         let db = db.clone();
         let runner = System::new();
@@ -88,6 +95,7 @@ pub fn start_ambient_indexer(opts: Opts, db: Arc<rocksdb::DB>) {
             initialize_templates(&db, &web3, opts.query_contract, &templates)
                 .await
                 .unwrap();
+
             loop {
                 let start_block =
                     get_latest_searched_block(&db).unwrap_or(DEFAULT_START_SEARCH_BLOCK.into());

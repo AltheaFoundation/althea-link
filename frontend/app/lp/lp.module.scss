@@ -14,7 +14,6 @@
 .title {
   font-size: 32px !important;
   width: 100%;
-  margin: 1rem;
 }
 
 .rewards {
@@ -22,7 +21,7 @@
   height: 100px;
   width: calc(100% - 2rem);
   padding: 1rem;
-  margin: 1rem;
+
   background-color: var(--card-surface-color);
   justify-content: space-between;
   align-items: center;
