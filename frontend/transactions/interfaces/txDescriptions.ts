@@ -1,6 +1,7 @@
 import { VoteOption } from "@/transactions/gov";
 import { CantoDexPair } from "@/hooks/pairs/cantoDex/interfaces/pairs";
 import { CTokenLendingTxTypes } from "@/transactions/lending";
+import { AmbientPool } from "@/hooks/pairs/newAmbient/interfaces/ambientPools";
 
 export const TX_DESCRIPTIONS = {
   ADD_LIQUIDITY: (pair: CantoDexPair, amount1: string, amount2: string) => ({
@@ -20,7 +21,7 @@ export const TX_DESCRIPTIONS = {
     amount: string,
     fromNetwork: string,
     toNetwork: string,
-    method: string,
+    method: string
   ) => ({
     title: `Send ${tokenSymbol} to ${toNetwork} from ${fromNetwork}`,
     description: `Send ${amount} ${tokenSymbol} to ${toNetwork} from ${fromNetwork} through ${method}`,
@@ -40,7 +41,7 @@ export const TX_DESCRIPTIONS = {
   CTOKEN_LENDING: (
     txType: CTokenLendingTxTypes,
     tokenSymbol: string,
-    amount: string,
+    amount: string
   ) => ({
     title: `${txType} ${tokenSymbol}`,
     description: `${txType} ${amount} ${tokenSymbol} ${
@@ -67,7 +68,7 @@ export const TX_DESCRIPTIONS = {
   MULTI_STAKE: (
     validatorAmount: string,
     amount: string,
-    undelegate: boolean,
+    undelegate: boolean
   ) => ({
     title: `${
       undelegate ? "Undelegate from" : "Delegating to"
@@ -79,7 +80,7 @@ export const TX_DESCRIPTIONS = {
   REDELEGATE: (
     validatorName: string,
     newValidatorName: string,
-    amount: string,
+    amount: string
   ) => ({
     title: `Redelegate from ${validatorName} to ${newValidatorName}`,
     description: `Redelegate ${amount} ALTHEA from ${validatorName} to ${newValidatorName}`,
@@ -100,7 +101,7 @@ export const TX_DESCRIPTIONS = {
   OFT_DEPOSIT_OR_WITHDRAW: (
     tokenSymbol: string,
     amount: string,
-    deposit: boolean,
+    deposit: boolean
   ) => ({
     title: `${deposit ? "Wrap" : "Unwrap"} ${tokenSymbol}`,
     description: `${deposit ? "Wrap" : "Unwrap"} ${amount} ${tokenSymbol} ${
@@ -122,6 +123,12 @@ export const TX_DESCRIPTIONS = {
   VOTE: (proposalId: number, voteOption: VoteOption) => ({
     title: `Vote for Proposal ${proposalId}`,
     description: `Vote ${voteOption} for Proposal ${proposalId}`,
+  }),
+  SWAP: (pool: AmbientPool, amount: string, isAmountBase: boolean) => ({
+    title: `Swap ${pool.base.symbol}/${pool.quote.symbol}`,
+    description: `Swap ${amount} ${
+      isAmountBase ? pool.base.symbol : pool.quote.symbol
+    } for ${isAmountBase ? pool.quote.symbol : pool.base.symbol}`,
   }),
 };
 
@@ -169,4 +176,5 @@ export enum CantoFETxType {
   MULTI_STAKE = "undelegate",
   REDELEGATE = "redelegate",
   CLAIM_STAKING_REWARDS = "claimStakingRewards",
+  SWAP = "swap",
 }

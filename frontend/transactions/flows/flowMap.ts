@@ -24,7 +24,7 @@ import {
 import { cantoBridgeTx, validateCantoBridgeTxParams } from "../bridge";
 import { stakingTx, validateStakingTxParams } from "../staking";
 import { proposalVoteTx, validateGovTxParams } from "../gov";
-
+import { swapTx, validateSwapTxParams } from "../swap";
 export enum TransactionFlowType {
   //   // Bridge
   BRIDGE = "BRIDGE",
@@ -40,6 +40,8 @@ export enum TransactionFlowType {
   //STAKING
   STAKE_CANTO_TX = "STAKE_CANTO_TX",
   VOTE_TX = "VOTE_TX",
+  // SWAP
+  SWAP_TX = "SWAP_TX",
 }
 
 export const TRANSACTION_FLOW_MAP: {
@@ -88,5 +90,9 @@ export const TRANSACTION_FLOW_MAP: {
   [TransactionFlowType.VOTE_TX]: {
     tx: async (params) => proposalVoteTx(params),
     validRetry: async (params) => NO_ERROR(validateGovTxParams(params)),
+  },
+  [TransactionFlowType.SWAP_TX]: {
+    tx: async (params) => swapTx(params),
+    validRetry: async (params) => NO_ERROR(validateSwapTxParams(params)),
   },
 };

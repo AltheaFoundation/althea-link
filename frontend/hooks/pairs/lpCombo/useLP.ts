@@ -6,15 +6,15 @@ import {
   ReturnWithError,
   Validation,
 } from "@/config/interfaces";
-import useCantoDex from "../cantoDex/useCantoDex";
+
 import { LPPairType } from "./interfaces.ts/pairTypes";
 import useAmbientPools from "../newAmbient/useAmbientPools";
-import { CantoDexPairWithUserCTokenData } from "../cantoDex/interfaces/pairs";
+
 import { AmbientPool } from "../newAmbient/interfaces/ambientPools";
 import { NewTransactionFlow, TransactionFlowType } from "@/transactions/flows";
-import { CantoDexTransactionParams } from "@/transactions/pairs/cantoDex";
+
 import { AmbientTransactionParams } from "@/transactions/pairs/ambient";
-import { addTokenBalances } from "@/utils/math";
+
 import { getCantoCoreAddress } from "@/config/consts/addresses";
 
 interface UseLPProps {
@@ -29,7 +29,6 @@ interface UseLPReturn {
     userAmbient: AmbientPool[];
   };
   rewards: {
-    cantoDex: string;
     ambient: string;
     total: string;
   };
@@ -38,12 +37,6 @@ interface UseLPReturn {
     setPair: (pairAddress: string | null) => void;
   };
   transactions: {
-    newCantoDexLPFlow: (
-      txParams: CantoDexTransactionParams
-    ) => NewTransactionFlow;
-    validateCantoDexLPParams: (
-      txParams: CantoDexTransactionParams
-    ) => Validation;
     newAmbientPoolTxFlow: (
       txParams: AmbientTransactionParams
     ) => NewTransactionFlow;
@@ -57,7 +50,7 @@ interface UseLPReturn {
 // combination of canto dex and ambient pools
 export default function useLP(props: UseLPProps): UseLPReturn {
   // grab data from canto dex and ambient
-  const cantoDex = useCantoDex(props);
+
   const ambient = useAmbientPools(props);
 
   // get user pairs
@@ -67,7 +60,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
   );
 
   // create list with all pairs
-  const allPairs: LPPairType[] = [...cantoDex.pairs, ...ambient.ambientPools];
+  const allPairs: LPPairType[] = [...ambient.ambientPools];
 
   ///
   /// SELECTED PAIR STATE
@@ -114,10 +107,6 @@ export default function useLP(props: UseLPProps): UseLPReturn {
       icon: "/icons/canto.svg",
       txType: TransactionFlowType.LP_COMBO_CLAIM_REWARDS_TX,
       params: {
-        clmParams: {
-          ...userParams,
-          estimatedRewards: cantoDex.position.totalRewards,
-        },
         ambientParams: { ...userParams, rewards: ambientRewardsPools },
       },
       tokenMetadata: wCantoAddress
@@ -135,18 +124,14 @@ export default function useLP(props: UseLPProps): UseLPReturn {
   }
 
   return {
-    isLoading: cantoDex.isLoading && ambient.isLoading,
+    isLoading: ambient.isLoading,
     pairs: {
       allAmbient: ambient.ambientPools,
       userAmbient: userAmbientPairs,
     },
     rewards: {
-      cantoDex: cantoDex.position.totalRewards,
       ambient: ambient.totalRewards,
-      total: addTokenBalances(
-        cantoDex.position.totalRewards,
-        ambient.totalRewards
-      ),
+      total: ambient.totalRewards,
     },
     selection: {
       pair: getPair(selectedPairId ?? "").data,
@@ -155,8 +140,7 @@ export default function useLP(props: UseLPProps): UseLPReturn {
     transactions: {
       newAmbientPoolTxFlow: ambient.transaction.newAmbientPoolTxFlow,
       validateAmbientPoolTxParams: ambient.transaction.validateParams,
-      newCantoDexLPFlow: cantoDex.transaction.newCantoDexLPFlow,
-      validateCantoDexLPParams: cantoDex.transaction.validateParams,
+
       newClaimRewardsFlow: newClaimComboRewardsFlow,
     },
   };

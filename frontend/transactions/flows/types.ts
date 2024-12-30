@@ -19,6 +19,7 @@ import {
 } from "../lending";
 import { StakingTransactionParams } from "../staking";
 import { ProposalVoteTxParams } from "../gov";
+import { SwapTransactionParams } from "../swap";
 
 // txType is the key for the txMap that will create the Transaction[] list
 export type NewTransactionFlow = {
@@ -71,6 +72,10 @@ export type NewTransactionFlow = {
       txType: TransactionFlowType.VOTE_TX;
       params: ProposalVoteTxParams;
     }
+  | {
+      txType: TransactionFlowType.SWAP_TX;
+      params: SwapTransactionParams;
+    }
 );
 
 ///
@@ -105,7 +110,7 @@ export type NewTransactionFlowPlaceholder = {
 
 // create const to use for placeholder flows to show in modal
 export const TX_PLACEHOLDER = (
-  placeholder: NewTransactionFlowPlaceholder,
+  placeholder: NewTransactionFlowPlaceholder
 ): TransactionWithStatus => ({
   tx: {
     feTxType: CantoFETxType.NONE,

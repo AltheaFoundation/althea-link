@@ -22,30 +22,6 @@ export default function usePool() {
   //   all pairs filtered by type
   const [filteredPairs, setFilteredPairs] = useState<string>("all");
 
-  /** CANTO DEX */
-
-  function validateCantoDexTx(params: Partial<CantoDexTransactionParams>) {
-    return transactions.validateCantoDexLPParams({
-      chainId,
-      ethAccount: connectedEthAccount,
-      pair: selectedPair,
-      ...params,
-    } as CantoDexTransactionParams);
-  }
-  function sendCantoDexTxFlow(params: Partial<CantoDexTransactionParams>) {
-    const flow = transactions.newCantoDexLPFlow({
-      chainId,
-      ethAccount: connectedEthAccount,
-      pair: selectedPair,
-      ...params,
-    } as CantoDexTransactionParams);
-    txStore?.addNewFlow({
-      txFlow: flow,
-      ethAccount: connectedEthAccount,
-      onSuccessCallback: () => selection.setPair(null),
-    });
-  }
-
   /** AMBIENT */
 
   function validateAmbientTxParams(params: Partial<AmbientTransactionParams>) {
@@ -133,8 +109,6 @@ export default function usePool() {
     selectedPair,
     setPair,
 
-    validateCantoDexTx,
-    sendCantoDexTxFlow,
     validateAmbientTxParams,
     sendAmbientTxFlow,
     sendClaimRewardsFlow,

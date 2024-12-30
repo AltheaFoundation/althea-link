@@ -35,8 +35,6 @@ export default function Page() {
     setFilteredPairs,
     selectedPair,
     setPair,
-    validateCantoDexTx,
-    sendCantoDexTxFlow,
     validateAmbientTxParams,
     sendAmbientTxFlow,
     sendClaimRewardsFlow,
@@ -86,13 +84,6 @@ export default function Page() {
         onClose={() => setPair(null)}
         closeOnOverlayClick={true}
       >
-        {selectedPair && isCantoDexPair(selectedPair) && (
-          <CantoDexLPModal
-            pair={selectedPair}
-            validateParams={validateCantoDexTx}
-            sendTxFlow={sendCantoDexTxFlow}
-          />
-        )}
         {selectedPair && isAmbientPool(selectedPair) && (
           <AmbientModal
             pool={selectedPair}

@@ -6,10 +6,12 @@ import Spacer from "@/components/layout/spacer";
 import Container from "@/components/container/container";
 import useScreenSize from "@/hooks/helpers/useScreenSize";
 import SwapBox from "./components/swapBox";
+import usePool from "../lp/utils";
 
 export default function SwapPage() {
   const { txStore, signer, chainId } = useCantoSigner();
   const { isMobile } = useScreenSize();
+  const { pairs } = usePool();
 
   return (
     <div className={styles.container}>
@@ -26,7 +28,7 @@ export default function SwapPage() {
         width="100%"
       >
         <Container className={styles.swapCard}>
-          <SwapBox />
+          <SwapBox pairs={pairs} />
         </Container>
       </Container>
     </div>

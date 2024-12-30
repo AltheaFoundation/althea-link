@@ -65,3 +65,13 @@ export function isOFTToken(object: any): object is OFTToken {
     object.isOFT === true
   );
 }
+
+export interface Token {
+  symbol: string;
+  name: string;
+  logoURI: string;
+  address: string;
+  balance?: string;
+  decimals?: number;
+  price?: string;
+}
