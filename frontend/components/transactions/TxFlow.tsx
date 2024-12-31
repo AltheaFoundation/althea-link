@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, ReactNode } from "react";
 import styles from "./transactions.module.scss";
 import Image from "next/image";
 import Text from "../text";
@@ -48,16 +48,19 @@ const TxFlow = (props: Props) => {
     checkRetryParams();
   }, [props.txFlow?.status]);
 
+  const renderIcon = (icon: string | ReactNode) => {
+    if (typeof icon === "string") {
+      return <Image src={icon} width={50} height={50} alt={"Transaction"} />;
+    }
+    // If it's a React node (like our SwapIcon), render it directly
+    return <div style={{ width: 50, height: 50 }}>{icon}</div>;
+  };
+
   return (
     <div className={styles.container}>
       {props.txFlow && (
         <>
-          <Image
-            src={props.txFlow.icon ?? ""}
-            width={50}
-            height={50}
-            alt={"Transaction"}
-          />
+          {props.txFlow.icon && renderIcon(props.txFlow.icon)}
           <Spacer height="30px" />
 
           <Text font="macan-font" size="lg">

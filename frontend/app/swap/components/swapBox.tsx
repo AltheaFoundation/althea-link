@@ -14,13 +14,12 @@ import Switch from "@/components/switch/switch";
 import { AmbientPool } from "@/hooks/pairs/newAmbient/interfaces/ambientPools";
 import useCantoSigner from "@/hooks/helpers/useCantoSigner";
 import { SwapTxType } from "@/transactions/swap/types";
-import useStore from "@/stores/useStore";
-import useTransactionStore from "@/stores/transactionStore";
+
 import { TransactionFlowType } from "@/transactions/flows";
 import { Token } from "@/utils/tokens/tokenTypes.utils";
+import { generateSwapIcon } from "@/utils/icons";
 
 const MAX_SLIPPAGE = 50; // Maximum allowed slippage percentage
-const PRICE_PRECISION = 18; // Ambient uses 18 decimal precision for prices
 
 export default function SwapBox({
   pairs,
@@ -74,11 +73,12 @@ export default function SwapBox({
   const [isGasless, setIsGasless] = useState(true);
 
   useEffect(() => {
-    if (availableTokens.length > 1) {
+    // Only set initial tokens if both fromToken and toToken are undefined
+    if (availableTokens.length > 1 && !fromToken && !toToken) {
       setFromToken(availableTokens[0]);
       setToToken(availableTokens[1]);
     }
-  }, [availableTokens]);
+  }, [availableTokens, fromToken, toToken]);
 
   // Calculate minimum amount received based on slippage
   const minimumReceived = useMemo(() => {
@@ -357,7 +357,7 @@ export default function SwapBox({
       txFlow: {
         title: `Swap ${fromToken.symbol} for ${toToken.symbol}`,
         txType: TransactionFlowType.SWAP_TX,
-        icon: "swap",
+        icon: generateSwapIcon(fromToken.logoURI, toToken.logoURI),
         params: {
           chainId,
           ethAccount: signer.account.address,

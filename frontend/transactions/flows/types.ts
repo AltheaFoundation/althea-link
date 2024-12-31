@@ -24,7 +24,7 @@ import { SwapTransactionParams } from "../swap";
 // txType is the key for the txMap that will create the Transaction[] list
 export type NewTransactionFlow = {
   title: string;
-  icon: string;
+  icon: string | React.ReactNode;
   // for importing tokens from tx list
   tokenMetadata?: {
     chainId: number;
