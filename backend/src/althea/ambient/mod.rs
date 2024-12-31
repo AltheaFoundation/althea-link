@@ -202,7 +202,8 @@ pub async fn search_for_pool_events(
     let swap_events = SwapEvent::from_logs(&swap_events)?
         .into_iter()
         .filter(|v| {
-            templates.contains(&v.pool_idx) && (tokens.contains(&v.buy) || tokens.contains(&v.sell))
+            templates.contains(&v.pool_idx)
+                && (tokens.contains(&v.base) || tokens.contains(&v.quote))
         })
         .collect::<Vec<_>>();
     let mint_ranged_events = MintRangedEvent::from_logs(&mint_ranged_events)?
@@ -290,12 +291,8 @@ pub async fn search_for_pool_events(
     }
     for event in swap_events {
         debug!("Writing {event:?} to database");
-        let (base, quote) = if event.buy < event.sell {
-            (event.buy, event.sell)
-        } else {
-            (event.sell, event.buy)
-        };
-        mark_pool_dirty(db, base, quote, event.pool_idx);
+
+        mark_pool_dirty(db, event.base, event.quote, event.pool_idx);
         save_swap(db, event);
     }
     for event in mint_ranged_events {

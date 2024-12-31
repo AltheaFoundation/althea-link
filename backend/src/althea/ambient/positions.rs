@@ -167,6 +167,7 @@ pub struct BurnRangedEvent {
     pub liq: u128,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub rewards: u128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -177,6 +178,7 @@ pub struct BurnRangedBytes {
     pub liq: u128,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub rewards: u128,
 }
 impl BurnRangedEvent {
     /// Parse multiple logs into BurnRangedEvents
@@ -248,6 +250,7 @@ impl BurnRangedEvent {
             liq: decoded_bytes.liq,
             base_flow: decoded_bytes.base_flow,
             quote_flow: decoded_bytes.quote_flow,
+            rewards: decoded_bytes.rewards,
         })
     }
 
@@ -284,6 +287,10 @@ impl BurnRangedEvent {
         index_start += 32;
         let quote_flow = parse_i128(input, index_start);
 
+        // rewards
+        index_start += 32;
+        let rewards = parse_u128(input, index_start);
+
         Ok(BurnRangedBytes {
             pool_idx,
             liq,
@@ -291,6 +298,7 @@ impl BurnRangedEvent {
             ask_tick,
             base_flow,
             quote_flow,
+            rewards,
         })
     }
 }
@@ -310,6 +318,7 @@ pub struct HarvestEvent {
     pub ask_tick: i32,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub rewards: u128,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -319,6 +328,7 @@ pub struct HarvestBytes {
     pub ask_tick: i32,
     pub base_flow: i128,
     pub quote_flow: i128,
+    pub rewards: u128,
 }
 impl HarvestEvent {
     /// Parse multiple logs into HarvestEvents
@@ -389,6 +399,7 @@ impl HarvestEvent {
             ask_tick: decoded_bytes.ask_tick,
             base_flow: decoded_bytes.base_flow,
             quote_flow: decoded_bytes.quote_flow,
+            rewards: decoded_bytes.rewards,
         })
     }
 
@@ -421,12 +432,17 @@ impl HarvestEvent {
         index_start += 32;
         let quote_flow = parse_i128(input, index_start);
 
+        // rewards
+        index_start += 32;
+        let rewards = parse_u128(input, index_start);
+
         Ok(HarvestBytes {
             pool_idx,
             bid_tick,
             ask_tick,
             base_flow,
             quote_flow,
+            rewards,
         })
     }
 }

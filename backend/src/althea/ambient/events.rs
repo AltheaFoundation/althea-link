@@ -7,14 +7,19 @@
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted whenever a swap is performed, exchanging buy tokens for sell tokens.
 /// @param user The address of the user performing the swap.
-/// @param buy The address of the token being bought.
-/// @param sell The address of the token being sold.
+/// @param base The address of the base token of the pool.
+/// @param quote The address of the quote token of the pool.
 /// @param poolIdx The template of the relevant pool.
-/// @param buyFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
-/// @param sellFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param isBuy If true, the user is swapping base for quote, otherwise it's quote for base.
+/// @param inBaseQty If true, the swap quantity is denominated in base tokens, otherwise in quote tokens.
+/// @param qty The total amount of base (quote) tokens being swapped if inBaseQty is true (false).
+/// @param minOutput The minimum output of tokens the user is willing to accept as the result of the swap.
+/// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it.
+/// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it.
 ///
-/// event Swap(address indexed user, address indexed buy, address indexed sell, uint256 poolIdx, int128 buyFlow, int128 sellFlow);
-pub const SWAP_SIGNATURE: &str = "Swap(address,address,address,uint256,int128,int128)";
+/// event Swap(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, bool isBuy, bool inBaseQty, uint128 qty, uint128 minOutput, int128 baseFlow, int128 quoteFlow);
+pub const SWAP_SIGNATURE: &str =
+    "Swap(address,address,address,uint256,bool,bool,uint128,uint128,int128,int128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when a concentrated liquidity position is created, or additional liquidity is added to an existing position.
@@ -43,10 +48,11 @@ pub const MINT_RANGED_SIGNATURE: &str =
 /// @param askTick The upper price tick of the range position.
 /// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 /// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param rewardFees The amount of ambient liquidity (as sqrt(X*Y)) removed from the pool due to payout of accrued fees.
 ///
 /// event BurnRanged(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, uint128 liq, int24 bidTick, int24 askTick, int128 baseFlow, int128 quoteFlow);
 pub const BURN_RANGED_SIGNATURE: &str =
-    "BurnRanged(address,address,address,uint256,uint128,int24,int24,int128,int128)";
+    "BurnRanged(address,address,address,uint256,uint128,int24,int24,int128,int128,uint128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when a concentrated position's ambient rewards are harvested, removing ambient liquidity from the pool.
@@ -58,10 +64,11 @@ pub const BURN_RANGED_SIGNATURE: &str =
 /// @param askTick The upper price tick of the range position.
 /// @param baseFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
 /// @param quoteFlow A positive value indicates tokens flowing into the pool, negative indicates tokens flowing out of it
+/// @param rewardFees The amount of ambient liquidity (as sqrt(X*Y)) removed from the pool due to payout of accrued fees.
 ///
 /// event Harvest(address indexed user, address indexed base, address indexed quote, uint256 poolIdx, int24 bidTick, int24 askTick, int128 baseFlow, int128 quoteFlow);
 pub const HARVEST_SIGNATURE: &str =
-    "Harvest(address,address,address,uint256,int24,int24,int128,int128)";
+    "Harvest(address,address,address,uint256,int24,int24,int128,int128,uint128)";
 
 /// NOTE: This event was added to the AltheaFoundation fork of Ambient
 /// @notice Emitted when an ambient (full range) liquidity position is created, or additional liquidity is added to an existing position.

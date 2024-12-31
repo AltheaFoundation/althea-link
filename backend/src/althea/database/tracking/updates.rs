@@ -47,6 +47,13 @@ pub struct PoolUpdateEvent {
     pub is_knockout: bool,
     pub is_bid: bool,
     pub is_harvest: bool,
+    pub is_buy: bool,
+    pub in_base_qty: bool,
+
+    // This confusing term is true when a liquidity change has bidTick != askTick and the event was not a harvest
+    pub is_tick_skewed: bool,
+    // This confusing term is true for mints/burns/harvests/swaps
+    pub flows_at_market: bool,
 }
 
 impl From<InitPoolEvent> for PoolUpdateEvent {
@@ -96,6 +103,8 @@ impl From<MintRangedEvent> for PoolUpdateEvent {
             ask_tick: Some(value.ask_tick),
             is_liq: true,
             is_mint: true,
+            is_tick_skewed: value.bid_tick != value.ask_tick,
+            flows_at_market: true,
             ..Default::default()
         }
     }
@@ -104,6 +113,7 @@ impl From<MintRangedEvent> for PoolUpdateEvent {
 impl From<BurnRangedEvent> for PoolUpdateEvent {
     fn from(value: BurnRangedEvent) -> Self {
         let conc_liq: Int256 = value.liq.into();
+        let amb_liq: Int256 = value.rewards.into();
 
         // Note: ambient liquidity must be calculated later using the curve's price
         PoolUpdateEvent {
@@ -114,10 +124,13 @@ impl From<BurnRangedEvent> for PoolUpdateEvent {
             base_flow: value.base_flow,
             quote_flow: value.quote_flow,
             conc_liq: -conc_liq,
+            ambient_liq: -amb_liq,
             bid_tick: Some(value.bid_tick),
             ask_tick: Some(value.ask_tick),
             is_liq: true,
             is_burn: true,
+            is_tick_skewed: value.bid_tick != value.ask_tick,
+            flows_at_market: true,
             ..Default::default()
         }
     }
@@ -125,6 +138,7 @@ impl From<BurnRangedEvent> for PoolUpdateEvent {
 
 impl From<HarvestEvent> for PoolUpdateEvent {
     fn from(event: HarvestEvent) -> Self {
+        let amb_liq: Int256 = event.rewards.into();
         PoolUpdateEvent {
             block: event.block_height,
             base: event.base,
@@ -132,9 +146,11 @@ impl From<HarvestEvent> for PoolUpdateEvent {
             pool_idx: event.pool_idx,
             base_flow: event.base_flow,
             quote_flow: event.quote_flow,
+            ambient_liq: -amb_liq,
             bid_tick: Some(event.bid_tick),
             ask_tick: Some(event.ask_tick),
             is_harvest: true,
+            flows_at_market: true,
             ..Default::default()
         }
     }
@@ -152,6 +168,7 @@ impl From<MintAmbientEvent> for PoolUpdateEvent {
             ambient_liq: Int256::from(value.liq),
             is_liq: true,
             is_mint: true,
+            flows_at_market: true,
             ..Default::default()
         }
     }
@@ -170,6 +187,7 @@ impl From<BurnAmbientEvent> for PoolUpdateEvent {
             ambient_liq: -(liq),
             is_liq: true,
             is_burn: true,
+            flows_at_market: true,
             ..Default::default()
         }
     }
@@ -177,33 +195,18 @@ impl From<BurnAmbientEvent> for PoolUpdateEvent {
 
 impl From<SwapEvent> for PoolUpdateEvent {
     fn from(event: SwapEvent) -> Self {
-        let base = min(event.buy, event.sell);
-        // A "buy" is any swap of base tokens for quote tokens
-        let is_buy = base == event.sell;
-        // TODO: Port over the fees calculation
-
-        if is_buy {
-            PoolUpdateEvent {
-                block: event.block_height,
-                base: event.sell,
-                quote: event.buy,
-                pool_idx: event.pool_idx,
-                base_flow: event.sell_flow,
-                quote_flow: event.buy_flow,
-                is_swap: true,
-                ..Default::default()
-            }
-        } else {
-            PoolUpdateEvent {
-                block: event.block_height,
-                base: event.buy,
-                quote: event.sell,
-                pool_idx: event.pool_idx,
-                base_flow: event.buy_flow,
-                quote_flow: event.sell_flow,
-                is_swap: true,
-                ..Default::default()
-            }
+        PoolUpdateEvent {
+            block: event.block_height,
+            base: event.base,
+            quote: event.quote,
+            pool_idx: event.pool_idx,
+            base_flow: event.base_flow,
+            quote_flow: event.quote_flow,
+            is_buy: event.is_buy,
+            in_base_qty: event.in_base_qty,
+            is_swap: true,
+            flows_at_market: true,
+            ..Default::default()
         }
     }
 }
@@ -245,6 +248,8 @@ impl From<MintKnockoutEvent> for PoolUpdateEvent {
             is_knockout: true,
             is_bid: event.is_bid,
             is_liq: true,
+            is_tick_skewed: bid_tick != ask_tick,
+            flows_at_market: true,
             ..Default::default()
         }
     }
@@ -270,6 +275,8 @@ impl From<BurnKnockoutEvent> for PoolUpdateEvent {
             is_bid: value.is_bid,
             is_liq: true,
             is_burn: true,
+            is_tick_skewed: value.lower_tick != value.upper_tick,
+            flows_at_market: true,
             ..Default::default()
         }
     }
@@ -300,6 +307,7 @@ impl From<WithdrawKnockoutEvent> for PoolUpdateEvent {
             is_knockout: true,
             is_bid: value.is_bid,
             is_liq: true,
+            is_tick_skewed: value.lower_tick != value.upper_tick,
             ..Default::default()
         }
     }

@@ -189,15 +189,10 @@ pub fn get_all_swap_after_block(
 }
 
 pub fn save_swap(db: &rocksdb::DB, swap: SwapEvent) {
-    let (base, quote) = if swap.buy < swap.sell {
-        (swap.buy, swap.sell)
-    } else {
-        (swap.sell, swap.buy)
-    };
     let k = swap_key(
         swap.user,
-        base,
-        quote,
+        swap.base,
+        swap.quote,
         swap.pool_idx,
         swap.block_height,
         swap.index,
