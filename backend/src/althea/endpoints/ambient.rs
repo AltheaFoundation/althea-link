@@ -248,14 +248,15 @@ pub async fn query_price(db: web::Data<Arc<DB>>, q: web::Query<PriceQuery>) -> i
     } else {
         (q.to, q.from, true)
     };
-    let price = get_price(&db, base, quote, q.pool_idx);
-    match price {
+    let q64_price = get_price(&db, base, quote, q.pool_idx);
+    match q64_price {
         None => HttpResponse::NotFound().body("No known price"),
-        Some(price) => HttpResponse::Ok().json(if flip {
-            1.0 / price as f64
-        } else {
-            price as f64
-        }),
+        Some(q64_price) => {
+            // The stored price is the sqrt price as a Q64 number, so first we divide by 2^64 and then square it.
+            let price = (q64_price.to_f64().unwrap() / 2.0f64.powf(64.0)).powf(2.0);
+
+            HttpResponse::Ok().json(if flip { 1.0 / price } else { price })
+        }
     }
 }
 /// A request for a user's positions in a pool
