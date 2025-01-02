@@ -1,5 +1,3 @@
-use std::cmp::min;
-
 use clarity::Address;
 use clarity::Int256;
 use clarity::Uint256;
@@ -224,13 +222,13 @@ impl From<MintKnockoutEvent> for PoolUpdateEvent {
             } else if base_mag == 0 {
                 (quote_mag as f64 / (1.0 / lower_price - 1.0 / upper_price)) as i128
             } else {
-                let price = derive_root_price_from_conc_flow(
-                    base_mag as f64,
-                    quote_mag as f64,
-                    bid_tick,
-                    ask_tick,
-                );
-                ((base_mag as f64) / (price - lower_price)) as i128
+                let price =
+                    derive_root_price_from_conc_flow(base_mag, quote_mag, bid_tick, ask_tick);
+                if price.is_none() {
+                    0
+                } else {
+                    ((base_mag as f64) / (price.unwrap() - lower_price)) as i128
+                }
             }
         }
         .into();
