@@ -127,9 +127,9 @@ pub struct TrackedPool {
     pub quote_volume: Uint256,
     pub base_fees: f64,
     pub quote_fees: f64,
-    pub last_price_swap: f64,
-    pub last_price_liq: f64,
-    pub last_price_indic: f64,
+    pub last_price_swap: f64, // Price as of the last swap: Used extensively by frontend
+    pub last_price_liq: f64, // Price as of the last liquidity change: Fetched but not used by frontend
+    pub last_price_indic: f64, // Most recent price change (liq or swap):  Fetched but not used by frontend
 
     pub ambient_liq: Uint256,
     pub bumps: Vec<LiquidityBump>,
