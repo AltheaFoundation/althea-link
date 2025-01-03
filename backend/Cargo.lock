@@ -356,7 +356,7 @@ dependencies = [
  "deep_space",
  "env_logger",
  "futures",
- "itertools 0.12.1",
+ "itertools 0.13.0",
  "log",
  "num-integer",
  "num-traits",
@@ -1053,9 +1053,9 @@ dependencies = [
 
 [[package]]
 name = "deep_space"
-version = "2.27.2"
+version = "2.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "161c2f10dd65be981e88678d44c1343d0cb403d926375c19c73a2d547c744d6e"
+checksum = "c611b05acba402a8dc6e9525bfaed45a29313111b1967b06a88ea9288935eeab"
 dependencies = [
  "base64 0.22.1",
  "bech32",
