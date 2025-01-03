@@ -574,8 +574,11 @@ pub async fn pool_stats(
 
     match pool {
         Some(pool) => {
-            let psr = PoolStatsResp::from(pool);
+            let mut psr = PoolStatsResp::from(pool);
             debug!("Returning pool stats: {:?}", psr);
+            if let Some(q64_price) = get_price(&db, req.base, req.quote, req.poolIdx) {
+                psr.last_price_swap = (q64_price.to_f64().unwrap() / 2.0f64.powf(64.0)).powf(2.0);
+            }
             HttpResponse::Ok().json(psr)
         }
         None => HttpResponse::NotFound().body("No pool found for base quote poolIdx triple"),
