@@ -9,6 +9,7 @@ use clarity::Address;
 use clarity::Int256;
 use clarity::Uint256;
 use log::debug;
+use log::info;
 use log::warn;
 use num_traits::ToPrimitive;
 use num_traits::Zero;
@@ -349,14 +350,14 @@ fn root_price_from_tick(tick: i32) -> f64 {
     price.sqrt()
 }
 
-fn tick_from_root_price(price: f64) -> i32 {
-    if price.abs() <= 0.0001 {
-        return 0;
-    }
-    let price = price * price;
-    let tick = price.log(1.0001f64);
-    tick as i32
-}
+// fn tick_from_root_price(price: f64) -> i32 {
+//     if price.abs() <= 0.0001 {
+//         return 0;
+//     }
+//     let price = price * price;
+//     let tick = price.log(1.0001f64);
+//     tick as i32
+// }
 
 pub fn handle_liq(mut pool: TrackedPool, update: &PoolUpdateEvent) -> TrackedPool {
     // Calculate TVL by inc/dec-rementing by the flows
@@ -533,15 +534,15 @@ fn derive_root_price_from_conc_flow(
     })
 }
 
-fn amb_liquidity_magnitude(base_mag: f64, quote_mag: f64) -> f64 {
-    (base_mag * quote_mag).sqrt()
-}
+// fn amb_liquidity_magnitude(base_mag: f64, quote_mag: f64) -> f64 {
+//     (base_mag * quote_mag).sqrt()
+// }
 
-fn should_remove_bump(bump: &LiquidityBump) -> bool {
-    bump.liquidity_delta.abs() < 0.0001
-        && bump.knockout_bid_liq.abs() < 0.0001
-        && bump.knockout_ask_liq.abs() < 0.0001
-}
+// fn should_remove_bump(bump: &LiquidityBump) -> bool {
+//     bump.liquidity_delta.abs() < 0.0001
+//         && bump.knockout_bid_liq.abs() < 0.0001
+//         && bump.knockout_ask_liq.abs() < 0.0001
+// }
 
 fn derive_price_from_amb_flow(base_flow: i128, quote_flow: i128) -> f64 {
     if quote_flow == 0 {
@@ -608,31 +609,35 @@ fn is_flow_dual_stable(base_flow: f64, quote_flow: f64) -> bool {
     base_flow.abs() >= 1000.0 && quote_flow.abs() >= 1000.0
 }
 
-fn derive_price_swap(base_mag: f64, quote_mag: f64, fee_rate: f64, is_sell: bool) -> f64 {
-    if is_sell {
-        (base_mag / quote_mag).abs() * (1.0 + (fee_rate / 1000000.0))
-    } else {
-        (base_mag / quote_mag).abs() * (1.0 - (fee_rate / 1000000.0))
-    }
+fn derive_price_swap(base_mag: f64, quote_mag: f64, _fee_rate: f64, _is_sell: bool) -> f64 {
+    // This implementation seems more accurate from manual testing
+    (base_mag / quote_mag).abs()
+
+    // GCGO implementation that tracks the fee rate
+    // if is_sell {
+    //     (base_mag / quote_mag).abs() * (1.0 + (fee_rate / (10000.0 * 100.0)))
+    // } else {
+    //     (base_mag / quote_mag).abs() * (1.0 - (fee_rate / (10000.0 * 100.0)))
+    // }
 }
 
-fn get_crossed_ko_bumps(pool: &TrackedPool, old_tick: i32, new_tick: i32) -> Vec<LiquidityBump> {
-    if new_tick > old_tick {
-        // Moving in the positive direction, we care about "ask" knockouts
-        pool.bumps
-            .iter()
-            .filter(|b| b.tick > old_tick && b.tick <= new_tick && b.knockout_ask_liq > 0.0)
-            .cloned()
-            .collect()
-    } else {
-        // Moving in the negative direction, we care about "bid" knockouts
-        pool.bumps
-            .iter()
-            .filter(|b| b.tick < old_tick && b.tick >= new_tick && b.knockout_bid_liq > 0.0)
-            .cloned()
-            .collect()
-    }
-}
+// fn get_crossed_ko_bumps(pool: &TrackedPool, old_tick: i32, new_tick: i32) -> Vec<LiquidityBump> {
+//     if new_tick > old_tick {
+//         // Moving in the positive direction, we care about "ask" knockouts
+//         pool.bumps
+//             .iter()
+//             .filter(|b| b.tick > old_tick && b.tick <= new_tick && b.knockout_ask_liq > 0.0)
+//             .cloned()
+//             .collect()
+//     } else {
+//         // Moving in the negative direction, we care about "bid" knockouts
+//         pool.bumps
+//             .iter()
+//             .filter(|b| b.tick < old_tick && b.tick >= new_tick && b.knockout_bid_liq > 0.0)
+//             .cloned()
+//             .collect()
+//     }
+// }
 
 // Knockout liquidity can be removed from a pool in a bid (price reduced) or ask (price increased) direction
 // Once a knockout "pivot" is crossed, the position's liquidity must be removed from both bumps to cancel out the position

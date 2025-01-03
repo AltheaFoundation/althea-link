@@ -242,7 +242,6 @@ pub struct PriceResponse {
 }
 #[get("/price")]
 pub async fn query_price(db: web::Data<Arc<DB>>, q: web::Query<PriceQuery>) -> impl Responder {
-    debug!("Querying current price");
     let (base, quote, flip) = if q.from < q.to {
         (q.from, q.to, false)
     } else {
